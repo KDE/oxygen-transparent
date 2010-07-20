@@ -49,6 +49,7 @@ namespace OxygenConfig
     static const QString NARROW_BUTTON_SPACING = "UseNarrowButtonSpacing";
     static const QString SHADOW_MODE = "ShadowMode";
     static const QString SHADOW_CACHE_MODE = "ShadowCacheMode";
+    static const QString BACKGROUND_OPACITY = "BackgroundOpacity";
 }
 
 namespace Oxygen
@@ -346,6 +347,19 @@ namespace Oxygen
         virtual void setTabsEnabled( bool value )
         { tabsEnabled_ = value; }
 
+        //! background opacity
+        virtual void setBackgroundOpacity( int value )
+        {
+            // check boundaries
+            value = qMin( 255, value );
+            value = qMax( 0, value );
+            backgroundOpacity_ = value;
+        }
+
+        //! background opacity
+        virtual int backgroundOpacity( void ) const
+        { return backgroundOpacity_; }
+
         private:
 
         //! title alignment
@@ -362,6 +376,9 @@ namespace Oxygen
 
         //! size grip mode
         SizeGripMode sizeGripMode_;
+
+        //! background opacity
+        int backgroundOpacity_;
 
         //! separator
         bool drawSeparator_;

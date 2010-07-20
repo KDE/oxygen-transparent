@@ -115,6 +115,7 @@ namespace Oxygen
     else if( userInterface_->ui.shadowMode->currentIndex() != userInterface_->ui.shadowMode->findText( configuration.shadowModeName( true ) ) ) modified = true;
     else if( userInterface_->ui.shadowCacheMode->currentIndex() != userInterface_->ui.shadowCacheMode->findText( configuration.shadowCacheModeName( true ) ) ) modified = true;
 
+    else if( userInterface_->ui.backgroundOpacity->value()*255/100 != configuration.backgroundOpacity() ) modified = true;
     else if( userInterface_->ui.drawSeparator->isChecked() != configuration.drawSeparator() ) modified = true;
     else if( userInterface_->ui.titleOutline->isChecked() !=  configuration.drawTitleOutline() ) modified = true;
     else if( userInterface_->shadowConfigurations[0]->isChecked() !=  configuration.useOxygenShadows() ) modified = true;
@@ -170,6 +171,7 @@ namespace Oxygen
       OxygenConfig::SHADOW_CACHE_MODE,
       Configuration::shadowCacheModeName( Configuration::shadowCacheMode( userInterface_->ui.shadowCacheMode->currentText(), true ), false ) );
 
+    configurationGroup.writeEntry( OxygenConfig::BACKGROUND_OPACITY, userInterface_->ui.backgroundOpacity->value()*255/100 );
     configurationGroup.writeEntry( OxygenConfig::DRAW_SEPARATOR, userInterface_->ui.drawSeparator->isChecked() );
     configurationGroup.writeEntry( OxygenConfig::DRAW_TITLE_OUTLINE, userInterface_->ui.titleOutline->isChecked() );
     configurationGroup.writeEntry( OxygenConfig::USE_DROP_SHADOWS, userInterface_->shadowConfigurations[1]->isChecked() );
@@ -238,6 +240,7 @@ namespace Oxygen
     userInterface_->ui.frameBorder->setCurrentIndex( userInterface_->ui.frameBorder->findText( configuration.frameBorderName( true ) ) );
     userInterface_->ui.sizeGripMode->setCurrentIndex( userInterface_->ui.sizeGripMode->findText( configuration.sizeGripModeName( true ) ) );
 
+    userInterface_->ui.backgroundOpacity->setValue( configuration.backgroundOpacity()*100/255 );
     userInterface_->ui.drawSeparator->setChecked( configuration.drawSeparator() );
     userInterface_->ui.titleOutline->setChecked( configuration.drawTitleOutline() );
     userInterface_->shadowConfigurations[0]->setChecked( configuration.useOxygenShadows() );

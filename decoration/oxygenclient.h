@@ -259,7 +259,7 @@ namespace Oxygen
         //@{
 
         //! window background
-        virtual void renderWindowBackground( QPainter*, const QRect&, const QWidget*, const QPalette& ) const;
+        virtual void renderWindowBackground( QPainter*, const QRect&, const QWidget*, const QPalette&, bool opaque = true ) const;
 
         //! window border
         // this draws a "blue" border around active window

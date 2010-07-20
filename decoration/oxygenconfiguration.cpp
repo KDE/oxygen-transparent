@@ -38,6 +38,7 @@ namespace Oxygen
         frameBorder_( BorderTiny ),
         blendColor_( RadialBlending ),
         sizeGripMode_( SizeGripWhenNeeded ),
+        backgroundOpacity_( 255 ),
         drawSeparator_( false ),
         drawTitleOutline_( false ),
         hideTitleBar_( false ),
@@ -83,6 +84,11 @@ namespace Oxygen
         setSizeGripMode( sizeGripMode(
             group.readEntry( OxygenConfig::SIZE_GRIP_MODE,
             defaultConfiguration.sizeGripModeName( false ) ), false ) );
+
+        // background opacity
+        setBackgroundOpacity(
+            group.readEntry( OxygenConfig::BACKGROUND_OPACITY,
+            defaultConfiguration.backgroundOpacity() ) );
 
         // draw separator
         setDrawSeparator( group.readEntry(
@@ -154,6 +160,7 @@ namespace Oxygen
         group.writeEntry( OxygenConfig::FRAME_BORDER, frameBorderName( false ) );
         group.writeEntry( OxygenConfig::SIZE_GRIP_MODE, sizeGripModeName( false ) );
 
+        group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() );
         group.writeEntry( OxygenConfig::DRAW_SEPARATOR, drawSeparator() );
         group.writeEntry( OxygenConfig::DRAW_TITLE_OUTLINE, drawTitleOutline() );
         group.writeEntry( OxygenConfig::HIDE_TITLEBAR, hideTitleBar() );

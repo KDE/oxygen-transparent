@@ -569,13 +569,20 @@ namespace Oxygen
     }
 
     //_________________________________________________________
-    void Client::renderWindowBackground( QPainter* painter, const QRect& rect, const QWidget* widget, const QPalette& palette ) const
+    void Client::renderWindowBackground( QPainter* painter, const QRect& rect, const QWidget* widget, const QPalette& palette, bool opaque ) const
     {
 
         if( configuration().blendColor() == Configuration::NoBlending )
         {
 
-            painter->fillRect( rect, palette.color( widget->window()->backgroundRole() ) );
+            if( compositingActive() && !opaque )
+            {
+
+                QColor color = palette.color( widget->window()->backgroundRole() );
+                color.setAlpha( configuration().backgroundOpacity() );
+                painter->fillRect( rect, color );
+
+            } else painter->fillRect( rect, palette.color( widget->window()->backgroundRole() ) );
 
         } else {
 
@@ -583,7 +590,15 @@ namespace Oxygen
             int height = 64 - Configuration::ButtonDefault;
             if( !configuration().hideTitleBar() ) height += configuration().buttonSize();
             const QWidget* window( isPreview() ? this->widget() : widget->window() );
-            helper().renderWindowBackground(painter, rect, widget, window, palette, offset, height );
+
+            if( compositingActive() && !opaque )
+            {
+
+                QColor color = palette.color( widget->window()->backgroundRole() );
+                color.setAlpha( configuration().backgroundOpacity() );
+                helper().renderWindowBackground( painter, rect, widget, window, color, offset, height );
+
+            } else helper().renderWindowBackground( painter, rect, widget, window, palette, offset, height );
 
         }
 
@@ -722,7 +737,7 @@ namespace Oxygen
             if( !mask.isEmpty() )
             {
                 painter->setClipRegion( mask, Qt::IntersectClip);
-                renderWindowBackground(painter, frame, widget, palette );
+                renderWindowBackground(painter, frame, widget, palette, false );
             }
 
         }
@@ -791,7 +806,7 @@ namespace Oxygen
             painter->setClipRegion( mask, Qt::IntersectClip );
 
             // draw window background
-            renderWindowBackground(painter, adjustedRect, widget(), palette );
+            renderWindowBackground(painter, adjustedRect, widget(), palette, false );
             painter->restore();
         }
 
@@ -1351,6 +1366,7 @@ namespace Oxygen
 
             TileSet *tileSet( 0 );
             QColor background( backgroundPalette( widget(), palette ).window().color() );
+
             ShadowCache::Key key( this->key() );
             if( configuration().useOxygenShadows() && glowIsAnimated() && !isForcedActive() )
             {
@@ -1413,7 +1429,7 @@ namespace Oxygen
         { updateItemBoundingRects( false ); }
 
         // window background
-        renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ) );
+        renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ), false );
         renderWindowBorder( &painter, frame, widget(), palette );
 
         // clipping
