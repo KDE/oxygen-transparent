@@ -72,36 +72,41 @@ namespace Oxygen
         connect( _windowDragMode, SIGNAL( currentIndexChanged( int ) ), SLOT( windowDragModeChanged( int ) ) );
         connect( _viewDrawTriangularExpander, SIGNAL( toggled( bool ) ), _viewTriangularExpanderSize, SLOT( setEnabled( bool ) ) );
 
+        connect( _backgroundOpacity, SIGNAL( valueChanged( int ) ), _backgroundOpacitySpinBox, SLOT( setValue( int ) ) );
+        connect( _backgroundOpacitySpinBox, SIGNAL( valueChanged( int ) ), _backgroundOpacity, SLOT( setValue( int ) ) );
+
         // toggle expert mode
         toggleExpertMode( false );
 
         // load setup from configData
         load();
 
-        connect( _animationsEnabled, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _toolBarDrawItemSeparator, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _checkDrawX, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _viewDrawTriangularExpander, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _viewTriangularExpanderSize, SIGNAL( currentIndexChanged( int ) ), SLOT( updateChanged() ) );
-        connect( _viewDrawFocusIndicator, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _viewDrawTreeBranchLines, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _scrollBarColored, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _scrollBarBevel, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _scrollBarWidth, SIGNAL( valueChanged(int) ), SLOT( updateChanged() ) );
-        connect( _menuHighlightDark, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _menuHighlightStrong, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _menuHighlightSubtle, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
-        connect( _tabStylePlain, SIGNAL( toggled(bool)), SLOT( updateChanged() ) );
-        connect( _tabStyleSingle, SIGNAL( toggled(bool)), SLOT( updateChanged() ) );
-        connect( _windowDragMode, SIGNAL( currentIndexChanged( int ) ), SLOT( updateChanged() ) );
-        connect( _useWMMoveResize, SIGNAL( toggled( bool ) ), SLOT( updateChanged() ) );
-        connect( _stackedWidgetTransitionsEnabled, SIGNAL( toggled(bool) ), SLOT( updateChanged() ) );
+        connect( _backgroundOpacity, SIGNAL( valueChanged( int ) ), SLOT( updateChanged( void ) ) );
+        connect( _animationsEnabled, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _toolBarDrawItemSeparator, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _checkDrawX, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _viewDrawTriangularExpander, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _viewTriangularExpanderSize, SIGNAL( currentIndexChanged( int ) ), SLOT( updateChanged( void ) ) );
+        connect( _viewDrawFocusIndicator, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _viewDrawTreeBranchLines, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _scrollBarColored, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _scrollBarBevel, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _scrollBarWidth, SIGNAL( valueChanged(int) ), SLOT( updateChanged( void ) ) );
+        connect( _menuHighlightDark, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _menuHighlightStrong, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _menuHighlightSubtle, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
+        connect( _tabStylePlain, SIGNAL( toggled(bool)), SLOT( updateChanged( void ) ) );
+        connect( _tabStyleSingle, SIGNAL( toggled(bool)), SLOT( updateChanged( void ) ) );
+        connect( _windowDragMode, SIGNAL( currentIndexChanged( int ) ), SLOT( updateChanged( void ) ) );
+        connect( _useWMMoveResize, SIGNAL( toggled( bool ) ), SLOT( updateChanged( void ) ) );
+        connect( _stackedWidgetTransitionsEnabled, SIGNAL( toggled(bool) ), SLOT( updateChanged( void ) ) );
 
     }
 
     //__________________________________________________________________
     void StyleConfig::save( void )
     {
+        OxygenStyleConfigData::setBackgroundOpacity( _backgroundOpacity->value()*255/100 );
         OxygenStyleConfigData::setToolBarDrawItemSeparator( _toolBarDrawItemSeparator->isChecked() );
         OxygenStyleConfigData::setCheckBoxStyle( ( _checkDrawX->isChecked() ? OxygenStyleConfigData::CS_X : OxygenStyleConfigData::CS_CHECK ) );
         OxygenStyleConfigData::setViewDrawTriangularExpander( _viewDrawTriangularExpander->isChecked() );
@@ -169,7 +174,7 @@ namespace Oxygen
             if( !_animationConfigWidget )
             {
                 _animationConfigWidget = new AnimationConfigWidget();
-                connect( _animationConfigWidget, SIGNAL( changed( bool ) ), SLOT( updateChanged() ) );
+                connect( _animationConfigWidget, SIGNAL( changed( bool ) ), SLOT( updateChanged( void ) ) );
                 connect( _animationConfigWidget, SIGNAL( layoutChanged( void ) ), SLOT( updateLayout() ) );
                 _animationConfigWidget->load();
             }
@@ -227,6 +232,7 @@ namespace Oxygen
 
         // check if any value was modified
         if ( _toolBarDrawItemSeparator->isChecked() != OxygenStyleConfigData::toolBarDrawItemSeparator() ) modified = true;
+        else if( _backgroundOpacity->value()*255/100 != OxygenStyleConfigData::backgroundOpacity() ) modified = true;
         else if( _viewDrawTriangularExpander->isChecked() != OxygenStyleConfigData::viewDrawTriangularExpander() ) modified = true;
         else if( _viewDrawFocusIndicator->isChecked() != OxygenStyleConfigData::viewDrawFocusIndicator() ) modified = true;
         else if( _viewDrawTreeBranchLines->isChecked() != OxygenStyleConfigData::viewDrawTreeBranchLines() ) modified = true;
@@ -272,6 +278,7 @@ namespace Oxygen
     void StyleConfig::load( void )
     {
 
+        _backgroundOpacity->setValue( OxygenStyleConfigData::backgroundOpacity()*100/255 );
         _toolBarDrawItemSeparator->setChecked( OxygenStyleConfigData::toolBarDrawItemSeparator() );
         _checkDrawX->setChecked( OxygenStyleConfigData::checkBoxStyle() == OxygenStyleConfigData::CS_X );
         _viewDrawTriangularExpander->setChecked( OxygenStyleConfigData::viewDrawTriangularExpander() );

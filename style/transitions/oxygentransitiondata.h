@@ -50,6 +50,10 @@ namespace Oxygen
         //! destructor
         virtual ~TransitionData( void );
 
+        //! transition widget
+        virtual const TransitionWidget::Pointer& transition( void ) const
+        { return transition_; }
+
         //! enability
         virtual void setEnabled( bool value )
         { enabled_ = value; }
@@ -97,10 +101,6 @@ namespace Oxygen
         }
 
         protected:
-
-        //! transition widget
-        virtual const TransitionWidget::Pointer& transition( void ) const
-        { return transition_; }
 
         //! used to avoid recursion when grabbing widgets
         void setRecursiveCheck( bool value )

@@ -57,6 +57,7 @@
 #include <QtGui/QToolBox>
 
 #include "oxygenstylehelper.h"
+#include "oxygenstyleconfigdata.h"
 #include "animations/oxygenwidgetstateengine.h"
 
 namespace Oxygen
@@ -111,6 +112,7 @@ namespace Oxygen
         //!@name polishing
         //@{
 
+        virtual void polish( QApplication* );
         virtual void polish( QWidget* );
         virtual void unpolish( QWidget* );
         using  KStyle::polish;
@@ -407,12 +409,17 @@ namespace Oxygen
         bool eventFilterScrollBar( QWidget*, QEvent* );
         bool eventFilterMdiSubWindow( QMdiSubWindow*, QEvent* );
         bool eventFilterGeometryTip( QWidget*, QEvent* );
+        bool eventFilterWindow( QWidget*, QEvent* );
 
         //@}
 
         //! returns true if compositing is active
         bool compositingActive( void ) const
         { return KWindowSystem::compositingActive(); }
+
+        //! returns true if translucent background is selected
+        bool hasTranslucentBackground( void ) const
+        { return OxygenStyleConfigData::backgroundOpacity() < 0xff; }
 
         //! returns true if a given widget supports alpha channel
         bool hasAlphaChannel( const QWidget* ) const;
@@ -470,6 +477,16 @@ namespace Oxygen
         typedef QMap<WidgetType, Style::KStylePrimitive> KStylePrimitiveMap;
         KStylePrimitiveMap kStylePrimitives_;
         //@}
+
+        //! application name
+        enum AppName
+        {
+            AppUnknown,
+            AppPlasma
+        };
+
+        //! application name
+        AppName _applicationName;
 
         //! helper
         StyleHelper &_helper;

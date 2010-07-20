@@ -105,6 +105,7 @@ namespace Oxygen
     //_____________________________________________
     Style::Style() :
         CE_CapacityBar( newControlElement( "CE_CapacityBar" ) ),
+        _applicationName( AppUnknown ),
         _helper(*globalHelper),
         _animations( new Animations( this ) ),
         _transitions( new Transitions( this ) ),
@@ -664,6 +665,8 @@ namespace Oxygen
         if( !widget->isWindow() ) return false;
 
         // normal "window" background
+        // Note: one should make sure that it is not already done in oxygen
+        // eventFilterWindow
         _helper.renderWindowBackground(p, option->rect, widget, option->palette );
         return true;
 
@@ -680,7 +683,7 @@ namespace Oxygen
         const QStyleOptionMenuItem* mOpt( qstyleoption_cast<const QStyleOptionMenuItem*>(option) );
         if( !( mOpt && widget ) ) return true;
         const QRect& r = mOpt->rect;
-        const QColor color = mOpt->palette.window().color();
+        const QColor color = mOpt->palette.color( widget->window()->backgroundRole() );
 
         const bool hasAlpha( hasAlphaChannel( widget ) );
         if( hasAlpha )
@@ -695,7 +698,18 @@ namespace Oxygen
 
         }
 
-        _helper.renderMenuBackground( p, r, widget, mOpt->palette );
+        if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+        {
+
+            QColor backgroundColor( color );
+            backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
+            _helper.renderMenuBackground( p, r, widget, backgroundColor );
+
+        } else {
+
+            _helper.renderMenuBackground( p, r, widget, color );
+
+        }
 
         if( hasAlpha ) p->setClipping( false );
         _helper.drawFloatFrame( p, r, color, !hasAlpha );
@@ -4538,7 +4552,30 @@ namespace Oxygen
     }
 
     //______________________________________________________________
-    void Style::polish(QWidget* widget)
+    void Style::polish( QApplication* app )
+    {
+
+        // get application full path
+        if( app->argc() < 1 ) return;
+        QString appName( app->argv()[0] );
+        int position( appName.lastIndexOf( '/' ) );
+        if( position >= 0 ) appName.remove( 0, position+1 );
+
+        /*
+        HACK: need to detect if application is of type Plasma
+        because applying translucency to some of its widgets creates
+        painting issues which could not be identified with a 'generic'
+        criteria.
+        */
+        if( appName == "plasma" || appName.startsWith( "plasma-" ) )
+        { _applicationName = AppPlasma; }
+
+        return;
+
+    }
+
+    //______________________________________________________________
+    void Style::polish( QWidget* widget )
     {
         if( !widget) return;
 
@@ -4583,7 +4620,58 @@ namespace Oxygen
 
             case Qt::Window:
             case Qt::Dialog:
-            widget->setAttribute(Qt::WA_StyledBackground);
+            {
+                widget->setAttribute(Qt::WA_StyledBackground);
+
+                // Hack: stop here if application is of type Plasma
+                /*
+                Right now we need to reject window candidates if the application is of type plasma
+                because it conflicts with some widgets embedded into the SysTray. Ideally one would
+                rather find a "generic" reason, not to handle them
+                */
+                if( _applicationName == AppPlasma && !widget->inherits( "QDialog" ) ) break;
+
+                // stop here if no translucent background selected/supported
+                if( !( compositingActive() && hasTranslucentBackground() ) ) break;
+
+                // more tests
+                if( !widget->isWindow() ) break;
+                if(
+                    widget->inherits( "QTipLabel") ||
+                    widget->inherits( "QSplashScreen") ) break;
+
+                if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
+                if( widget->windowType() == Qt::Desktop || // makes no sense + QDesktopWidget is often misused
+                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) || // makes no sense
+                    widget->testAttribute(Qt::WA_TranslucentBackground) ||
+                    widget->testAttribute(Qt::WA_NoSystemBackground) ||
+                    widget->testAttribute(Qt::WA_PaintOnScreen)
+                    ) break;
+
+                /*
+                whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
+                Unfortunately some properties are lost, among them the window icon. We save it and restore it manually
+                */
+                QIcon icon(widget->windowIcon());
+
+                /*
+                set translucent and install event filter,
+                because PE_Widget primitive is not called any more
+                when translucent flag is set
+                */
+                widget->setAttribute( Qt::WA_TranslucentBackground );
+                widget->setWindowIcon(icon);
+
+                /*
+                HACK: somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
+                we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
+                Copied from bespin. (TODO: try save position and restore)
+                */
+                widget->move(10000,10000);
+
+                addEventFilter( widget );
+            }
+
             break;
 
             default: break;
@@ -4891,6 +4979,23 @@ namespace Oxygen
         // reinitialize engines
         animations().setupEngines();
         transitions().setupEngines();
+
+        /*
+        disable stackedWidget engine in case
+        translucent backgrounds are enabled
+        */
+        if( compositingActive() && hasTranslucentBackground() )
+        {
+
+            transitions().stackedWidgetEngine().setEnabled( false );
+            transitions().labelEngine().setForceTransparentTransitions( true );
+
+        } else {
+
+            transitions().labelEngine().setForceTransparentTransitions( false );
+
+        }
+
         windowManager().initialize();
 
         widgetExplorer().setEnabled( OxygenStyleConfigData::widgetExplorerEnabled() );
@@ -7291,13 +7396,15 @@ namespace Oxygen
     {
 
         if( KStyle::eventFilter(obj, ev) ) return true;
+
+        // cast to QWidget
+        QWidget *widget = static_cast<QWidget*>(obj);
+        eventFilterWindow( widget, ev );
+
         if( QToolBar *t = qobject_cast<QToolBar*>(obj) ) { return eventFilterToolBar( t, ev ); }
         if( QDockWidget*dw = qobject_cast<QDockWidget*>(obj) ) { return eventFilterDockWidget( dw, ev ); }
         if( QToolBox *tb = qobject_cast<QToolBox*>(obj) ) { return eventFilterToolBox( tb, ev ); }
         if( QMdiSubWindow *sw = qobject_cast<QMdiSubWindow*>(obj) ) { return eventFilterMdiSubWindow( sw, ev ); }
-
-        // cast to QWidget
-        QWidget *widget = static_cast<QWidget*>(obj);
 
         if( widget->inherits( "Q3ListView" ) ) { return eventFilterQ3ListView( widget, ev ); }
         if( widget->inherits( "QComboBoxPrivateContainer" ) ) { return eventFilterComboBoxContainer( widget, ev ); }
@@ -7345,6 +7452,7 @@ namespace Oxygen
 
                 }
 
+
                 const bool hasAlpha( hasAlphaChannel(t) );
                 if( hasAlpha )
                 {
@@ -7357,7 +7465,18 @@ namespace Oxygen
                 }
 
                 // background
-                _helper.renderWindowBackground(&p, r, t, color);
+                if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+                {
+
+                    QColor backgroundColor( color );
+                    backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
+                    _helper.renderWindowBackground(&p, r, t, backgroundColor);
+
+                } else {
+
+                    _helper.renderWindowBackground(&p, r, t, color);
+
+                }
 
                 if( t->isMovable() )
                 {
@@ -7424,7 +7543,7 @@ namespace Oxygen
                 p.setClipRegion(e->region());
 
                 const QRect r( widget->rect() );
-                const QColor color( widget->palette().window().color() );
+                const QColor color( widget->palette().color( widget->window()->backgroundRole() ) );
                 const bool hasAlpha( hasAlphaChannel( widget ) );
 
                 if( hasAlpha )
@@ -7437,7 +7556,19 @@ namespace Oxygen
 
                 }
 
-                _helper.renderMenuBackground( &p, e->rect(), widget, widget->palette() );
+                // background
+                if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+                {
+
+                    QColor backgroundColor( color );
+                    backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
+                    _helper.renderMenuBackground( &p, e->rect(), widget, backgroundColor );
+
+                } else {
+
+                    _helper.renderMenuBackground( &p, e->rect(), widget, color );
+
+                }
 
                 // frame
                 if( hasAlpha ) p.setClipping( false );
@@ -7523,6 +7654,35 @@ namespace Oxygen
     }
 
     //____________________________________________________________________________
+    bool Style::eventFilterWindow( QWidget* widget, QEvent* ev )
+    {
+
+        if( ev->type() != QEvent::Paint ) return false;
+        if( !( compositingActive() && hasTranslucentBackground() ) ) return false;
+        if( !( (widget->windowFlags() & Qt::WindowType_Mask) & (Qt::Window|Qt::Dialog) ) ) return false;
+        if( !(
+            widget->isWindow() &&
+            widget->testAttribute( Qt::WA_TranslucentBackground ) &&
+            widget->testAttribute( Qt::WA_StyledBackground ) )
+            ) return false;
+
+        QPaintEvent* paintEvent( static_cast<QPaintEvent*>( ev ) );
+        QPainter p( widget );
+        p.setClipRegion( paintEvent->region() );
+
+        // normal "window" background
+        QColor color( widget->palette().color( widget->backgroundRole() ) );
+
+        // add alpha channel, if supported by the widget
+        if( hasAlphaChannel( widget ) )
+        { color.setAlpha( OxygenStyleConfigData::backgroundOpacity() ); }
+
+        _helper.renderWindowBackground( &p, paintEvent->rect(), widget, color );
+        return true;
+
+    }
+
+    //____________________________________________________________________________
     bool Style::eventFilterMdiSubWindow( QMdiSubWindow* sw, QEvent* ev )
     {
 
@@ -7588,10 +7748,22 @@ namespace Oxygen
                         // set clip region
                         p.setCompositionMode(QPainter::CompositionMode_SourceOver );
                         p.setClipRegion( _helper.roundedMask( r.adjusted( 1, 1, -1, -1 ) ), Qt::IntersectClip );
+
                     }
                     #endif
 
-                    _helper.renderWindowBackground(&p, r, dw, color);
+                    if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+                    {
+
+                        QColor backgroundColor( color );
+                        backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
+                        _helper.renderWindowBackground(&p, r, dw, backgroundColor);
+
+                    } else {
+
+                        _helper.renderWindowBackground(&p, r, dw, color);
+
+                    }
 
                     #ifndef Q_WS_WIN
                     if( hasAlpha ) p.setClipping( false );

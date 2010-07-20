@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>450</width>
-    <height>259</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -44,29 +44,29 @@
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_6">
-       <item row="0" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
         <widget class="QCheckBox" name="_toolBarDrawItemSeparator">
          <property name="text">
           <string>Draw toolbar item separators</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item>
         <widget class="QCheckBox" name="_checkDrawX">
          <property name="text">
           <string>Use 'X' in checkboxes instead of check</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item>
         <widget class="QCheckBox" name="_animationsEnabled">
          <property name="text">
           <string>Enable animations</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item>
         <widget class="QWidget" name="_stackedTransitionWidget" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="margin">
@@ -104,7 +104,41 @@
          </layout>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Background opacity:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="_backgroundOpacity">
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksBelow</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="_backgroundOpacitySpinBox">
+           <property name="maximum">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QWidget" name="_generalExpertWidget" native="true">
          <layout class="QGridLayout" name="gridLayout">
           <property name="margin">
@@ -168,7 +202,7 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item>
         <spacer name="verticalSpacer_4">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

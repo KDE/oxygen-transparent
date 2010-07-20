@@ -44,7 +44,8 @@ namespace Oxygen
 
         //! constructor
         LabelEngine( QObject* parent ):
-        BaseEngine( parent )
+        BaseEngine( parent ),
+        forceTransparentTransitions_( false )
         {}
 
         //! destructor
@@ -68,6 +69,10 @@ namespace Oxygen
             data_.setDuration( value );
         }
 
+        //! force transparent transitions
+        void setForceTransparentTransitions( bool value )
+        { forceTransparentTransitions_ = value; }
+
         public slots:
 
         //! remove widget from map
@@ -75,6 +80,9 @@ namespace Oxygen
         { return data_.unregisterWidget( object ); }
 
         private:
+
+        //! if true, Transparent flag is forced to all label Data
+        bool forceTransparentTransitions_;
 
         //! maps
         DataMap<LabelData> data_;

@@ -11,15 +11,25 @@
        <default>100</default>
     </entry>
 
+    <!-- background opacity -->
+    <entry name="BackgroundOpacity" type = "Int" >
+       <default>255</default>
+    </entry>
+
+    <!-- tooltips -->
     <entry name="ToolTipTransparent" type = "Bool" >
        <default>true</default>
     </entry>
     <entry name="ToolTipDrawStyledFrames" type = "Bool">
        <default>true</default>
     </entry>
+
+    <!-- toolbars -->
     <entry name="ToolBarDrawItemSeparator" type="Bool">
       <default>true</default>
     </entry>
+    
+    <!-- views -->
     <entry name="ViewDrawTriangularExpander" type="Bool">
       <default>true</default>
     </entry>
@@ -37,15 +47,10 @@
     <entry name="ViewDrawTreeBranchLines" type="Bool">
       <default>true</default>
     </entry>
+
+    <!-- scrollbars -->
     <entry name="ScrollBarWidth" type="Int">
       <default>15</default>
-    </entry>
-    <entry name="CheckBoxStyle" type="Enum">
-      <choices>
-          <choice name="CS_CHECK" />
-          <choice name="CS_X" />
-      </choices>
-      <default>CS_CHECK</default>
     </entry>
     <entry name="ScrollBarColored" type="Bool">
       <default>false</default>
@@ -53,9 +58,22 @@
     <entry name="ScrollBarBevel" type="Bool">
       <default>false</default>
     </entry>
+
+    <!-- checkboxes -->
+    <entry name="CheckBoxStyle" type="Enum">
+      <choices>
+          <choice name="CS_CHECK" />
+          <choice name="CS_X" />
+      </choices>
+      <default>CS_CHECK</default>
+    </entry>
+
+    <!-- progress bars -->
     <entry name="ProgressBarAnimated" type="Bool">
       <default>true</default>
     </entry>
+
+    <!-- menus -->
     <entry name="MenuHighlightMode" type="Enum">
       <choices>
           <choice name="MM_DARK" />
@@ -64,6 +82,8 @@
       </choices>
       <default>MM_DARK</default>
     </entry>
+
+    <!-- tabs -->
     <entry name="TabSubtleShadow" type="Bool">
       <default>false</default>
     </entry>
@@ -73,6 +93,15 @@
           <choice name="TS_PLAIN" />
       </choices>
       <default>TS_SINGLE</default>
+    </entry>
+
+    <!-- 
+        this enables WidgetExplorer debugging tool.
+        it provides information about widgets, 
+        widgets' geometry, and ancestry tree
+    -->
+    <entry name="WidgetExplorerEnabled" type="Bool">
+      <default>false</default>
     </entry>
 
     <!-- window dragging -->
@@ -86,15 +115,6 @@
           <choice name="WD_FULL" />
       </choices>
       <default>WD_FULL</default>
-    </entry>
-
-    <!-- 
-        this enables WidgetExplorer debugging tool.
-        it provides information about widgets, 
-        widgets' geometry, and ancestry tree
-    -->
-    <entry name="WidgetExplorerEnabled" type="Bool">
-      <default>false</default>
     </entry>
 
     <!-- 

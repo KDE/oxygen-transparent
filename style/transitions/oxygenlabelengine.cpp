@@ -35,7 +35,19 @@ namespace Oxygen
     {
 
         if( !widget ) return false;
-        if( !data_.contains( widget ) ) { data_.insert( widget, new LabelData( this, widget, duration() ), enabled() ); }
+        if( !data_.contains( widget ) )
+        {
+
+            // create new label data
+            LabelData* data = new LabelData( this, widget, duration() );
+
+            // force transparent flag if requested
+            if( forceTransparentTransitions_ ) data->transition().data()->setFlags( TransitionWidget::Transparent );
+
+            // and insert in map
+            data_.insert( widget, data, enabled() );
+
+        }
 
         // connect destruction signal
         disconnect( widget, SIGNAL( destroyed( QObject* ) ), this, SLOT( unregisterWidget( QObject* ) ) );
