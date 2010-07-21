@@ -143,7 +143,10 @@ namespace Oxygen
             if( !(child && child->isVisible()) ) continue;
 
             bool rejected( false );
-            if( child->autoFillBackground() || child->testAttribute(Qt::WA_OpaquePaintEvent) )
+
+            if(
+                (child->autoFillBackground() && child->palette().color( child->backgroundRole() ).alpha() == 0xff ) ||
+                child->testAttribute(Qt::WA_OpaquePaintEvent) )
             {
 
                 const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
@@ -156,15 +159,6 @@ namespace Oxygen
                 const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
                 region -= child->rect().translated( offset );
                 rejected = true;
-
-            } else if( QPushButton* button = qobject_cast<QPushButton*>( child ) ) {
-
-                if( !button->isFlat() )
-                {
-                    const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
-                    region -= child->rect().translated( offset );
-                    rejected = true;
-                }
 
             }
 
