@@ -72,9 +72,6 @@ namespace Oxygen
         connect( _windowDragMode, SIGNAL( currentIndexChanged( int ) ), SLOT( windowDragModeChanged( int ) ) );
         connect( _viewDrawTriangularExpander, SIGNAL( toggled( bool ) ), _viewTriangularExpanderSize, SLOT( setEnabled( bool ) ) );
 
-        connect( _backgroundOpacity, SIGNAL( valueChanged( int ) ), _backgroundOpacitySpinBox, SLOT( setValue( int ) ) );
-        connect( _backgroundOpacitySpinBox, SIGNAL( valueChanged( int ) ), _backgroundOpacity, SLOT( setValue( int ) ) );
-
         // toggle expert mode
         toggleExpertMode( false );
 
