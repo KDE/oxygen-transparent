@@ -99,8 +99,6 @@ namespace Oxygen
     shadowConfigurations.push_back( ui.inactiveShadowConfiguration );
 
     // connections
-    connect( ui.backgroundOpacity, SIGNAL( valueChanged( int ) ), ui.backgroundOpacitySpinBox, SLOT( setValue( int ) ) );
-    connect( ui.backgroundOpacitySpinBox, SIGNAL( valueChanged( int ) ), ui.backgroundOpacity, SLOT( setValue( int ) ) );
     connect( ui.backgroundOpacity, SIGNAL( valueChanged( int ) ), SIGNAL( changed() ) );
 
     connect( ui.shadowMode, SIGNAL( currentIndexChanged(int)), SLOT(shadowModeChanged(int)) );
