@@ -81,6 +81,14 @@ namespace Oxygen
         switch( event->type() )
         {
 
+            case QEvent::Hide:
+            {
+                QWidget* widget( qobject_cast<QWidget*>( object ) );
+                if( widget && widget->isWindow() )
+                { clear( widget ); }
+                break;
+            }
+
             case QEvent::Show:
             case QEvent::Resize:
             {
