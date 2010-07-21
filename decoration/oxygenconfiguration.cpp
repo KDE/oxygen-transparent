@@ -85,11 +85,6 @@ namespace Oxygen
             group.readEntry( OxygenConfig::SIZE_GRIP_MODE,
             defaultConfiguration.sizeGripModeName( false ) ), false ) );
 
-        // background opacity
-        setBackgroundOpacity(
-            group.readEntry( OxygenConfig::BACKGROUND_OPACITY,
-            defaultConfiguration.backgroundOpacity() ) );
-
         // draw separator
         setDrawSeparator( group.readEntry(
             OxygenConfig::DRAW_SEPARATOR,
@@ -151,6 +146,17 @@ namespace Oxygen
     }
 
     //__________________________________________________
+    void Configuration::readBackgroundOpacity( KConfigGroup group )
+    {
+
+        // background opacity
+        Configuration defaultConfiguration;
+        setBackgroundOpacity(
+            group.readEntry( OxygenConfig::BACKGROUND_OPACITY,
+            defaultConfiguration.backgroundOpacity() ) );
+    }
+
+    //__________________________________________________
     void Configuration::write( KConfigGroup& group ) const
     {
 
@@ -160,7 +166,6 @@ namespace Oxygen
         group.writeEntry( OxygenConfig::FRAME_BORDER, frameBorderName( false ) );
         group.writeEntry( OxygenConfig::SIZE_GRIP_MODE, sizeGripModeName( false ) );
 
-        group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() );
         group.writeEntry( OxygenConfig::DRAW_SEPARATOR, drawSeparator() );
         group.writeEntry( OxygenConfig::DRAW_TITLE_OUTLINE, drawTitleOutline() );
         group.writeEntry( OxygenConfig::HIDE_TITLEBAR, hideTitleBar() );
@@ -175,6 +180,10 @@ namespace Oxygen
         group.writeEntry( OxygenConfig::SHADOW_CACHE_MODE, shadowCacheModeName( false ) );
 
     }
+
+    //__________________________________________________
+    void Configuration::writeBackgroundOpacity( KConfigGroup& group ) const
+    { group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() ); }
 
     //__________________________________________________
     QString Configuration::titleAlignmentName( Qt::Alignment value, bool translated )
@@ -338,6 +347,7 @@ namespace Oxygen
             frameBorder() == other.frameBorder() &&
             blendColor() == other.blendColor() &&
             sizeGripMode() == other.sizeGripMode() &&
+            backgroundOpacity() == other.backgroundOpacity()&&
             drawSeparator() == other.drawSeparator() &&
             drawTitleOutline() == other.drawTitleOutline() &&
             hideTitleBar() == other.hideTitleBar() &&

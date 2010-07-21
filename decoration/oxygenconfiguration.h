@@ -127,8 +127,14 @@ namespace Oxygen
         //! equal to operator
         bool operator == ( const Configuration& ) const;
 
+        //! constructor from KConfig
+        void readBackgroundOpacity( KConfigGroup );
+
         //! write to kconfig group
         virtual void write( KConfigGroup& ) const;
+
+        //! constructor from KConfig
+        void writeBackgroundOpacity( KConfigGroup& ) const;
 
         //!@name title alignment
         //@{

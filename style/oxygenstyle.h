@@ -44,7 +44,6 @@
  */
 
 #include <KStyle>
-#include <KWindowSystem>
 
 #include <QtGui/QAbstractScrollArea>
 #include <QtGui/QBitmap>
@@ -67,6 +66,7 @@ namespace Oxygen
     class WindowManager;
     class FrameShadowFactory;
     class WidgetExplorer;
+    class BlurHelper;
 
     //! main oxygen style class.
     /*! it is responsible to draw all the primitives to be displayed on screen, on request from Qt paint engine */
@@ -252,6 +252,10 @@ namespace Oxygen
         FrameShadowFactory& frameShadowFactory( void ) const
         { return *_frameShadowFactory; }
 
+        //! blur helper
+        BlurHelper& blurHelper( void ) const
+        { return *_blurHelper; }
+
         //! widget explorer
         /*!
         this is used for debugging. Provides information about
@@ -400,7 +404,7 @@ namespace Oxygen
         //!@name event filters
         //@{
 
-        bool eventFilter(QObject *, QEvent *);
+        bool eventFilter( QObject*, QEvent* );
         bool eventFilterToolBar( QToolBar*, QEvent* );
         bool eventFilterDockWidget( QDockWidget*, QEvent* );
         bool eventFilterToolBox( QToolBox*, QEvent* );
@@ -413,16 +417,9 @@ namespace Oxygen
 
         //@}
 
-        //! returns true if compositing is active
-        bool compositingActive( void ) const
-        { return KWindowSystem::compositingActive(); }
-
         //! returns true if translucent background is selected
         bool hasTranslucentBackground( void ) const
         { return OxygenStyleConfigData::backgroundOpacity() < 0xff; }
-
-        //! returns true if a given widget supports alpha channel
-        bool hasAlphaChannel( const QWidget* ) const;
 
         //! install event filter to object, in a unique way
         void addEventFilter( QObject* object )
@@ -502,6 +499,9 @@ namespace Oxygen
 
         //! frame shadows
         FrameShadowFactory* _frameShadowFactory;
+
+        //! blur helper
+        BlurHelper* _blurHelper;
 
         //! widget explorer
         /*!

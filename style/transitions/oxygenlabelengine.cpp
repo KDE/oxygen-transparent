@@ -41,9 +41,6 @@ namespace Oxygen
             // create new label data
             LabelData* data = new LabelData( this, widget, duration() );
 
-            // force transparent flag if requested
-            if( forceTransparentTransitions_ ) data->transition().data()->setFlags( TransitionWidget::Transparent );
-
             // and insert in map
             data_.insert( widget, data, enabled() );
 

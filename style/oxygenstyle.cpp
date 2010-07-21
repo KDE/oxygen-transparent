@@ -67,6 +67,7 @@
 #include <KDebug>
 
 #include "oxygenanimations.h"
+#include "oxygenblurhelper.h"
 #include "oxygenframeshadow.h"
 #include "oxygenstyleconfigdata.h"
 #include "oxygentransitions.h"
@@ -111,6 +112,7 @@ namespace Oxygen
         _transitions( new Transitions( this ) ),
         _windowManager( new WindowManager( this ) ),
         _frameShadowFactory( new FrameShadowFactory( this ) ),
+        _blurHelper( new BlurHelper( this, _helper ) ),
         _widgetExplorer( new WidgetExplorer( this ) )
     {
 
@@ -685,7 +687,7 @@ namespace Oxygen
         const QRect& r = mOpt->rect;
         const QColor color = mOpt->palette.color( widget->window()->backgroundRole() );
 
-        const bool hasAlpha( hasAlphaChannel( widget ) );
+        const bool hasAlpha( _helper.hasAlphaChannel( widget ) );
         if( hasAlpha )
         {
 
@@ -698,7 +700,7 @@ namespace Oxygen
 
         }
 
-        if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+        if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
         {
 
             QColor backgroundColor( color );
@@ -757,7 +759,7 @@ namespace Oxygen
 
         // make tooltip semi transparents when possible
         // alpha is copied from "kdebase/apps/dolphin/tooltips/filemetadatatooltip.cpp"
-        const bool hasAlpha( hasAlphaChannel( widget ) );
+        const bool hasAlpha( _helper.hasAlphaChannel( widget ) );
         if(  hasAlpha && OxygenStyleConfigData::toolTipTransparent() )
         {
             topColor.setAlpha(220);
@@ -4632,7 +4634,7 @@ namespace Oxygen
                 if( _applicationName == AppPlasma && !widget->inherits( "QDialog" ) ) break;
 
                 // stop here if no translucent background selected/supported
-                if( !( compositingActive() && hasTranslucentBackground() ) ) break;
+                if( !( _helper.compositingActive() && hasTranslucentBackground() ) ) break;
 
                 // more tests
                 if( !widget->isWindow() ) break;
@@ -4670,6 +4672,8 @@ namespace Oxygen
                 widget->move(10000,10000);
 
                 addEventFilter( widget );
+                blurHelper().registerWidget( widget );
+
             }
 
             break;
@@ -4720,8 +4724,10 @@ namespace Oxygen
             toolbar to toolbar if removed.
             (Hugo 05/18/2010)
         */
-        if( qobject_cast<QToolBar *>(widget->parent()) )
-        { widget->setContentsMargins(0,0,0,1); }
+        if( qobject_cast<QToolBar*>(widget->parent()) )
+        {
+            widget->setContentsMargins(0,0,0,1);
+        }
 
         if( qobject_cast<QToolButton*>(widget) )
         {
@@ -4755,6 +4761,7 @@ namespace Oxygen
             widget->setBackgroundRole(QPalette::NoRole);
             widget->setAttribute(Qt::WA_TranslucentBackground);
             addEventFilter( widget );
+            blurHelper().registerWidget( widget );
 
             #ifdef Q_WS_WIN
             //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
@@ -4786,6 +4793,7 @@ namespace Oxygen
             widget->setAttribute(Qt::WA_TranslucentBackground);
             widget->setContentsMargins(3,3,3,3);
             addEventFilter( widget );
+            blurHelper().registerWidget( widget );
 
         } else if( qobject_cast<QMdiSubWindow*>(widget) ) {
 
@@ -4808,6 +4816,7 @@ namespace Oxygen
         } else if( qobject_cast<QMenu*>(widget) ) {
 
             widget->setAttribute(Qt::WA_TranslucentBackground);
+            blurHelper().registerWidget( widget );
             #ifdef Q_WS_WIN
             //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
             widget->setWindowFlags(widget->windowFlags() | Qt::FramelessWindowHint);
@@ -4816,6 +4825,8 @@ namespace Oxygen
         } else if( widget->inherits("QComboBoxPrivateContainer")) {
 
             addEventFilter( widget );
+            blurHelper().registerWidget( widget );
+
             widget->setAttribute(Qt::WA_TranslucentBackground);
             #ifdef Q_WS_WIN
             //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
@@ -4970,6 +4981,9 @@ namespace Oxygen
         // reset helper configuration
         if( type == KGlobalSettings::PaletteChanged) _helper.reloadConfig();
 
+        // store previous background opacity
+        int oldBackgroundOpacity( OxygenStyleConfigData::backgroundOpacity() );
+
         // reset config
         OxygenStyleConfigData::self()->readConfig();
 
@@ -4984,21 +4998,28 @@ namespace Oxygen
         disable stackedWidget engine in case
         translucent backgrounds are enabled
         */
-        if( compositingActive() && hasTranslucentBackground() )
+        if( _helper.compositingActive() && hasTranslucentBackground() )
         {
 
+            blurHelper().setEnabled( true );
             transitions().stackedWidgetEngine().setEnabled( false );
-            transitions().labelEngine().setForceTransparentTransitions( true );
+            transitions().labelEngine().setEnabled( false );
 
         } else {
 
-            transitions().labelEngine().setForceTransparentTransitions( false );
+            blurHelper().setEnabled( false );
 
         }
 
         windowManager().initialize();
-
         widgetExplorer().setEnabled( OxygenStyleConfigData::widgetExplorerEnabled() );
+
+        // if background opacity has changed, one needs to trigger update of all top level windows
+        if( OxygenStyleConfigData::backgroundOpacity() != oldBackgroundOpacity )
+        {
+            foreach( QWidget* widget, qApp->topLevelWidgets() )
+            { widget->update(); }
+        }
 
     }
 
@@ -6695,7 +6716,7 @@ namespace Oxygen
             case SH_Menu_Mask:
             {
 
-                if( !hasAlphaChannel( widget ) && (!widget || widget->isWindow() ) )
+                if( !_helper.hasAlphaChannel( widget ) && (!widget || widget->isWindow() ) )
                 {
 
                     // mask should be set only if compositing is disabled
@@ -7424,7 +7445,7 @@ namespace Oxygen
             case QEvent::Resize:
             {
                 // make sure mask is appropriate
-                if( t->isFloating() && !hasAlphaChannel(t) ) t->setMask(_helper.roundedMask( t->rect() ));
+                if( t->isFloating() && !_helper.hasAlphaChannel(t) ) t->setMask(_helper.roundedMask( t->rect() ));
                 else  t->clearMask();
                 return false;
             }
@@ -7453,7 +7474,7 @@ namespace Oxygen
                 }
 
 
-                const bool hasAlpha( hasAlphaChannel(t) );
+                const bool hasAlpha( _helper.hasAlphaChannel(t) );
                 if( hasAlpha )
                 {
                     p.setCompositionMode(QPainter::CompositionMode_Source );
@@ -7465,7 +7486,7 @@ namespace Oxygen
                 }
 
                 // background
-                if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+                if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
                 {
 
                     QColor backgroundColor( color );
@@ -7530,7 +7551,7 @@ namespace Oxygen
             case QEvent::Show:
             case QEvent::Resize:
             {
-                if( !hasAlphaChannel(widget) ) widget->setMask(_helper.roundedMask( widget->rect() ));
+                if( !_helper.hasAlphaChannel(widget) ) widget->setMask(_helper.roundedMask( widget->rect() ));
                 else widget->clearMask();
                 return false;
             }
@@ -7544,7 +7565,7 @@ namespace Oxygen
 
                 const QRect r( widget->rect() );
                 const QColor color( widget->palette().color( widget->window()->backgroundRole() ) );
-                const bool hasAlpha( hasAlphaChannel( widget ) );
+                const bool hasAlpha( _helper.hasAlphaChannel( widget ) );
 
                 if( hasAlpha )
                 {
@@ -7557,7 +7578,7 @@ namespace Oxygen
                 }
 
                 // background
-                if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+                if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
                 {
 
                     QColor backgroundColor( color );
@@ -7606,7 +7627,7 @@ namespace Oxygen
             {
 
                 // make sure mask is appropriate
-                if( !hasAlphaChannel(widget) ) widget->setMask(_helper.roundedMask( widget->rect() ));
+                if( !_helper.hasAlphaChannel(widget) ) widget->setMask(_helper.roundedMask( widget->rect() ));
                 else widget->clearMask();
                 return false;
             }
@@ -7621,7 +7642,7 @@ namespace Oxygen
                 QPaintEvent *e = (QPaintEvent*)ev;
                 p.setClipRegion(e->region());
 
-                const bool hasAlpha( hasAlphaChannel( widget ) );
+                const bool hasAlpha( _helper.hasAlphaChannel( widget ) );
                 if( hasAlpha )
                 {
 
@@ -7658,7 +7679,6 @@ namespace Oxygen
     {
 
         if( ev->type() != QEvent::Paint ) return false;
-        if( !( compositingActive() && hasTranslucentBackground() ) ) return false;
         if( !( (widget->windowFlags() & Qt::WindowType_Mask) & (Qt::Window|Qt::Dialog) ) ) return false;
         if( !(
             widget->isWindow() &&
@@ -7674,7 +7694,7 @@ namespace Oxygen
         QColor color( widget->palette().color( widget->backgroundRole() ) );
 
         // add alpha channel, if supported by the widget
-        if( hasAlphaChannel( widget ) )
+        if( _helper.hasAlphaChannel( widget ) )
         { color.setAlpha( OxygenStyleConfigData::backgroundOpacity() ); }
 
         _helper.renderWindowBackground( &p, paintEvent->rect(), widget, color );
@@ -7721,7 +7741,7 @@ namespace Oxygen
             case QEvent::Resize:
             {
                 // make sure mask is appropriate
-                if( dw->isFloating() && !hasAlphaChannel(dw) ) dw->setMask(_helper.roundedMask( dw->rect() ));
+                if( dw->isFloating() && !_helper.hasAlphaChannel(dw) ) dw->setMask(_helper.roundedMask( dw->rect() ));
                 else dw->clearMask();
                 return false;
             }
@@ -7738,7 +7758,7 @@ namespace Oxygen
                 {
 
                     #ifndef Q_WS_WIN
-                    bool hasAlpha( hasAlphaChannel(dw ) );
+                    bool hasAlpha( _helper.hasAlphaChannel(dw ) );
                     if( hasAlpha )
                     {
                         p.setCompositionMode(QPainter::CompositionMode_Source );
@@ -7752,7 +7772,7 @@ namespace Oxygen
                     }
                     #endif
 
-                    if( hasAlpha && compositingActive() && hasTranslucentBackground() )
+                    if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
                     {
 
                         QColor backgroundColor( color );
@@ -7808,24 +7828,6 @@ namespace Oxygen
         }
 
         return false;
-    }
-
-    //____________________________________________________________________
-    bool Style::hasAlphaChannel( const QWidget* widget ) const
-    {
-        #ifdef Q_WS_X11
-        if( compositingActive() )
-        {
-
-            if( widget ) return widget->x11Info().depth() == 32;
-            else return QX11Info().appDepth() == 32;
-
-        } else return false;
-
-        #else
-        return compositingActive();
-        #endif
-
     }
 
     //____________________________________________________________________

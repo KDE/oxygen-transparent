@@ -32,8 +32,6 @@ DEALINGS IN THE SOFTWARE.
 #include "oxygenanimationconfigwidget.h"
 #include "oxygenstyleconfigdata.h"
 
-#include <QtCore/QTextStream>
-
 #include <KGlobal>
 #include <KLocale>
 #include <KSharedConfig>
@@ -103,7 +101,8 @@ namespace Oxygen
     //__________________________________________________________________
     void StyleConfig::save( void )
     {
-        OxygenStyleConfigData::setBackgroundOpacity( _backgroundOpacity->value()*255/100 );
+
+        OxygenStyleConfigData::setBackgroundOpacity( (_backgroundOpacity->value()*255)/100 );
         OxygenStyleConfigData::setToolBarDrawItemSeparator( _toolBarDrawItemSeparator->isChecked() );
         OxygenStyleConfigData::setCheckBoxStyle( ( _checkDrawX->isChecked() ? OxygenStyleConfigData::CS_X : OxygenStyleConfigData::CS_CHECK ) );
         OxygenStyleConfigData::setViewDrawTriangularExpander( _viewDrawTriangularExpander->isChecked() );
@@ -116,6 +115,8 @@ namespace Oxygen
         OxygenStyleConfigData::setMenuHighlightMode( menuMode() );
         OxygenStyleConfigData::setTabStyle( tabStyle() );
         OxygenStyleConfigData::setViewTriangularExpanderSize( triangularExpanderSize() );
+
+        QTextStream( stdout ) << "OxygenStyleConfigData::BackgroundOpacity: " << OxygenStyleConfigData::backgroundOpacity() << endl;
 
         if( _expertMode )
         {
@@ -229,7 +230,7 @@ namespace Oxygen
 
         // check if any value was modified
         if ( _toolBarDrawItemSeparator->isChecked() != OxygenStyleConfigData::toolBarDrawItemSeparator() ) modified = true;
-        else if( _backgroundOpacity->value()*255/100 != OxygenStyleConfigData::backgroundOpacity() ) modified = true;
+        else if( _backgroundOpacity->value() != OxygenStyleConfigData::backgroundOpacity()*100/255 ) modified = true;
         else if( _viewDrawTriangularExpander->isChecked() != OxygenStyleConfigData::viewDrawTriangularExpander() ) modified = true;
         else if( _viewDrawFocusIndicator->isChecked() != OxygenStyleConfigData::viewDrawFocusIndicator() ) modified = true;
         else if( _viewDrawTreeBranchLines->isChecked() != OxygenStyleConfigData::viewDrawTreeBranchLines() ) modified = true;

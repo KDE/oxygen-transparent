@@ -143,6 +143,9 @@ namespace Oxygen
     // shadow mode
     ui.shadowsExpertWidget->setVisible( expertMode_ );
 
+    // background opacity is hidden in expert mode, as it is redundant with the style configuration
+    ui.backgroundOpacityWidget->setVisible( !expertMode_ );
+
     if( expertMode_ ) ui.shadowSpacer->changeSize(0,0, QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     else ui.shadowSpacer->changeSize(0,0, QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 

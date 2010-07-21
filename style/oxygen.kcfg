@@ -3,17 +3,22 @@
 <kcfg> 
   <kcfgfile name="oxygenrc"/> 
 
+
+  <group name="Common"> 
+
+    <!-- background opacity -->
+    <entry name="BackgroundOpacity" type = "Int" >
+       <default>255</default>
+    </entry>
+
+  </group>
+
   <!-- widget style -->
   <group name="Style"> 
     
     <!-- cache size -->
     <entry name="MaxCacheSize" type = "Int" >
        <default>100</default>
-    </entry>
-
-    <!-- background opacity -->
-    <entry name="BackgroundOpacity" type = "Int" >
-       <default>255</default>
     </entry>
 
     <!-- tooltips -->

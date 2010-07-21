@@ -101,8 +101,9 @@ namespace Oxygen
 
         // create a config object
         KConfig config("oxygenrc");
-        KConfigGroup group( config.group("Windeco") );
-        Configuration configuration( group );
+        Configuration configuration( config.group("Windeco" ) );
+        configuration.readBackgroundOpacity( config.group("Common") );
+
         if( !( configuration == defaultConfiguration() ) )
         {
             setDefaultConfiguration( configuration );
