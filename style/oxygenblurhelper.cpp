@@ -214,6 +214,10 @@ namespace Oxygen
 
         }
 
+        // force update
+        if( widget->isVisible() )
+        { widget->update(); }
+
         #endif
 
     }
