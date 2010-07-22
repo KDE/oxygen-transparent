@@ -5,7 +5,7 @@
 //
 // Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
 //
-// Largely inspired from BeSpin style
+// Loosely inspired (and largely rewritten) from BeSpin style
 // Copyright (C) 2007 Thomas Luebking <thomas.luebking@web.de>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -84,9 +84,14 @@ namespace Oxygen
             case QEvent::Hide:
             {
                 QWidget* widget( qobject_cast<QWidget*>( object ) );
-                if( widget && widget->isWindow() )
-                { clear( widget ); }
+                if( widget && isOpaque( widget ) && isTransparent( widget->window() ) )
+                {
+                    QWidget* window( widget->window() );
+                    _pendingWidgets.insert( window, window );
+                    delayedUpdate();
+                }
                 break;
+
             }
 
             case QEvent::Show:
@@ -95,14 +100,24 @@ namespace Oxygen
 
                 // cast to widget and check
                 QWidget* widget( qobject_cast<QWidget*>( object ) );
-                if( !(
-                    widget && widget->isWindow() &&
-                    widget->testAttribute( Qt::WA_TranslucentBackground ) &&
-                    _helper.hasAlphaChannel( widget ) ) )
-                { return false; }
+                if( !widget ) break;
+                if( isTransparent( widget ) )
+                {
 
-                // update
-                update( widget );
+                    _pendingWidgets.insert( widget, widget );
+                    delayedUpdate();
+
+                } else if( isOpaque( widget ) ) {
+
+                    QWidget* window( widget->window() );
+                    if( isTransparent( window ) )
+                    {
+                        _pendingWidgets.insert( window, window );
+                        delayedUpdate();
+                    }
+
+                }
+
                 break;
             }
 
@@ -150,27 +165,14 @@ namespace Oxygen
             QWidget* child( qobject_cast<QWidget*>( childObject ) );
             if( !(child && child->isVisible()) ) continue;
 
-            bool rejected( false );
-
-            if(
-                (child->autoFillBackground() && child->palette().color( child->backgroundRole() ).alpha() == 0xff ) ||
-                child->testAttribute(Qt::WA_OpaquePaintEvent) )
+            if( isOpaque( child ) )
             {
 
                 const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
                 if( child->mask().isEmpty() ) region -= child->rect().translated( offset );
                 else region -= child->mask().translated( offset );
-                rejected = true;
 
-            } else if( qobject_cast<QProgressBar*>( child ) ) {
-
-                const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
-                region -= child->rect().translated( offset );
-                rejected = true;
-
-            }
-
-            if( !rejected ) trimBlurRegion( parent, child, region );
+            } else { trimBlurRegion( parent, child, region ); }
 
         }
 
@@ -184,9 +186,19 @@ namespace Oxygen
 
         #ifdef Q_WS_X11
 
+        /*
+        directly from bespin code. Supposibly prevent playing with some 'pseudo-widgets'
+        that have winId matching some other -random- window
+        */
+        if( !(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() ))
+        { return; }
+
         const QRegion region( blurRegion( widget ) );
-        if( region.isEmpty() ) clear( widget );
-        else {
+        if( region.isEmpty() ) {
+
+            clear( widget );
+
+        } else {
 
             QVector<unsigned long> data;
             foreach( const QRect& rect, region.rects() )

@@ -4587,6 +4587,13 @@ namespace Oxygen
         windowManager().registerWidget( widget );
         frameShadowFactory().registerWidget( widget, _helper );
 
+        /*
+        need to register all widgets to blur helper, in order to
+        have proper blur_behind region set have proper regions removed for opaque widgets.
+        Note: that the helper does nothing as long as compositing and ARGB are not enabled
+        */
+        blurHelper().registerWidget( widget );
+
         // scroll areas
         if( QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>(widget) )
         {
@@ -4672,7 +4679,6 @@ namespace Oxygen
                 widget->move(10000,10000);
 
                 addEventFilter( widget );
-                blurHelper().registerWidget( widget );
 
             }
 
