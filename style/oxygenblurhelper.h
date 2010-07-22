@@ -60,15 +60,18 @@ namespace Oxygen
         {}
 
         //! enable state
-        virtual void setEnabled( bool value )
+        void setEnabled( bool value )
         { _enabled = value; }
 
         //! enabled
-        virtual bool enabled( void ) const
+        bool enabled( void ) const
         { return _enabled; }
 
         //! register widget
-        virtual bool registerWidget( QWidget* );
+        void registerWidget( QWidget* );
+
+        //! register widget
+        void unregisterWidget( QWidget* );
 
         //! event filter
         virtual bool eventFilter( QObject*, QEvent* );

@@ -4871,11 +4871,12 @@ namespace Oxygen
     void Style::unpolish(QWidget* widget)
     {
 
-        // register widget to animations
+        // unregister from all 'helper' classes
         animations().unregisterWidget( widget );
         transitions().unregisterWidget( widget );
         windowManager().unregisterWidget( widget );
         frameShadowFactory().unregisterWidget( widget );
+        blurHelper().unregisterWidget( widget );
 
         if( isKTextEditFrame( widget ) )
         { widget->setAttribute( Qt::WA_Hover, false  ); }
