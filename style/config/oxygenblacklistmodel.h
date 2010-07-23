@@ -74,7 +74,7 @@ namespace Oxygen
         protected:
         
         //! sort
-        virtual void _sort( int, Qt::SortOrder );
+        virtual void privateSort( int, Qt::SortOrder );
         
         private:
         

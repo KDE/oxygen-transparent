@@ -84,15 +84,15 @@ namespace Oxygen
     }
     
     //____________________________________________________________
-    void BlackListModel::_sort( int column, Qt::SortOrder order )
+    void BlackListModel::privateSort( int column, Qt::SortOrder order )
     { std::sort( _get().begin(), _get().end(), SortFTor( (ColumnType) column, order ) ); }
     
     //________________________________________________________
     bool BlackListModel::SortFTor::operator () ( BlackListPair first, BlackListPair second ) const
     {
         
-        if( order_ == Qt::AscendingOrder ) std::swap( first, second );
-        switch( type_ )
+        if( _order == Qt::AscendingOrder ) std::swap( first, second );
+        switch( _type )
         {
             case NAME: return first.first < second.first;
             case ENABLED: return first.second < second.second;
