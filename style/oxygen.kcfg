@@ -11,6 +11,21 @@
        <default>255</default>
     </entry>
 
+    <!-- opacity grey list -->
+    <!-- 
+      applications listed here appear in the configuration list of black-listed applications 
+      however they are unchecked, unless they also appear in the blacklist
+    -->
+    <entry name="OpacityGreyList" type = "StringList"> 
+        <default>krunner,smplayer,amarok,dragonplayer,vlc,vlc-wrapper,kaffeine,kscreenlocker</default>
+    </entry>
+
+    <!-- opacity black list -->
+    <!-- applications listed here cannot be set transparent -->
+    <entry name="OpacityBlackList" type = "StringList"> 
+        <default>krunner,smplayer,dragonplayer,vlc,vlc-wrapper,kaffeine</default>
+    </entry>
+
   </group>
 
   <!-- widget style -->

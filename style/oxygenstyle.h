@@ -479,7 +479,8 @@ namespace Oxygen
         enum AppName
         {
             AppUnknown,
-            AppPlasma
+            AppPlasma,
+            AppBlackListed
         };
 
         //! application name

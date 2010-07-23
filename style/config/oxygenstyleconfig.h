@@ -29,6 +29,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include "ui_oxygenstyleconfig.h"
 
+#include <QtCore/QStringList>
+
 namespace Oxygen
 {
     class AnimationConfigWidget;
@@ -70,7 +72,7 @@ namespace Oxygen
 
         //! event
         virtual void showEvent( QShowEvent* );
-
+        
         protected Q_SLOTS:
 
         //! update layout
@@ -82,6 +84,9 @@ namespace Oxygen
 
         //! update options enable state based on selected drag mode
         void windowDragModeChanged( int );
+
+        //! edit black list
+        virtual void editExceptions( void );
 
         protected:
 
@@ -99,7 +104,13 @@ namespace Oxygen
 
         //! animation config (expert mode only)
         AnimationConfigWidget* _animationConfigWidget;
-
+        
+        //! grey listed applications
+        QStringList _opacityGreyList;
+        
+        //! black listed applications
+        QStringList _opacityBlackList;
+        
     };
 
 }

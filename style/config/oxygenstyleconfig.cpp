@@ -29,8 +29,11 @@ DEALINGS IN THE SOFTWARE.
 
 #include "oxygenstyleconfig.h"
 #include "oxygenstyleconfig.moc"
+#include "oxygenblacklistdialog.h"
 #include "oxygenanimationconfigwidget.h"
 #include "oxygenstyleconfigdata.h"
+
+#include <QtCore/QSharedPointer>
 
 #include <KGlobal>
 #include <KLocale>
@@ -69,7 +72,8 @@ namespace Oxygen
         connect( _animationsEnabled, SIGNAL( toggled(bool) ), _stackedWidgetTransitionsEnabled, SLOT( setEnabled( bool) ) );
         connect( _windowDragMode, SIGNAL( currentIndexChanged( int ) ), SLOT( windowDragModeChanged( int ) ) );
         connect( _viewDrawTriangularExpander, SIGNAL( toggled( bool ) ), _viewTriangularExpanderSize, SLOT( setEnabled( bool ) ) );
-
+        connect( _exceptionsButton, SIGNAL( clicked( void ) ), SLOT( editExceptions( void ) ) );
+        
         // toggle expert mode
         toggleExpertMode( false );
 
@@ -116,8 +120,6 @@ namespace Oxygen
         OxygenStyleConfigData::setTabStyle( tabStyle() );
         OxygenStyleConfigData::setViewTriangularExpanderSize( triangularExpanderSize() );
 
-        QTextStream( stdout ) << "OxygenStyleConfigData::BackgroundOpacity: " << OxygenStyleConfigData::backgroundOpacity() << endl;
-
         if( _expertMode )
         {
 
@@ -141,6 +143,9 @@ namespace Oxygen
 
         }
 
+        OxygenStyleConfigData::setOpacityGreyList( _opacityGreyList );
+        OxygenStyleConfigData::setOpacityBlackList( _opacityBlackList );
+        
         OxygenStyleConfigData::self()->writeConfig();
     }
 
@@ -245,7 +250,9 @@ namespace Oxygen
         else if( _useWMMoveResize->isChecked() != OxygenStyleConfigData::useWMMoveResize() ) modified = true;
         else if( triangularExpanderSize() != OxygenStyleConfigData::viewTriangularExpanderSize() ) modified = true;
         else if( _animationConfigWidget && _animationConfigWidget->isChanged() ) modified = true;
-
+        else if( _opacityBlackList != OxygenStyleConfigData::opacityBlackList() ) modified = true;
+        else if( _opacityGreyList != OxygenStyleConfigData::opacityGreyList() ) modified = true;
+        
         if( !modified )
         {
             switch( _windowDragMode->currentIndex() )
@@ -302,7 +309,7 @@ namespace Oxygen
         _stackedWidgetTransitionsEnabled->setEnabled( false );
 
         _animationsEnabled->setChecked( OxygenStyleConfigData::animationsEnabled() );
-
+        
         if( !OxygenStyleConfigData::windowDragEnabled() ) _windowDragMode->setCurrentIndex(0);
         else if( OxygenStyleConfigData::windowDragMode() == OxygenStyleConfigData::WD_MINIMAL ) _windowDragMode->setCurrentIndex(1);
         else _windowDragMode->setCurrentIndex(2);
@@ -316,6 +323,10 @@ namespace Oxygen
 
         _useWMMoveResize->setChecked( OxygenStyleConfigData::useWMMoveResize() );
 
+        // black listing
+        _opacityGreyList = OxygenStyleConfigData::opacityGreyList();
+        _opacityBlackList = OxygenStyleConfigData::opacityBlackList();
+        
         // animation config widget
         if( _animationConfigWidget ) _animationConfigWidget->load();
 
@@ -325,6 +336,19 @@ namespace Oxygen
     void StyleConfig::windowDragModeChanged( int value )
     { _useWMMoveResize->setEnabled( value != 0 ); }
 
+    //__________________________________________________________________
+    void StyleConfig::editExceptions( void )
+    {
+        QSharedPointer<BlackListDialog> dialog( new BlackListDialog( this ) );
+        dialog->setLists( _opacityGreyList, _opacityBlackList );
+        if( dialog->exec() == QDialog::Rejected ) return;
+
+        _opacityGreyList = dialog->greyList();
+        _opacityBlackList = dialog->blackList();
+        updateChanged();
+        
+    }
+    
     //____________________________________________________________
     int StyleConfig::menuMode( void ) const
     {

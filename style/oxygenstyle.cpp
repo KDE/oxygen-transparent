@@ -4563,15 +4563,24 @@ namespace Oxygen
         int position( appName.lastIndexOf( '/' ) );
         if( position >= 0 ) appName.remove( 0, position+1 );
 
-        /*
-        HACK: need to detect if application is of type Plasma
-        because applying translucency to some of its widgets creates
-        painting issues which could not be identified with a 'generic'
-        criteria.
-        */
         if( appName == "plasma" || appName.startsWith( "plasma-" ) )
-        { _applicationName = AppPlasma; }
+        { 
+            
+            /*
+            HACK: need to detect if application is of type Plasma
+            because applying translucency to some of its widgets creates
+            painting issues which could not be identified with a 'generic'
+            criteria.
+            */
+            _applicationName = AppPlasma; 
 
+        } else if( OxygenStyleConfigData::opacityBlackList().contains( appName ) ) {
+            
+            // black-list application
+            _applicationName = AppBlackListed;
+            
+        }
+        
         return;
 
     }
@@ -4592,7 +4601,8 @@ namespace Oxygen
         have proper blur_behind region set have proper regions removed for opaque widgets.
         Note: that the helper does nothing as long as compositing and ARGB are not enabled
         */
-        blurHelper().registerWidget( widget );
+        if( _applicationName != AppBlackListed )
+        { blurHelper().registerWidget( widget ); }
 
         // scroll areas
         if( QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>(widget) )
@@ -4632,6 +4642,9 @@ namespace Oxygen
             {
                 widget->setAttribute(Qt::WA_StyledBackground);
 
+                // check blacklisted applications
+                if( _applicationName == AppBlackListed ) break;
+
                 // Hack: stop here if application is of type Plasma
                 /*
                 Right now we need to reject window candidates if the application is of type plasma
@@ -4639,7 +4652,7 @@ namespace Oxygen
                 rather find a "generic" reason, not to handle them
                 */
                 if( _applicationName == AppPlasma && !widget->inherits( "QDialog" ) ) break;
-
+                
                 // stop here if no translucent background selected/supported
                 if( !( _helper.compositingActive() && hasTranslucentBackground() ) ) break;
 
