@@ -116,7 +116,8 @@ namespace Oxygen
         ui.separatorComboBox->setCurrentIndex( ui.separatorComboBox->findText( exception.drawSeparator() ? i18nc( "draw separator", "Enabled" ) : i18nc( "draw separator", "Disabled" ) ) );
         ui.titleOutlineComboBox->setCurrentIndex( ui.titleOutlineComboBox->findText( exception.drawTitleOutline() ? i18nc( "outline window title", "Enabled" ) : i18nc( "outline window title", "Disabled" ) ) );
         ui.hideTitleBar->setChecked( exception.hideTitleBar() );
-
+        ui.transparencyDisabled->setChecked( !exception.transparencyEnabled() );
+        
         // mask
         for( CheckBoxMap::iterator iter = checkboxes_.begin(); iter != checkboxes_.end(); ++iter )
         { iter->second->setChecked( exception.mask() & iter->first ); }
@@ -137,7 +138,8 @@ namespace Oxygen
         exception.setDrawSeparator( ui.separatorComboBox->currentText() == i18nc( "draw separator", "Enabled" ) );
         exception.setDrawTitleOutline( ui.titleOutlineComboBox->currentText() == i18nc( "outline window title", "Enabled" ) );
         exception.setHideTitleBar( ui.hideTitleBar->isChecked() );
-
+        exception.setTransparencyEnabled( !ui.transparencyDisabled->isChecked() );
+        
         // mask
         unsigned int mask = Exception::None;
         for( CheckBoxMap::const_iterator iter = checkboxes_.begin(); iter != checkboxes_.end(); ++iter )
