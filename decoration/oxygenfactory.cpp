@@ -281,6 +281,7 @@ namespace Oxygen
             if( iter->mask() & Exception::TitleOutline ) configuration.setDrawTitleOutline( iter->drawTitleOutline() );
             if( iter->mask() & Exception::SizeGripMode ) configuration.setSizeGripMode( iter->sizeGripMode() );
             configuration.setHideTitleBar( iter->hideTitleBar() );
+            configuration.setTransparencyEnabled( iter->transparencyEnabled() );
             return configuration;
 
         }

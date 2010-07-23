@@ -48,6 +48,7 @@ namespace Oxygen
         animateTitleChange_( true ),
         animationsDuration_( 150 ),
         tabsEnabled_( true ),
+        transparencyEnabled_( true ),
         useNarrowButtonSpacing_( false ),
         shadowMode_( OxygenShadows ),
         shadowCacheMode_( CacheVariable )
@@ -130,6 +131,11 @@ namespace Oxygen
             OxygenConfig::TABS_ENABLED,
             defaultConfiguration.tabsEnabled() ) );
 
+        // transparency
+        setTransparencyEnabled( group.readEntry(
+            OxygenConfig::TRANSPARENCY_ENABLED,
+            defaultConfiguration.transparencyEnabled() ) );
+
         // buttonSpacing
         setUseNarrowButtonSpacing( group.readEntry(
             OxygenConfig::NARROW_BUTTON_SPACING,
@@ -175,6 +181,7 @@ namespace Oxygen
         group.writeEntry( OxygenConfig::ANIMATE_TITLE_CHANGE, animateTitleChange() );
         group.writeEntry( OxygenConfig::ANIMATIONS_DURATION, animationsDuration() );
         group.writeEntry( OxygenConfig::TABS_ENABLED, tabsEnabled() );
+        group.writeEntry( OxygenConfig::TRANSPARENCY_ENABLED, transparencyEnabled() );
         group.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, useNarrowButtonSpacing() );
         group.writeEntry( OxygenConfig::SHADOW_MODE, shadowModeName( false ) );
         group.writeEntry( OxygenConfig::SHADOW_CACHE_MODE, shadowCacheModeName( false ) );
@@ -357,6 +364,7 @@ namespace Oxygen
             animateTitleChange() == other.animateTitleChange() &&
             animationsDuration() == other.animationsDuration() &&
             tabsEnabled() == other.tabsEnabled() &&
+            transparencyEnabled() == other.transparencyEnabled() &&
             useNarrowButtonSpacing() == other.useNarrowButtonSpacing() &&
             shadowMode() == other.shadowMode() &&
             shadowCacheMode() == other.shadowCacheMode();

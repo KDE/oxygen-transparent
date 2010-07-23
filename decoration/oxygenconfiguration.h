@@ -46,6 +46,7 @@ namespace OxygenConfig
     static const QString ANIMATE_TITLE_CHANGE = "AnimateTitleChange";
     static const QString ANIMATIONS_DURATION = "AnimationsDuration";
     static const QString TABS_ENABLED = "TabsEnabled";
+    static const QString TRANSPARENCY_ENABLED = "TransparencyEnabled";
     static const QString NARROW_BUTTON_SPACING = "UseNarrowButtonSpacing";
     static const QString SHADOW_MODE = "ShadowMode";
     static const QString SHADOW_CACHE_MODE = "ShadowCacheMode";
@@ -353,6 +354,14 @@ namespace Oxygen
         virtual void setTabsEnabled( bool value )
         { tabsEnabled_ = value; }
 
+        //! transparency
+        virtual bool transparencyEnabled( void ) const
+        { return transparencyEnabled_; }
+
+        //! tabbing
+        virtual void setTransparencyEnabled( bool value )
+        { transparencyEnabled_ = value; }
+
         //! background opacity
         virtual void setBackgroundOpacity( int value )
         {
@@ -412,6 +421,9 @@ namespace Oxygen
 
         //! tabbing
         bool tabsEnabled_;
+
+        //! transparency
+        bool transparencyEnabled_;
 
         //! narrow button spacing
         bool useNarrowButtonSpacing_;

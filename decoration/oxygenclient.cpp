@@ -575,7 +575,7 @@ namespace Oxygen
         if( configuration().blendColor() == Configuration::NoBlending )
         {
 
-            if( compositingActive() && !opaque )
+            if( compositingActive() && configuration().transparencyEnabled() && !opaque )
             {
 
                 QColor color = palette.color( widget->window()->backgroundRole() );
@@ -591,7 +591,7 @@ namespace Oxygen
             if( !configuration().hideTitleBar() ) height += configuration().buttonSize();
             const QWidget* window( isPreview() ? this->widget() : widget->window() );
 
-            if( compositingActive() && !opaque )
+            if( compositingActive() && configuration().transparencyEnabled() && !opaque )
             {
 
                 QColor color = palette.color( widget->window()->backgroundRole() );

@@ -104,23 +104,6 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0" colspan="3">
-       <widget class="QCheckBox" name="hideTitleBar">
-        <property name="text">
-         <string>Hide window title bar</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="3">
-       <widget class="QFrame" name="frame">
-        <property name="frameShape">
-         <enum>QFrame::HLine</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="2">
        <widget class="KComboBox" name="frameBorderComboBox"/>
       </item>
@@ -135,6 +118,30 @@
       </item>
       <item row="5" column="2">
        <widget class="KComboBox" name="separatorComboBox"/>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="transparencyDisabled">
+        <property name="text">
+         <string>Disable background translucency</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QFrame" name="frame">
+        <property name="frameShape">
+         <enum>QFrame::HLine</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QCheckBox" name="hideTitleBar">
+        <property name="text">
+         <string>Hide window title bar</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
