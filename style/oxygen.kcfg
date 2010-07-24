@@ -23,7 +23,7 @@
     <!-- opacity black list -->
     <!-- applications listed here cannot be set transparent -->
     <entry name="OpacityBlackList" type = "StringList"> 
-        <default>krunner,smplayer,dragonplayer,kaffeine</default>
+        <default>smplayer,dragonplayer,kaffeine</default>
     </entry>
 
   </group>
