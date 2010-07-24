@@ -45,6 +45,7 @@
 
 #include <KStyle>
 
+#include <QtCore/QSet>
 #include <QtGui/QAbstractScrollArea>
 #include <QtGui/QBitmap>
 #include <QtGui/QDockWidget>
@@ -428,6 +429,13 @@ namespace Oxygen
             object->installEventFilter( this );
         }
 
+        //! register transparent widget
+        void registerTransparentWidget( QObject* object )
+        { 
+            _transparentWidgets.insert( object ); 
+            connect( object, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) ); 
+        }
+        
         protected Q_SLOTS:
 
         //! standard icons
@@ -436,6 +444,10 @@ namespace Oxygen
         //! needed to update style when configuration is changed
         void globalSettingsChange(int type, int arg);
 
+        //! unregister transparent widget
+        void unregisterTransparentWidget( QObject* object )
+        { _transparentWidgets.remove( object ); }
+        
         private:
 
         //! right to left languages
@@ -511,6 +523,10 @@ namespace Oxygen
         */
         WidgetExplorer* _widgetExplorer;
 
+        //! set of transparent widgets (as defined in ::polish)
+        typedef QSet<const QObject*> ObjectSet;
+        ObjectSet _transparentWidgets;
+        
     };
 }
 Q_DECLARE_OPERATORS_FOR_FLAGS(Oxygen::Style::StyleOptions)

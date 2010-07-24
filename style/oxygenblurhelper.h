@@ -37,7 +37,10 @@
 #include <QtCore/QHash>
 #include <QtCore/QBasicTimer>
 #include <QtCore/QTimerEvent>
+#include <QtGui/QDockWidget>
+#include <QtGui/QMenu>
 #include <QtGui/QRegion>
+#include <QtGui/QToolBar>
 
 #ifdef Q_WS_X11
 #include <X11/Xdefs.h>
@@ -134,12 +137,18 @@ namespace Oxygen
         }
 
         //! true if widget is a transparent window
+        /*! some additional checks are performed to make sure stuff like plasma tooltips 
+        don't get their blur region overwritten */
         bool isTransparent( const QWidget* widget ) const
         {
             return
                 widget->isWindow() &&
                 widget->testAttribute( Qt::WA_TranslucentBackground ) &&
-                _helper.hasAlphaChannel( widget );
+                ( widget->testAttribute( Qt::WA_StyledBackground ) || 
+                qobject_cast<const QMenu*>( widget ) || 
+                qobject_cast<const QDockWidget*>( widget ) || 
+                qobject_cast<const QToolBar*>( widget ) ) &&
+               _helper.hasAlphaChannel( widget );
         }
 
         private:

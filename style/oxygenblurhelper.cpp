@@ -34,11 +34,8 @@
 
 #include <QtCore/QEvent>
 #include <QtCore/QVector>
-#include <QtGui/QDockWidget>
-#include <QtGui/QMenu>
 #include <QtGui/QProgressBar>
 #include <QtGui/QPushButton>
-#include <QtGui/QToolBar>
 
 #ifdef Q_WS_X11
 #include <X11/Xlib.h>
@@ -138,6 +135,8 @@ namespace Oxygen
     QRegion BlurHelper::blurRegion( QWidget* widget ) const
     {
 
+        if( !widget->isVisible() ) return QRegion();
+        
         // get main region
         QRegion region;
         if(

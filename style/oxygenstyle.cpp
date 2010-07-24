@@ -4663,8 +4663,8 @@ namespace Oxygen
                     widget->inherits( "QSplashScreen") ) break;
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
-                if( widget->windowType() == Qt::Desktop || // makes no sense + QDesktopWidget is often misused
-                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) || // makes no sense
+                if( widget->windowType() == Qt::Desktop ||
+                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) ||
                     widget->testAttribute(Qt::WA_TranslucentBackground) ||
                     widget->testAttribute(Qt::WA_NoSystemBackground) ||
                     widget->testAttribute(Qt::WA_PaintOnScreen)
@@ -4692,7 +4692,8 @@ namespace Oxygen
                 widget->move(10000,10000);
 
                 addEventFilter( widget );
-
+                registerTransparentWidget( widget );
+                
             }
 
             break;
@@ -4891,6 +4892,14 @@ namespace Oxygen
         frameShadowFactory().unregisterWidget( widget );
         blurHelper().unregisterWidget( widget );
 
+        if( _transparentWidgets.contains( widget ) )
+        {
+            widget->setAttribute(Qt::WA_PaintOnScreen, false);
+            widget->setAttribute(Qt::WA_NoSystemBackground, false);
+            widget->setAttribute(Qt::WA_StyledBackground, false);
+            widget->setAttribute(Qt::WA_TranslucentBackground, false);
+        }
+        
         if( isKTextEditFrame( widget ) )
         { widget->setAttribute( Qt::WA_Hover, false  ); }
 
@@ -4986,6 +4995,7 @@ namespace Oxygen
 
             widget->setAttribute(Qt::WA_PaintOnScreen, false);
             widget->setAttribute(Qt::WA_NoSystemBackground, false);
+            widget->setAttribute(Qt::WA_TranslucentBackground, false);
             widget->clearMask();
 
         } else if( widget->inherits("QComboBoxPrivateContainer") ) widget->removeEventFilter(this);
