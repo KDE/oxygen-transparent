@@ -40,6 +40,7 @@
 #include <QtGui/QCheckBox>
 #include <QtGui/QComboBox>
 #include <QtGui/QDial>
+#include <QtGui/QDialog>
 #include <QtGui/QDockWidget>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGroupBox>
@@ -4640,10 +4641,14 @@ namespace Oxygen
             case Qt::Window:
             case Qt::Dialog:
             {
-                widget->setAttribute(Qt::WA_StyledBackground);
 
-                // check blacklisted applications
-                if( _applicationName == AppBlackListed ) break;
+                // do not handle all kind of 'special background' widgets
+                if( widget->windowType() == Qt::Desktop ||
+                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) ||
+                    widget->testAttribute(Qt::WA_TranslucentBackground) ||
+                    widget->testAttribute(Qt::WA_NoSystemBackground) ||
+                    widget->testAttribute(Qt::WA_PaintOnScreen)
+                    ) break;
 
                 // Hack: stop here if application is of type Plasma
                 /*
@@ -4651,7 +4656,13 @@ namespace Oxygen
                 because it conflicts with some widgets embedded into the SysTray. Ideally one would
                 rather find a "generic" reason, not to handle them
                 */
-                if( _applicationName == AppPlasma && !widget->inherits( "QDialog" ) ) break;
+                if( _applicationName == AppPlasma && !qobject_cast<QDialog*>(widget) ) break;
+
+                // set background as styled
+                widget->setAttribute(Qt::WA_StyledBackground);
+
+                // check blacklisted applications
+                if( _applicationName == AppBlackListed ) break;
                 
                 // stop here if no translucent background selected/supported
                 if( !( _helper.compositingActive() && hasTranslucentBackground() ) ) break;
@@ -4663,12 +4674,6 @@ namespace Oxygen
                     widget->inherits( "QSplashScreen") ) break;
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
-                if( widget->windowType() == Qt::Desktop ||
-                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) ||
-                    widget->testAttribute(Qt::WA_TranslucentBackground) ||
-                    widget->testAttribute(Qt::WA_NoSystemBackground) ||
-                    widget->testAttribute(Qt::WA_PaintOnScreen)
-                    ) break;
 
                 /*
                 whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
@@ -4676,12 +4681,10 @@ namespace Oxygen
                 */
                 QIcon icon(widget->windowIcon());
 
-                /*
-                set translucent and install event filter,
-                because PE_Widget primitive is not called any more
-                when translucent flag is set
-                */
+                // set translucent flag
                 widget->setAttribute( Qt::WA_TranslucentBackground );
+                
+                // re-install icon
                 widget->setWindowIcon(icon);
 
                 /*
@@ -4689,8 +4692,14 @@ namespace Oxygen
                 we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
                 Copied from bespin. (TODO: try save position and restore)
                 */
-                widget->move(10000,10000);
+                if( !widget->isVisible() ) 
+                { widget->move(10000,10000); }
 
+                /* 
+                install event filter, because PE_Widget primitive is not called any more
+                when translucent flag is set. Also register as a transparent widget, to make
+                sure properties are restored properly in unpolish
+                */  
                 addEventFilter( widget );
                 registerTransparentWidget( widget );
                 
