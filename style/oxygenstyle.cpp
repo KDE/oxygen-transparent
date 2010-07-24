@@ -4591,6 +4591,15 @@ namespace Oxygen
     {
         if( !widget) return;
 
+        if( widget->inherits( "QWSEmbedContainer" ) )
+        { 
+            QTextStream(stdout) << "Oxygen::Style::polish - Detected X11Embed" << endl;
+        }
+        
+        if( widget->inherits( "QWSEmbedWidget" ) )
+        { 
+            QTextStream(stdout) << "Oxygen::Style::polish - Detected X11Embed" << endl;
+        }
         // register widget to animations
         animations().registerWidget( widget );
         transitions().registerWidget( widget );
@@ -4903,7 +4912,6 @@ namespace Oxygen
 
         if( _transparentWidgets.contains( widget ) )
         {
-            widget->setAttribute(Qt::WA_PaintOnScreen, false);
             widget->setAttribute(Qt::WA_NoSystemBackground, false);
             widget->setAttribute(Qt::WA_StyledBackground, false);
             widget->setAttribute(Qt::WA_TranslucentBackground, false);
