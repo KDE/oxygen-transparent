@@ -700,7 +700,7 @@ namespace Oxygen
             p->setClipRegion( _helper.roundedMask( r.adjusted( 1, 1, -1, -1 ) ), Qt::IntersectClip );
 
         }
-        
+
         // render background
         _helper.renderMenuBackground( p, r, widget, translucentColor( color, hasAlpha ) );
 
@@ -2152,14 +2152,14 @@ namespace Oxygen
                 else renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
                 return false;
             }
-            
+
             case ScrollBar::DoubleButtonVert:
             {
                 const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, QRect(r.left(), r.top()-5, r.width(), 5), color, Qt::Vertical, TileSet::Bottom | TileSet::Left | TileSet::Right);
                 return false;
             }
-            
+
             case ScrollBar::SingleButtonHor:
             {
                 const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
@@ -2174,7 +2174,7 @@ namespace Oxygen
                 renderScrollBarHole(p, QRect(r.left(), r.bottom()+3, r.width(), 5), color, Qt::Vertical, TileSet::Top | TileSet::Left | TileSet::Right);
                 return false;
             }
-            
+
             case ScrollBar::GrooveAreaVertTop:
             {
                 const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
@@ -4569,23 +4569,23 @@ namespace Oxygen
         if( position >= 0 ) appName.remove( 0, position+1 );
 
         if( appName == "plasma" || appName.startsWith( "plasma-" ) )
-        { 
-            
+        {
+
             /*
             HACK: need to detect if application is of type Plasma
             because applying translucency to some of its widgets creates
             painting issues which could not be identified with a 'generic'
             criteria.
             */
-            _applicationName = AppPlasma; 
+            _applicationName = AppPlasma;
 
         } else if( OxygenStyleConfigData::opacityBlackList().contains( appName ) ) {
-            
+
             // black-list application
             _applicationName = AppBlackListed;
-            
+
         }
-        
+
         return;
 
     }
@@ -4596,12 +4596,12 @@ namespace Oxygen
         if( !widget) return;
 
         if( widget->inherits( "QWSEmbedContainer" ) )
-        { 
+        {
             QTextStream(stdout) << "Oxygen::Style::polish - Detected X11Embed" << endl;
         }
-        
+
         if( widget->inherits( "QWSEmbedWidget" ) )
-        { 
+        {
             QTextStream(stdout) << "Oxygen::Style::polish - Detected X11Embed" << endl;
         }
         // register widget to animations
@@ -4676,7 +4676,7 @@ namespace Oxygen
 
                 // check blacklisted applications
                 if( _applicationName == AppBlackListed ) break;
-                
+
                 // stop here if no translucent background selected/supported
                 if( !( _helper.compositingActive() && hasTranslucentBackground() ) ) break;
 
@@ -4696,7 +4696,7 @@ namespace Oxygen
 
                 // set translucent flag
                 widget->setAttribute( Qt::WA_TranslucentBackground );
-                
+
                 // re-install icon
                 widget->setWindowIcon(icon);
 
@@ -4705,17 +4705,17 @@ namespace Oxygen
                 we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
                 Copied from bespin. (TODO: try save position and restore)
                 */
-                if( !widget->isVisible() ) 
+                if( !widget->isVisible() )
                 { widget->move(10000,10000); }
 
-                /* 
+                /*
                 install event filter, because PE_Widget primitive is not called any more
                 when translucent flag is set. Also register as a transparent widget, to make
                 sure properties are restored properly in unpolish
-                */  
+                */
                 addEventFilter( widget );
                 registerTransparentWidget( widget );
-                
+
             }
 
             break;
@@ -4915,7 +4915,7 @@ namespace Oxygen
             widget->setAttribute(Qt::WA_StyledBackground, false);
             widget->setAttribute(Qt::WA_TranslucentBackground, false);
         }
-        
+
         if( isKTextEditFrame( widget ) )
         { widget->setAttribute( Qt::WA_Hover, false  ); }
 
@@ -5491,8 +5491,11 @@ namespace Oxygen
             : TileSet::Left | TileSet::Right | TileSet::Center);
 
         // draw the slider itself
-        QRectF rect( horizontal ? r.adjusted(3, 2, -3, -3):r.adjusted(3,4,-3,-3) );
-        if( !rect.isValid()) { // e.g. not enough height
+        QRectF rect( horizontal ? r.adjusted(3, 2, -3, -3):r.adjusted(3, 4, -3, -3) );
+
+        if( !rect.isValid())
+        {
+            // e.g. not enough height
             p->restore();
             return;
         }
@@ -5537,7 +5540,8 @@ namespace Oxygen
         // slider gradient
         {
             QLinearGradient sliderGradient( rect.topLeft(), horizontal ? rect.bottomLeft() : rect.topRight());
-            if( !OxygenStyleConfigData::scrollBarColored()) {
+            if( !OxygenStyleConfigData::scrollBarColored())
+            {
                 sliderGradient.setColorAt(0.0, color);
                 sliderGradient.setColorAt(1.0, mid);
             } else {
@@ -5553,10 +5557,12 @@ namespace Oxygen
         // pattern
         if( OxygenStyleConfigData::scrollBarBevel() )
         {
-            QPoint offset = horizontal ? QPoint(-rect.left(), 0) : QPoint(0, -rect.top()); // don't let the pattern move
+            // don't let the pattern move
+            QPoint offset = horizontal ? QPoint(-rect.left(), 0) : QPoint(0, -rect.top());
             QPoint periodEnd = offset + (horizontal ? QPoint(30, 0) : QPoint(0, 30));
             QLinearGradient patternGradient(rect.topLeft()+offset, rect.topLeft()+periodEnd);
-            if( !OxygenStyleConfigData::scrollBarColored()) {
+            if( !OxygenStyleConfigData::scrollBarColored())
+            {
                 patternGradient.setColorAt(0.0, _helper.alphaColor(shadow, 0.1));
                 patternGradient.setColorAt(1.0, _helper.alphaColor(light, 0.1));
             } else {
