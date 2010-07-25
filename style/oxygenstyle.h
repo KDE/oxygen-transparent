@@ -344,13 +344,13 @@ namespace Oxygen
         //! scrollbar handle (non animated)
         void renderScrollBarHandle(
             QPainter *p, const QRect &r, const QPalette &pal,
-            Qt::Orientation orientation, bool hover) const
-        { renderScrollBarHandle( p, r, pal, orientation, hover, -1 ); }
+            Qt::Orientation orientation, bool hover, bool hasAlpha = false ) const
+        { renderScrollBarHandle( p, r, pal, orientation, hover, hasAlpha, -1 ); }
 
         //! scrollbar handle (animated)
         void renderScrollBarHandle(
             QPainter *p, const QRect &r, const QPalette &pal,
-            Qt::Orientation orientation, bool hover, qreal opacity) const;
+            Qt::Orientation orientation, bool hover, bool hasAlpha, qreal opacity) const;
 
         //! get polygon corresponding to generic arrow
         enum ArrowSize {

@@ -700,19 +700,9 @@ namespace Oxygen
             p->setClipRegion( _helper.roundedMask( r.adjusted( 1, 1, -1, -1 ) ), Qt::IntersectClip );
 
         }
-
-        if( hasAlpha && hasTranslucentBackground() )
-        {
-
-            QColor backgroundColor( color );
-            backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
-            _helper.renderMenuBackground( p, r, widget, backgroundColor );
-
-        } else {
-
-            _helper.renderMenuBackground( p, r, widget, color );
-
-        }
+        
+        // render background
+        _helper.renderMenuBackground( p, r, widget, translucentColor( color, hasAlpha ) );
 
         if( hasAlpha ) p->setClipping( false );
         _helper.drawFloatFrame( p, r, color, !hasAlpha );
@@ -2155,63 +2145,76 @@ namespace Oxygen
         switch( primitive )
         {
             case ScrollBar::DoubleButtonHor:
-
-            if( reverseLayout) renderScrollBarHole(p, QRect(r.right()+1, r.top(), 5, r.height()), pal.color(QPalette::Window), Qt::Horizontal, TileSet::Top | TileSet::Bottom | TileSet::Left);
-            else renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), pal.color(QPalette::Window), Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
-            return false;
-
+            {
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                if( reverseLayout) renderScrollBarHole(p, QRect(r.right()+1, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Bottom | TileSet::Left);
+                else renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
+                return false;
+            }
+            
             case ScrollBar::DoubleButtonVert:
-            renderScrollBarHole(p, QRect(r.left(), r.top()-5, r.width(), 5), pal.color(QPalette::Window), Qt::Vertical, TileSet::Bottom | TileSet::Left | TileSet::Right);
-            return false;
-
+            {
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, QRect(r.left(), r.top()-5, r.width(), 5), color, Qt::Vertical, TileSet::Bottom | TileSet::Left | TileSet::Right);
+                return false;
+            }
+            
             case ScrollBar::SingleButtonHor:
-            if( reverseLayout) renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), pal.color(QPalette::Window), Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
-            else renderScrollBarHole(p, QRect(r.right()+1, r.top(), 5, r.height()), pal.color(QPalette::Window), Qt::Horizontal, TileSet::Top | TileSet::Left | TileSet::Bottom);
-            return false;
+            {
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                if( reverseLayout) renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
+                else renderScrollBarHole(p, QRect(r.right()+1, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Left | TileSet::Bottom);
+                return false;
+            }
 
             case ScrollBar::SingleButtonVert:
-            renderScrollBarHole(p, QRect(r.left(), r.bottom()+3, r.width(), 5), pal.color(QPalette::Window), Qt::Vertical, TileSet::Top | TileSet::Left | TileSet::Right);
-            return false;
-
+            {
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, QRect(r.left(), r.bottom()+3, r.width(), 5), color, Qt::Vertical, TileSet::Top | TileSet::Left | TileSet::Right);
+                return false;
+            }
+            
             case ScrollBar::GrooveAreaVertTop:
             {
-                renderScrollBarHole(p, r.adjusted(0,2,0,12), pal.color(QPalette::Window), Qt::Vertical, TileSet::Left | TileSet::Right | TileSet::Center | TileSet::Top);
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, r.adjusted(0,2,0,12), color, Qt::Vertical, TileSet::Horizontal );
                 return true;
             }
 
             case ScrollBar::GrooveAreaVertBottom:
             {
-                renderScrollBarHole(p, r.adjusted(0,-10,0,0), pal.color(QPalette::Window), Qt::Vertical, TileSet::Left | TileSet::Right | TileSet::Center | TileSet::Bottom);
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, r.adjusted(0,-10,0,0), color, Qt::Vertical, TileSet::Horizontal );
                 return true;
             }
 
             case ScrollBar::GrooveAreaHorLeft:
             {
-                const QRect rect( (reverseLayout) ? r.adjusted(0,0,10,0) : r.adjusted(0,0,12,0) );
-                renderScrollBarHole(p, rect, pal.color(QPalette::Window), Qt::Horizontal, TileSet::Left | TileSet::Center | TileSet::Top | TileSet::Bottom);
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, r.adjusted(0,0,10,0), color, Qt::Horizontal, TileSet::Vertical );
                 return true;
             }
 
             case ScrollBar::GrooveAreaHorRight:
             {
-                const QRect rect( (reverseLayout) ? r.adjusted(-12,0,0,0) : r.adjusted(-10,0,0,0) );
-                renderScrollBarHole(p, rect, pal.color(QPalette::Window), Qt::Horizontal, TileSet::Right | TileSet::Center | TileSet::Top | TileSet::Bottom);
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, r.adjusted(-10,0,0,0), color, Qt::Horizontal, TileSet::Vertical );
                 return true;
             }
 
             case ScrollBar::SliderHor:
             {
                 const bool animated( enabled && animations().scrollBarEngine().isAnimated( widget, SC_ScrollBarSlider ) );
-                if( animated ) renderScrollBarHandle(p, r, pal, Qt::Horizontal, mouseOver, animations().scrollBarEngine().opacity( widget, SC_ScrollBarSlider ) );
-                else renderScrollBarHandle(p, r, pal, Qt::Horizontal, mouseOver );
+                if( animated ) renderScrollBarHandle(p, r, pal, Qt::Horizontal, mouseOver, _helper.hasAlphaChannel( widget ), animations().scrollBarEngine().opacity( widget, SC_ScrollBarSlider ) );
+                else renderScrollBarHandle(p, r, pal, Qt::Horizontal, mouseOver, _helper.hasAlphaChannel( widget ) );
                 return true;
             }
 
             case ScrollBar::SliderVert:
             {
                 bool animated( enabled && animations().scrollBarEngine().isAnimated( widget, SC_ScrollBarSlider ) );
-                if( animated ) renderScrollBarHandle(p, r, pal, Qt::Vertical, mouseOver, animations().scrollBarEngine().opacity( widget, SC_ScrollBarSlider ) );
-                else renderScrollBarHandle(p, r, pal, Qt::Vertical, mouseOver );
+                if( animated ) renderScrollBarHandle(p, r, pal, Qt::Vertical, mouseOver, _helper.hasAlphaChannel( widget ), animations().scrollBarEngine().opacity( widget, SC_ScrollBarSlider ) );
+                else renderScrollBarHandle(p, r, pal, Qt::Vertical, mouseOver, _helper.hasAlphaChannel( widget ) );
                 return true;
             }
 
@@ -5451,7 +5454,7 @@ namespace Oxygen
     }
 
     //______________________________________________________________________________
-    void Style::renderScrollBarHole(QPainter *p, const QRect &r, const QColor &color,
+    void Style::renderScrollBarHole( QPainter *p, const QRect &r, const QColor &color,
         Qt::Orientation orientation, TileSet::Tiles tiles) const
     {
         if( !r.isValid() ) return;
@@ -5466,7 +5469,7 @@ namespace Oxygen
     //______________________________________________________________________________
     void Style::renderScrollBarHandle(
         QPainter *p, const QRect &r, const QPalette &pal,
-        Qt::Orientation orientation, bool hover, qreal opacity ) const
+        Qt::Orientation orientation, bool hover, bool hasAlpha, qreal opacity ) const
     {
         if( !r.isValid()) return;
 
@@ -5482,12 +5485,12 @@ namespace Oxygen
         // draw the hole as background
         const QRect holeRect( horizontal ? r.adjusted(-4,0,4,0) : r.adjusted(0,-3,0,4) );
         renderScrollBarHole(p, holeRect,
-            pal.color(QPalette::Window), orientation,
+            translucentColor( pal.color(QPalette::Window), hasAlpha ), orientation,
             horizontal ? TileSet::Top | TileSet::Bottom | TileSet::Center
             : TileSet::Left | TileSet::Right | TileSet::Center);
 
         // draw the slider itself
-        QRectF rect( r.adjusted(3, horizontal ? 2 : 4, -3, -3) );
+        QRectF rect( horizontal ? r.adjusted(3, 2, -3, -3):r.adjusted(3,4,-3,-3) );
         if( !rect.isValid()) { // e.g. not enough height
             p->restore();
             return;
@@ -7527,19 +7530,7 @@ namespace Oxygen
                     p.setClipRegion( _helper.roundedMask( r.adjusted( 1, 1, -1, -1 ) ), Qt::IntersectClip );
                 }
 
-                // background
-                if( hasAlpha && hasTranslucentBackground() )
-                {
-
-                    QColor backgroundColor( color );
-                    backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
-                    _helper.renderWindowBackground(&p, r, t, backgroundColor);
-
-                } else {
-
-                    _helper.renderWindowBackground(&p, r, t, color);
-
-                }
+                _helper.renderWindowBackground(&p, r, t, translucentColor( color, hasAlpha ) );
 
                 if( t->isMovable() )
                 {
@@ -7620,18 +7611,7 @@ namespace Oxygen
                 }
 
                 // background
-                if( hasAlpha && hasTranslucentBackground() )
-                {
-
-                    QColor backgroundColor( color );
-                    backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
-                    _helper.renderMenuBackground( &p, e->rect(), widget, backgroundColor );
-
-                } else {
-
-                    _helper.renderMenuBackground( &p, e->rect(), widget, color );
-
-                }
+                _helper.renderMenuBackground( &p, e->rect(), widget, translucentColor( color, hasAlpha ) );
 
                 // frame
                 if( hasAlpha ) p.setClipping( false );
@@ -7732,13 +7712,8 @@ namespace Oxygen
         QPainter p( widget );
         p.setClipRegion( paintEvent->region() );
 
-        // normal "window" background
-        QColor color( widget->palette().color( widget->backgroundRole() ) );
-
-        // add alpha channel, if supported by the widget
-        if( _helper.hasAlphaChannel( widget ) )
-        { color.setAlpha( OxygenStyleConfigData::backgroundOpacity() ); }
-
+        // get color and render
+        QColor color( translucentColor( widget->palette().color( widget->backgroundRole() ), widget ) );
         _helper.renderWindowBackground( &p, paintEvent->rect(), widget, color );
         return true;
 
@@ -7814,18 +7789,8 @@ namespace Oxygen
                     }
                     #endif
 
-                    if( hasAlpha && hasTranslucentBackground() )
-                    {
-
-                        QColor backgroundColor( color );
-                        backgroundColor.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
-                        _helper.renderWindowBackground(&p, r, dw, backgroundColor);
-
-                    } else {
-
-                        _helper.renderWindowBackground(&p, r, dw, color);
-
-                    }
+                    // render background
+                    _helper.renderWindowBackground(&p, r, dw, translucentColor( color, hasAlpha ) );
 
                     #ifndef Q_WS_WIN
                     if( hasAlpha ) p.setClipping( false );
