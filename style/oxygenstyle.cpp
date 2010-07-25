@@ -701,7 +701,7 @@ namespace Oxygen
 
         }
 
-        if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
+        if( hasAlpha && hasTranslucentBackground() )
         {
 
             QColor backgroundColor( color );
@@ -2152,7 +2152,7 @@ namespace Oxygen
             else r.adjust( 1, 0, -1, 0 );
         }
 
-        switch (primitive)
+        switch( primitive )
         {
             case ScrollBar::DoubleButtonHor:
 
@@ -7528,7 +7528,7 @@ namespace Oxygen
                 }
 
                 // background
-                if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
+                if( hasAlpha && hasTranslucentBackground() )
                 {
 
                     QColor backgroundColor( color );
@@ -7620,7 +7620,7 @@ namespace Oxygen
                 }
 
                 // background
-                if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
+                if( hasAlpha && hasTranslucentBackground() )
                 {
 
                     QColor backgroundColor( color );
@@ -7814,7 +7814,7 @@ namespace Oxygen
                     }
                     #endif
 
-                    if( hasAlpha && _helper.compositingActive() && hasTranslucentBackground() )
+                    if( hasAlpha && hasTranslucentBackground() )
                     {
 
                         QColor backgroundColor( color );
