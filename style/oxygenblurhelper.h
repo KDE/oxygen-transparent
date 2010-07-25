@@ -94,6 +94,13 @@ namespace Oxygen
 
         }
 
+        //! install event filter to object, in a unique way
+        void addEventFilter( QObject* object )
+        {
+            object->removeEventFilter( this );
+            object->installEventFilter( this );
+        }
+
         //! get list of blur-behind regions matching a given widget
         QRegion blurRegion( QWidget* ) const;
 

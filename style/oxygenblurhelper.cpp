@@ -63,7 +63,7 @@ namespace Oxygen
 
     //___________________________________________________________
     void BlurHelper::registerWidget( QWidget* widget )
-    { widget->installEventFilter( this ); }
+    { addEventFilter( widget ); }
 
     //___________________________________________________________
     void BlurHelper::unregisterWidget( QWidget* widget )
