@@ -4799,7 +4799,6 @@ namespace Oxygen
             widget->setBackgroundRole(QPalette::NoRole);
             widget->setAttribute(Qt::WA_TranslucentBackground);
             addEventFilter( widget );
-            blurHelper().registerWidget( widget );
 
             #ifdef Q_WS_WIN
             //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
@@ -4831,7 +4830,6 @@ namespace Oxygen
             widget->setAttribute(Qt::WA_TranslucentBackground);
             widget->setContentsMargins(3,3,3,3);
             addEventFilter( widget );
-            blurHelper().registerWidget( widget );
 
         } else if( qobject_cast<QMdiSubWindow*>(widget) ) {
 
@@ -4854,7 +4852,6 @@ namespace Oxygen
         } else if( qobject_cast<QMenu*>(widget) ) {
 
             widget->setAttribute(Qt::WA_TranslucentBackground);
-            blurHelper().registerWidget( widget );
             #ifdef Q_WS_WIN
             //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
             widget->setWindowFlags(widget->windowFlags() | Qt::FramelessWindowHint);
@@ -4863,8 +4860,6 @@ namespace Oxygen
         } else if( widget->inherits("QComboBoxPrivateContainer")) {
 
             addEventFilter( widget );
-            blurHelper().registerWidget( widget );
-
             widget->setAttribute(Qt::WA_TranslucentBackground);
             #ifdef Q_WS_WIN
             //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
