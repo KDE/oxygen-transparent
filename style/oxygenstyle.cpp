@@ -1509,7 +1509,8 @@ namespace Oxygen
         {
             case ProgressBar::Groove:
             {
-                renderScrollBarHole(p, rect, pal.color(QPalette::Window), orientation);
+                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                renderScrollBarHole(p, rect, color, orientation);
                 return true;
             }
 
@@ -7713,7 +7714,7 @@ namespace Oxygen
         p.setClipRegion( paintEvent->region() );
 
         // get color and render
-        QColor color( translucentColor( widget->palette().color( widget->backgroundRole() ), widget ) );
+        const QColor color( translucentColor( widget->palette().color( widget->backgroundRole() ), widget ) );
         _helper.renderWindowBackground( &p, paintEvent->rect(), widget, color );
         return true;
 
