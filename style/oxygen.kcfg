@@ -17,13 +17,13 @@
       however they are unchecked, unless they also appear in the blacklist
     -->
     <entry name="OpacityGreyList" type = "StringList"> 
-        <default>krunner,smplayer,amarok,dragonplayer,vlc,vlc-wrapper,kaffeine,kscreenlocker</default>
+        <default>krunner,smplayer,amarok,dragon,vlc,vlc-wrapper,kaffeine,kscreenlocker</default>
     </entry>
 
     <!-- opacity black list -->
     <!-- applications listed here cannot be set transparent -->
     <entry name="OpacityBlackList" type = "StringList"> 
-        <default>smplayer,dragonplayer,kaffeine</default>
+        <default>smplayer,dragon,kaffeine</default>
     </entry>
 
   </group>
