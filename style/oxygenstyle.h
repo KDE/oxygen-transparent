@@ -422,6 +422,13 @@ namespace Oxygen
         bool hasTranslucentBackground( void ) const
         { return OxygenStyleConfigData::backgroundOpacity() < 0xff; }
 
+        //! returns translucent color
+        QColor translucentColor( const QColor& color, const QWidget* widget ) const
+        { return translucentColor( color, _helper.hasAlphaChannel( widget ) ); }
+        
+        //! returns translucent color
+        inline QColor translucentColor( const QColor& color, bool hasAlpha ) const;
+        
         //! install event filter to object, in a unique way
         void addEventFilter( QObject* object )
         {
@@ -528,7 +535,20 @@ namespace Oxygen
         ObjectSet _transparentWidgets;
         
     };
+    
+    // inline functions
+    QColor Style::translucentColor( const QColor& color, bool hasAlpha ) const
+    {
+        if( hasAlpha && hasTranslucentBackground() )
+        {
+            QColor out( color );
+            out.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
+            return out;
+        } else return color;
+    }
+    
 }
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(Oxygen::Style::StyleOptions)
 
 #endif // __OXYGEN_H
