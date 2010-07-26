@@ -4578,10 +4578,6 @@ namespace Oxygen
             criteria.
             */
             _applicationName = AppPlasma;
-        } else if( appName.endsWith( ".kss" ) ) {
-
-            // black-list application
-            _applicationName = AppBlackListed;
 
         } else if( OxygenStyleConfigData::opacityBlackList().contains( appName ) ) {
 
@@ -4599,15 +4595,6 @@ namespace Oxygen
     {
         if( !widget) return;
 
-        if( widget->inherits( "QWSEmbedContainer" ) )
-        {
-            QTextStream(stdout) << "Oxygen::Style::polish - Detected X11Embed" << endl;
-        }
-
-        if( widget->inherits( "QWSEmbedWidget" ) )
-        {
-            QTextStream(stdout) << "Oxygen::Style::polish - Detected X11Embed" << endl;
-        }
         // register widget to animations
         animations().registerWidget( widget );
         transitions().registerWidget( widget );
@@ -4666,6 +4653,9 @@ namespace Oxygen
                     widget->testAttribute(Qt::WA_NoSystemBackground) ||
                     widget->testAttribute(Qt::WA_PaintOnScreen)
                     ) break;
+
+                // disable kde screensaver windows
+                if( widget->inherits( "KScreenSaver" ) ) break;
 
                 // Hack: stop here if application is of type Plasma
                 /*
