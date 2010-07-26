@@ -4655,6 +4655,11 @@ namespace Oxygen
                     ) break;
 
                 // disable kde screensaver windows
+                /*
+                the kscreensaver widgets get a WA_PaintOnScreen flag set,
+                which should have been covered by the above, but somehow the flag is set too late,
+                and notably after polish is called. Or so it seems.
+                */
                 if( widget->inherits( "KScreenSaver" ) ) break;
 
                 // Hack: stop here if application is of type Plasma
