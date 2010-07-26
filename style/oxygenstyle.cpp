@@ -4578,6 +4578,10 @@ namespace Oxygen
             criteria.
             */
             _applicationName = AppPlasma;
+        } else if( appName.endsWith( ".kss" ) ) {
+
+            // black-list application
+            _applicationName = AppBlackListed;
 
         } else if( OxygenStyleConfigData::opacityBlackList().contains( appName ) ) {
 
