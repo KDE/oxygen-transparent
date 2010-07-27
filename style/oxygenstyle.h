@@ -67,6 +67,7 @@ namespace Oxygen
     class WindowManager;
     class FrameShadowFactory;
     class WidgetExplorer;
+    class ArgbHelper;
     class BlurHelper;
 
     //! main oxygen style class.
@@ -253,6 +254,10 @@ namespace Oxygen
         FrameShadowFactory& frameShadowFactory( void ) const
         { return *_frameShadowFactory; }
 
+        //! argb (translucent windows) helper
+        ArgbHelper& argbHelper( void ) const
+        { return *_argbHelper; }
+
         //! blur helper
         BlurHelper& blurHelper( void ) const
         { return *_blurHelper; }
@@ -418,17 +423,6 @@ namespace Oxygen
 
         //@}
 
-        //! returns true if translucent background is selected
-        bool hasTranslucentBackground( void ) const
-        { return OxygenStyleConfigData::backgroundOpacity() < 0xff; }
-
-        //! returns translucent color
-        QColor translucentColor( const QColor& color, const QWidget* widget ) const
-        { return translucentColor( color, _helper.hasAlphaChannel( widget ) ); }
-        
-        //! returns translucent color
-        inline QColor translucentColor( const QColor& color, bool hasAlpha ) const;
-        
         //! install event filter to object, in a unique way
         void addEventFilter( QObject* object )
         {
@@ -438,11 +432,11 @@ namespace Oxygen
 
         //! register transparent widget
         void registerTransparentWidget( QObject* object )
-        { 
-            _transparentWidgets.insert( object ); 
-            connect( object, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) ); 
+        {
+            _transparentWidgets.insert( object );
+            connect( object, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
         }
-        
+
         protected Q_SLOTS:
 
         //! standard icons
@@ -454,7 +448,7 @@ namespace Oxygen
         //! unregister transparent widget
         void unregisterTransparentWidget( QObject* object )
         { _transparentWidgets.remove( object ); }
-        
+
         private:
 
         //! right to left languages
@@ -494,17 +488,6 @@ namespace Oxygen
         KStylePrimitiveMap kStylePrimitives_;
         //@}
 
-        //! application name
-        enum AppName
-        {
-            AppUnknown,
-            AppPlasma,
-            AppBlackListed
-        };
-
-        //! application name
-        AppName _applicationName;
-
         //! helper
         StyleHelper &_helper;
 
@@ -520,6 +503,9 @@ namespace Oxygen
         //! frame shadows
         FrameShadowFactory* _frameShadowFactory;
 
+        //! argb helper
+        ArgbHelper* _argbHelper;
+
         //! blur helper
         BlurHelper* _blurHelper;
 
@@ -533,20 +519,9 @@ namespace Oxygen
         //! set of transparent widgets (as defined in ::polish)
         typedef QSet<const QObject*> ObjectSet;
         ObjectSet _transparentWidgets;
-        
+
     };
-    
-    // inline functions
-    QColor Style::translucentColor( const QColor& color, bool hasAlpha ) const
-    {
-        if( hasAlpha && hasTranslucentBackground() )
-        {
-            QColor out( color );
-            out.setAlpha( OxygenStyleConfigData::backgroundOpacity() );
-            return out;
-        } else return color;
-    }
-    
+
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Oxygen::Style::StyleOptions)

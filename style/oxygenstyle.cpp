@@ -40,7 +40,6 @@
 #include <QtGui/QCheckBox>
 #include <QtGui/QComboBox>
 #include <QtGui/QDial>
-#include <QtGui/QDialog>
 #include <QtGui/QDockWidget>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGroupBox>
@@ -68,6 +67,7 @@
 #include <KDebug>
 
 #include "oxygenanimations.h"
+#include "oxygenargbhelper.h"
 #include "oxygenblurhelper.h"
 #include "oxygenframeshadow.h"
 #include "oxygenstyleconfigdata.h"
@@ -107,12 +107,12 @@ namespace Oxygen
     //_____________________________________________
     Style::Style() :
         CE_CapacityBar( newControlElement( "CE_CapacityBar" ) ),
-        _applicationName( AppUnknown ),
         _helper(*globalHelper),
         _animations( new Animations( this ) ),
         _transitions( new Transitions( this ) ),
         _windowManager( new WindowManager( this ) ),
         _frameShadowFactory( new FrameShadowFactory( this ) ),
+        _argbHelper( new ArgbHelper( this, _helper ) ),
         _blurHelper( new BlurHelper( this, _helper ) ),
         _widgetExplorer( new WidgetExplorer( this ) )
     {
@@ -702,7 +702,7 @@ namespace Oxygen
         }
 
         // render background
-        _helper.renderMenuBackground( p, r, widget, translucentColor( color, hasAlpha ) );
+        _helper.renderMenuBackground( p, r, widget, argbHelper().translucentColor( color, hasAlpha ) );
 
         if( hasAlpha ) p->setClipping( false );
         _helper.drawFloatFrame( p, r, color, !hasAlpha );
@@ -1509,7 +1509,7 @@ namespace Oxygen
         {
             case ProgressBar::Groove:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, rect, color, orientation);
                 return true;
             }
@@ -2147,7 +2147,7 @@ namespace Oxygen
         {
             case ScrollBar::DoubleButtonHor:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 if( reverseLayout) renderScrollBarHole(p, QRect(r.right()+1, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Bottom | TileSet::Left);
                 else renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
                 return false;
@@ -2155,14 +2155,14 @@ namespace Oxygen
 
             case ScrollBar::DoubleButtonVert:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, QRect(r.left(), r.top()-5, r.width(), 5), color, Qt::Vertical, TileSet::Bottom | TileSet::Left | TileSet::Right);
                 return false;
             }
 
             case ScrollBar::SingleButtonHor:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 if( reverseLayout) renderScrollBarHole(p, QRect(r.left()-5, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Right | TileSet::Bottom);
                 else renderScrollBarHole(p, QRect(r.right()+1, r.top(), 5, r.height()), color, Qt::Horizontal, TileSet::Top | TileSet::Left | TileSet::Bottom);
                 return false;
@@ -2170,35 +2170,35 @@ namespace Oxygen
 
             case ScrollBar::SingleButtonVert:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, QRect(r.left(), r.bottom()+3, r.width(), 5), color, Qt::Vertical, TileSet::Top | TileSet::Left | TileSet::Right);
                 return false;
             }
 
             case ScrollBar::GrooveAreaVertTop:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, r.adjusted(0,2,0,12), color, Qt::Vertical, TileSet::Horizontal );
                 return true;
             }
 
             case ScrollBar::GrooveAreaVertBottom:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, r.adjusted(0,-10,0,0), color, Qt::Vertical, TileSet::Horizontal );
                 return true;
             }
 
             case ScrollBar::GrooveAreaHorLeft:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, r.adjusted(0,0,10,0), color, Qt::Horizontal, TileSet::Vertical );
                 return true;
             }
 
             case ScrollBar::GrooveAreaHorRight:
             {
-                const QColor color( translucentColor( pal.color(QPalette::Window), widget ) );
+                const QColor color( argbHelper().translucentColor( pal.color(QPalette::Window), widget ) );
                 renderScrollBarHole(p, r.adjusted(-10,0,0,0), color, Qt::Horizontal, TileSet::Vertical );
                 return true;
             }
@@ -4562,30 +4562,7 @@ namespace Oxygen
     void Style::polish( QApplication* app )
     {
 
-        // get application full path
-        if( app->argc() < 1 ) return;
-        QString appName( app->argv()[0] );
-        int position( appName.lastIndexOf( '/' ) );
-        if( position >= 0 ) appName.remove( 0, position+1 );
-
-        if( appName == "plasma" || appName.startsWith( "plasma-" ) )
-        {
-
-            /*
-            HACK: need to detect if application is of type Plasma
-            because applying translucency to some of its widgets creates
-            painting issues which could not be identified with a 'generic'
-            criteria.
-            */
-            _applicationName = AppPlasma;
-
-        } else if( OxygenStyleConfigData::opacityBlackList().contains( appName ) ) {
-
-            // black-list application
-            _applicationName = AppBlackListed;
-
-        }
-
+        argbHelper().registerApplication( app );
         return;
 
     }
@@ -4601,12 +4578,49 @@ namespace Oxygen
         windowManager().registerWidget( widget );
         frameShadowFactory().registerWidget( widget, _helper );
 
+        // adjust flags for windows and dialogs
+        switch( widget->windowFlags() & Qt::WindowType_Mask )
+        {
+
+            case Qt::Window:
+            case Qt::Dialog:
+            {
+
+                // do not handle all kind of 'special background' widgets
+                if( widget->windowType() == Qt::Desktop ||
+                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) ||
+                    widget->testAttribute(Qt::WA_TranslucentBackground) ||
+                    widget->testAttribute(Qt::WA_NoSystemBackground) ||
+                    widget->testAttribute(Qt::WA_PaintOnScreen)
+                    ) break;
+
+                // disable kde screensaver windows
+                /*
+                the kscreensaver widgets get a WA_PaintOnScreen flag set,
+                which should have been covered by the above, but somehow the flag is set too late,
+                and notably after polish is called. Or so it seems.
+                */
+                if( widget->inherits( "KScreenSaver" ) ) break;
+
+                // set background as styled
+                widget->setAttribute(Qt::WA_StyledBackground);
+            }
+
+            break;
+
+            default: break;
+
+        }
+
+        // register to argbHelper and install event filter if sucessful
+        if( argbHelper().registerWidget( widget ) ) addEventFilter( widget );
+
         /*
         need to register all widgets to blur helper, in order to
         have proper blur_behind region set have proper regions removed for opaque widgets.
         Note: that the helper does nothing as long as compositing and ARGB are not enabled
         */
-        if( _applicationName != AppBlackListed )
+        if( !argbHelper().isBlackListed() )
         { blurHelper().registerWidget( widget ); }
 
         // scroll areas
@@ -4635,91 +4649,6 @@ namespace Oxygen
 
             widget->setAttribute( Qt::WA_Hover );
             animations().lineEditEngine().registerWidget( widget, AnimationHover|AnimationFocus );
-
-        }
-
-        // adjust flags for windows and dialogs
-        switch( widget->windowFlags() & Qt::WindowType_Mask )
-        {
-
-            case Qt::Window:
-            case Qt::Dialog:
-            {
-
-                // do not handle all kind of 'special background' widgets
-                if( widget->windowType() == Qt::Desktop ||
-                    widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) ||
-                    widget->testAttribute(Qt::WA_TranslucentBackground) ||
-                    widget->testAttribute(Qt::WA_NoSystemBackground) ||
-                    widget->testAttribute(Qt::WA_PaintOnScreen)
-                    ) break;
-
-                // disable kde screensaver windows
-                /*
-                the kscreensaver widgets get a WA_PaintOnScreen flag set,
-                which should have been covered by the above, but somehow the flag is set too late,
-                and notably after polish is called. Or so it seems.
-                */
-                if( widget->inherits( "KScreenSaver" ) ) break;
-
-                // Hack: stop here if application is of type Plasma
-                /*
-                Right now we need to reject window candidates if the application is of type plasma
-                because it conflicts with some widgets embedded into the SysTray. Ideally one would
-                rather find a "generic" reason, not to handle them
-                */
-                if( _applicationName == AppPlasma && !qobject_cast<QDialog*>(widget) ) break;
-
-                // set background as styled
-                widget->setAttribute(Qt::WA_StyledBackground);
-
-                // check blacklisted applications
-                if( _applicationName == AppBlackListed ) break;
-
-                // stop here if no translucent background selected/supported
-                if( !( _helper.compositingActive() && hasTranslucentBackground() ) ) break;
-
-                // more tests
-                if( !widget->isWindow() ) break;
-                if(
-                    widget->inherits( "QTipLabel") ||
-                    widget->inherits( "QSplashScreen") ) break;
-
-                if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
-
-                /*
-                whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
-                Unfortunately some properties are lost, among them the window icon. We save it and restore it manually
-                */
-                QIcon icon(widget->windowIcon());
-
-                // set translucent flag
-                widget->setAttribute( Qt::WA_TranslucentBackground );
-
-                // re-install icon
-                widget->setWindowIcon(icon);
-
-                /*
-                HACK: somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
-                we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
-                Copied from bespin. (TODO: try save position and restore)
-                */
-                if( !widget->isVisible() )
-                { widget->move(10000,10000); }
-
-                /*
-                install event filter, because PE_Widget primitive is not called any more
-                when translucent flag is set. Also register as a transparent widget, to make
-                sure properties are restored properly in unpolish
-                */
-                addEventFilter( widget );
-                registerTransparentWidget( widget );
-
-            }
-
-            break;
-
-            default: break;
 
         }
 
@@ -4906,14 +4835,8 @@ namespace Oxygen
         transitions().unregisterWidget( widget );
         windowManager().unregisterWidget( widget );
         frameShadowFactory().unregisterWidget( widget );
+        argbHelper().unregisterWidget( widget );
         blurHelper().unregisterWidget( widget );
-
-        if( _transparentWidgets.contains( widget ) )
-        {
-            widget->setAttribute(Qt::WA_NoSystemBackground, false);
-            widget->setAttribute(Qt::WA_StyledBackground, false);
-            widget->setAttribute(Qt::WA_TranslucentBackground, false);
-        }
 
         if( isKTextEditFrame( widget ) )
         { widget->setAttribute( Qt::WA_Hover, false  ); }
@@ -5026,9 +4949,6 @@ namespace Oxygen
         // reset helper configuration
         if( type == KGlobalSettings::PaletteChanged) _helper.reloadConfig();
 
-        // store previous background opacity
-        int oldBackgroundOpacity( OxygenStyleConfigData::backgroundOpacity() );
-
         // reset config
         OxygenStyleConfigData::self()->readConfig();
 
@@ -5038,12 +4958,19 @@ namespace Oxygen
         // reinitialize engines
         animations().setupEngines();
         transitions().setupEngines();
+        windowManager().initialize();
+
+        widgetExplorer().setEnabled( OxygenStyleConfigData::widgetExplorerEnabled() );
+
+        // background opacity and blacklist are passed to argbHelper
+        bool opacityChanged( argbHelper().setOpacity( OxygenStyleConfigData::backgroundOpacity() ) );
+        argbHelper().setBlackList( OxygenStyleConfigData::opacityBlackList() );
 
         /*
         disable stackedWidget engine in case
         translucent backgrounds are enabled
         */
-        if( _helper.compositingActive() && hasTranslucentBackground() )
+        if( _helper.compositingActive() && argbHelper().enabled() )
         {
 
             blurHelper().setEnabled( true );
@@ -5056,11 +4983,9 @@ namespace Oxygen
 
         }
 
-        windowManager().initialize();
-        widgetExplorer().setEnabled( OxygenStyleConfigData::widgetExplorerEnabled() );
 
         // if background opacity has changed, one needs to trigger update of all top level windows
-        if( OxygenStyleConfigData::backgroundOpacity() != oldBackgroundOpacity )
+        if( opacityChanged )
         {
             foreach( QWidget* widget, qApp->topLevelWidgets() )
             { widget->update(); }
@@ -5485,7 +5410,7 @@ namespace Oxygen
         // draw the hole as background
         const QRect holeRect( horizontal ? r.adjusted(-4,0,4,0) : r.adjusted(0,-3,0,4) );
         renderScrollBarHole(p, holeRect,
-            translucentColor( pal.color(QPalette::Window), hasAlpha ), orientation,
+            argbHelper().translucentColor( pal.color(QPalette::Window), hasAlpha ), orientation,
             horizontal ? TileSet::Top | TileSet::Bottom | TileSet::Center
             : TileSet::Left | TileSet::Right | TileSet::Center);
 
@@ -7524,7 +7449,6 @@ namespace Oxygen
 
                 }
 
-
                 const bool hasAlpha( _helper.hasAlphaChannel(t) );
                 if( hasAlpha )
                 {
@@ -7536,7 +7460,7 @@ namespace Oxygen
                     p.setClipRegion( _helper.roundedMask( r.adjusted( 1, 1, -1, -1 ) ), Qt::IntersectClip );
                 }
 
-                _helper.renderWindowBackground(&p, r, t, translucentColor( color, hasAlpha ) );
+                _helper.renderWindowBackground(&p, r, t, argbHelper().translucentColor( color, hasAlpha ) );
 
                 if( t->isMovable() )
                 {
@@ -7617,7 +7541,7 @@ namespace Oxygen
                 }
 
                 // background
-                _helper.renderMenuBackground( &p, e->rect(), widget, translucentColor( color, hasAlpha ) );
+                _helper.renderMenuBackground( &p, e->rect(), widget, argbHelper().translucentColor( color, hasAlpha ) );
 
                 // frame
                 if( hasAlpha ) p.setClipping( false );
@@ -7719,7 +7643,7 @@ namespace Oxygen
         p.setClipRegion( paintEvent->region() );
 
         // get color and render
-        const QColor color( translucentColor( widget->palette().color( widget->backgroundRole() ), widget ) );
+        const QColor color( argbHelper().translucentColor( widget->palette().color( widget->backgroundRole() ), widget ) );
         _helper.renderWindowBackground( &p, paintEvent->rect(), widget, color );
         return true;
 
@@ -7791,12 +7715,11 @@ namespace Oxygen
                         // set clip region
                         p.setCompositionMode(QPainter::CompositionMode_SourceOver );
                         p.setClipRegion( _helper.roundedMask( r.adjusted( 1, 1, -1, -1 ) ), Qt::IntersectClip );
-
                     }
                     #endif
 
                     // render background
-                    _helper.renderWindowBackground(&p, r, dw, translucentColor( color, hasAlpha ) );
+                    _helper.renderWindowBackground(&p, r, dw, argbHelper().translucentColor( color, hasAlpha ) );
 
                     #ifndef Q_WS_WIN
                     if( hasAlpha ) p.setClipping( false );
