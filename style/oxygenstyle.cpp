@@ -4830,7 +4830,6 @@ namespace Oxygen
     void Style::unpolish(QWidget* widget)
     {
 
-        // unregister from all 'helper' classes
         animations().unregisterWidget( widget );
         transitions().unregisterWidget( widget );
         windowManager().unregisterWidget( widget );
