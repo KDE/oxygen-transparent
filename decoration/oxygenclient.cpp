@@ -608,9 +608,6 @@ namespace Oxygen
     void Client::renderWindowBorder( QPainter* painter, const QRect& clipRect, const QWidget* widget, const QPalette& palette ) const
     {
 
-        // check if outline is needed
-        if( clientGroupItems().count() < 2 && !itemData_.isAnimated() && !( isActive() && configuration().drawTitleOutline() ) ) return;
-
         // get coordinates relative to the client area
         // this is annoying. One could use mapTo if this was taking const QWidget* and not
         // const QWidget* as argument.
@@ -1430,7 +1427,9 @@ namespace Oxygen
 
         // window background
         renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ), false );
-        renderWindowBorder( &painter, frame, widget(), palette );
+
+        // window border (for title outline)
+        if( hasTitleOutline() ) renderWindowBorder( &painter, frame, widget(), palette );
 
         // clipping
         if( compositingActive() )
@@ -1712,7 +1711,7 @@ namespace Oxygen
             itemData_.setDirty( true );
             moveItemInClientGroup( from, itemClicked );
             updateTitleRect();
-            
+
         } else {
 
             setForceActive( true );
