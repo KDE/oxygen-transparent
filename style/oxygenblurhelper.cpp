@@ -136,7 +136,7 @@ namespace Oxygen
     {
 
         if( !widget->isVisible() ) return QRegion();
-        
+
         // get main region
         QRegion region;
         if(

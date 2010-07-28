@@ -144,20 +144,9 @@ namespace Oxygen
         }
 
         //! true if widget is a transparent window
-        /*! some additional checks are performed to make sure stuff like plasma tooltips 
+        /*! some additional checks are performed to make sure stuff like plasma tooltips
         don't get their blur region overwritten */
-        bool isTransparent( const QWidget* widget ) const
-        {
-            return
-                widget->isWindow() &&
-                widget->testAttribute( Qt::WA_TranslucentBackground ) &&
-                ( widget->testAttribute( Qt::WA_StyledBackground ) || 
-                qobject_cast<const QMenu*>( widget ) || 
-                qobject_cast<const QDockWidget*>( widget ) || 
-                qobject_cast<const QToolBar*>( widget ) ||
-                widget->inherits( "Konsole::MainWindow" ) ) &&
-               _helper.hasAlphaChannel( widget );
-        }
+        inline bool isTransparent( const QWidget* widget ) const;
 
         private:
 
@@ -181,6 +170,30 @@ namespace Oxygen
         #endif
 
     };
+
+
+    bool BlurHelper::isTransparent( const QWidget* widget ) const
+    {
+
+        return
+            widget->isWindow() &&
+            widget->testAttribute( Qt::WA_TranslucentBackground ) &&
+
+            // widgets using qgraphicsview
+            widget->graphicsProxyWidget() ||
+
+            // plasma dialogs
+            widget->inherits( "Plasma::Dialog" ) ) &&
+            ( widget->testAttribute( Qt::WA_StyledBackground ) ||
+            qobject_cast<const QMenu*>( widget ) ||
+            qobject_cast<const QDockWidget*>( widget ) ||
+            qobject_cast<const QToolBar*>( widget ) ||
+
+            // konsole (thought that should be handled
+            // internally by the application
+            widget->inherits( "Konsole::MainWindow" ) ) &&
+            _helper.hasAlphaChannel( widget );
+    }
 
 }
 
