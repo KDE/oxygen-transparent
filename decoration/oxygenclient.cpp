@@ -748,6 +748,84 @@ namespace Oxygen
 
     }
 
+
+    //_________________________________________________________
+    QRegion Client::windowBorderMask( void ) const
+    {
+
+        if( !( configuration().drawTitleOutline() && isActive() && configuration().frameBorder() > Configuration::BorderNone ) )
+        { return QRegion(); }
+
+        // get coordinates relative to the client area
+        // this is annoying. One could use mapTo if this was taking const QWidget* and not
+        // const QWidget* as argument.
+        const QWidget* window = (isPreview()) ? widget() : widget()->window();
+        const QWidget* w = widget();
+        QPoint position( 0, 0 );
+        while (  w != window && !w->isWindow() && w != w->parentWidget() )
+        {
+            position += w->geometry().topLeft();
+            w = w->parentWidget();
+        }
+
+        QRect r = (isPreview()) ? this->widget()->rect():window->rect();
+
+        const qreal shadowSize( shadowCache().shadowSize() );
+        r.adjust( shadowSize, shadowSize, -shadowSize, -shadowSize );
+        r.adjust(0,0, 1, 1);
+
+        // title height
+        const int titleHeight( layoutMetric( LM_TitleEdgeTop ) + layoutMetric( LM_TitleEdgeBottom ) + layoutMetric( LM_TitleHeight ) );
+
+        // save mask and frame to where
+        // grey window background is to be rendered
+        QRegion mask;
+
+        // bottom line
+        const int leftOffset = qMin( layoutMetric( LM_BorderLeft ), int(HFRAMESIZE) );
+        const int rightOffset = qMin( layoutMetric( LM_BorderRight ), int(HFRAMESIZE) );
+        if( configuration().frameBorder() > Configuration::BorderNone )
+        {
+
+            const int height = qMax( 0, layoutMetric( LM_BorderBottom ) - HFRAMESIZE );
+            const int width = r.width() - leftOffset - rightOffset - 1;
+
+            const QRect rect( r.bottomLeft()-position + QPoint( leftOffset, -layoutMetric( LM_BorderBottom ) ), QSize( width, height ) );
+            if( height > 0 ) mask += rect;
+
+        }
+
+        // left and right
+        const int topOffset = titleHeight;
+        const int bottomOffset = qMin( layoutMetric( LM_BorderBottom ), int(HFRAMESIZE) );
+        const int height = r.height() - topOffset - bottomOffset - 1;
+
+        if( configuration().frameBorder() >= Configuration::BorderTiny )
+        {
+
+            // left
+            int width = qMax( 0, layoutMetric( LM_BorderLeft ) - HFRAMESIZE );
+            QRect rect( r.topLeft()-position + QPoint( layoutMetric( LM_BorderLeft ) - width, topOffset ), QSize( width, height ) );
+            if( width > 0 ) mask += rect;
+
+            // right
+            width = qMax( 0, layoutMetric( LM_BorderRight ) - HFRAMESIZE );
+            rect = QRect(r.topRight()-position + QPoint( -layoutMetric( LM_BorderRight ), topOffset ), QSize( width, height ));
+            if( width > 0 ) mask += rect;
+
+        }
+
+        // in preview mode also adds center square
+        if( isPreview() )
+        {
+            const QRect rect( r.topLeft()-position + QPoint( layoutMetric( LM_BorderLeft ), topOffset ), QSize(r.width()-layoutMetric( LM_BorderLeft )-layoutMetric( LM_BorderRight ),height) );
+            mask += rect;
+        }
+
+        return mask;
+
+    }
+
     //_________________________________________________________
     void Client::renderSeparator( QPainter* painter, const QRect& clipRect, const QWidget* widget, const QColor& color ) const
     {
@@ -1438,16 +1516,20 @@ namespace Oxygen
             */
 
             // store current painter mask
-            QRegion mask( painter.clipRegion() );
+            const QRegion mask( painter.clipRegion() );
+            const QRegion borderMask( windowBorderMask() );
 
             // subtract title outline
             const QRect& activeItemBoundingRect( itemData_[visibleClientGroupItem()].boundingRect_ );
-            painter.setClipRegion( mask - helper().roundedMask(activeItemBoundingRect.adjusted(1,0,-1,1), 1, 1, 1, 0), Qt::ReplaceClip );
+            const QRegion& titleMask( mask - helper().roundedMask(activeItemBoundingRect.adjusted(1,0,-1,1), 1, 1, 1, 0) );
 
             // window background
+            if( borderMask.isEmpty() ) painter.setClipRegion( titleMask, Qt::ReplaceClip );
+            else painter.setClipRegion( titleMask - borderMask, Qt::ReplaceClip );
             renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ), false );
 
             // window border (for title outline)
+            if( !borderMask.isEmpty() ) painter.setClipRegion( titleMask, Qt::ReplaceClip );
             renderWindowBorder( &painter, frame, widget(), palette );
 
             // restore mask
