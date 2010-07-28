@@ -4604,7 +4604,7 @@ namespace Oxygen
         have proper blur_behind region set have proper regions removed for opaque widgets.
         Note: that the helper does nothing as long as compositing and ARGB are not enabled
         */
-        if( !argbHelper().isBlackListed() )
+        if( !argbHelper().isBlackListed( widget ) )
         { blurHelper().registerWidget( widget ); }
 
         // scroll areas

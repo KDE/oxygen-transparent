@@ -75,6 +75,12 @@ namespace Oxygen
         bool isBlackListed( void ) const
         { return _applicationType == AppBlackListed; }
 
+        //! true if widget is blackListed
+        bool isBlackListed( const QWidget* widget )
+        {
+            return isBlackListed() || ( _applicationType == AppPlasma && !widget->inherits( "QDialog" ) );
+        }
+
         //! true if enabled
         bool enabled( void ) const
         { return _enabled; }
