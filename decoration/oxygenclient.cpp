@@ -1425,11 +1425,42 @@ namespace Oxygen
         if(  itemData_.isDirty() || itemData_.count() != clientGroupItems().count() )
         { updateItemBoundingRects( false ); }
 
-        // window background
-        renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ), false );
+        const bool hasTitleOutline( this->hasTitleOutline() );
+        const bool hasAlpha( compositingActive() && configuration().transparencyEnabled() );
 
-        // window border (for title outline)
-        if( hasTitleOutline() ) renderWindowBorder( &painter, frame, widget(), palette );
+        if( hasAlpha && hasTitleOutline )
+        {
+
+            /*
+            when alpha channel is enabled and title outline is needed,
+            some extra clip region are needed to avoid overlapping semi-transparent painting
+            */
+
+            // store current painter mask
+            QRegion mask( painter.clipRegion() );
+
+            // subtract title outline
+            const QRect& activeItemBoundingRect( itemData_[visibleClientGroupItem()].boundingRect_ );
+            painter.setClipRegion( mask - helper().roundedMask(activeItemBoundingRect.adjusted(1,0,-1,1), 1, 1, 1, 0), Qt::ReplaceClip );
+
+            // window background
+            renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ), false );
+
+            // window border (for title outline)
+            renderWindowBorder( &painter, frame, widget(), palette );
+
+            // restore mask
+            painter.setClipRegion( mask, Qt::ReplaceClip );
+
+        } else {
+
+            // window background
+            renderWindowBackground( &painter, frame, widget(), backgroundPalette( widget(), palette ), false );
+
+            // window border (for title outline)
+            if( hasTitleOutline ) renderWindowBorder( &painter, frame, widget(), palette );
+
+        }
 
         // clipping
         if( compositingActive() )
