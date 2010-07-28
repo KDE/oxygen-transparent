@@ -180,10 +180,10 @@ namespace Oxygen
             widget->testAttribute( Qt::WA_TranslucentBackground ) &&
 
             // widgets using qgraphicsview
-            widget->graphicsProxyWidget() ||
-
-            // plasma dialogs
+            !( widget->graphicsProxyWidget() ||
             widget->inherits( "Plasma::Dialog" ) ) &&
+
+            // flags and special widgets
             ( widget->testAttribute( Qt::WA_StyledBackground ) ||
             qobject_cast<const QMenu*>( widget ) ||
             qobject_cast<const QDockWidget*>( widget ) ||
