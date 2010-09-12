@@ -17,13 +17,13 @@
       however they are unchecked, unless they also appear in the blacklist
     -->
     <entry name="OpacityGreyList" type = "StringList"> 
-        <default>krunner,smplayer,amarok,dragon,vlc,vlc-wrapper,kaffeine,kscreenlocker</default>
+        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker</default>
     </entry>
 
     <!-- opacity black list -->
     <!-- applications listed here cannot be set transparent -->
     <entry name="OpacityBlackList" type = "StringList"> 
-        <default>smplayer,dragon,kaffeine</default>
+        <default>smplayer,dragon,kaffeine,loopy,kwin</default>
     </entry>
 
   </group>
@@ -33,7 +33,11 @@
     
     <!-- cache size -->
     <entry name="MaxCacheSize" type = "Int" >
-       <default>100</default>
+       <default>512</default>
+    </entry>
+    
+    <entry name="AnimationSteps" type = "Int">
+        <default>10</default>
     </entry>
 
     <!-- tooltips -->

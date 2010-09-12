@@ -76,10 +76,7 @@ namespace Oxygen
         { return _applicationType == AppBlackListed; }
 
         //! true if widget is blackListed
-        bool isBlackListed( const QWidget* widget )
-        {
-            return isBlackListed() || ( _applicationType == AppPlasma && !widget->inherits( "QDialog" ) );
-        }
+        inline bool isBlackListed( const QWidget* ) const;
 
         //! true if enabled
         bool enabled( void ) const
@@ -141,6 +138,14 @@ namespace Oxygen
     };
 
     // inline functions
+    bool ArgbHelper::isBlackListed( const QWidget* widget ) const
+    {
+        return isBlackListed() ||
+            ( _applicationType == AppPlasma && !(
+            widget->inherits( "QDialog" ) ||
+            widget->inherits( "QMenu" ) ) );
+    }
+
     QColor ArgbHelper::translucentColor( const QColor& color, bool hasAlpha ) const
     {
         if( hasAlpha && _enabled )

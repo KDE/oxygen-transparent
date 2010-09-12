@@ -4480,11 +4480,9 @@ namespace Oxygen
         Q_UNUSED( opt );
         Q_UNUSED( kOpt );
 
-        if( const QAbstractItemView *aiv = qobject_cast<const QAbstractItemView*>(widget) )
+        if( qobject_cast<const QAbstractItemView*>(widget) )
         {
-            if( OxygenStyleConfigData::viewDrawFocusIndicator() &&
-                aiv->selectionMode() != QAbstractItemView::SingleSelection &&
-                aiv->selectionMode() != QAbstractItemView::NoSelection)
+            if( OxygenStyleConfigData::viewDrawFocusIndicator() )
             {
 
                 const QRect r( rect.adjusted( 2, 0, -2, -2 ) );
