@@ -38,6 +38,62 @@
 namespace Oxygen
 {
 
+    template<typename T> class BaseCache: public QCache<quint64, T>
+    {
+
+        public:
+
+        //! constructor
+        BaseCache( int maxCost ):
+            QCache<quint64, T>( maxCost ),
+            _enabled( true )
+        {}
+
+        //! constructor
+        explicit BaseCache( void ):
+            _enabled( true )
+            {}
+
+        //! destructor
+        ~BaseCache( void )
+        {}
+
+        //! enable
+        void setEnabled( bool value )
+        { _enabled = value; }
+
+        //! enable state
+        bool enabled( void ) const
+        { return _enabled; }
+
+        //! access
+        T* object( const quint64& key )
+        { return _enabled ? QCache<quint64, T>::object( key ) : 0; }
+
+        //! max cost
+        void setMaxCost( int cost )
+        {
+            if( cost <= 0 ) {
+
+                QCache<quint64, T>::clear();
+                QCache<quint64, T>::setMaxCost( 1 );
+                setEnabled( false );
+
+            } else {
+
+                setEnabled( true );
+                QCache<quint64, T>::setMaxCost( cost );
+
+            }
+        }
+
+        private:
+
+        //! enable flag
+        bool _enabled;
+
+    };
+
     template<typename T> class Cache
     {
 
@@ -52,16 +108,17 @@ namespace Oxygen
         {}
 
         //! return cache matching a given key
-        typedef QCache<quint64, T> Value;
+        //typedef QCache<quint64, T> Value;
+        typedef BaseCache<T> Value;
         Value* get( const QColor& color )
         {
-            quint64 key = (quint64(color.rgba()) << 32);
-            Value *cache = data_.object(key);
+            quint64 key = ( quint64( color.rgba() ) << 32 );
+            Value* cache = data_.object( key );
 
-            if (!cache)
+            if ( !cache )
             {
                 cache = new Value( data_.maxCost() );
-                data_.insert(key, cache);
+                data_.insert( key, cache );
             }
 
             return cache;
@@ -81,7 +138,8 @@ namespace Oxygen
 
         private:
 
-        QCache<quint64, Value> data_;
+        //! data
+        BaseCache<Value> data_;
 
     };
 
@@ -92,7 +150,7 @@ namespace Oxygen
         public:
 
         //! constructor
-        Helper(const QByteArray &componentName);
+        Helper( const QByteArray& componentName );
 
         //! destructor
         virtual ~Helper()
@@ -117,7 +175,7 @@ namespace Oxygen
         \par gradientHeight: the height of the generated gradient.
         for different heights, the gradient is translated so that it is always at the same position from the bottom
         */
-        void renderWindowBackground(QPainter *p, const QRect &clipRect, const QWidget *widget, const QPalette & pal, int y_shift=-23, int gradientHeight = 64)
+        void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QPalette&  pal, int y_shift=-23, int gradientHeight = 64 )
         { renderWindowBackground( p, clipRect, widget, pal.color( widget->window()->backgroundRole() ), y_shift, gradientHeight ); }
 
         /*!
@@ -125,50 +183,50 @@ namespace Oxygen
         gradientHeight: the height of the generated gradient.
         for different heights, the gradient is translated so that it is always at the same position from the bottom
         */
-        void renderWindowBackground(QPainter *p, const QRect &clipRect, const QWidget *widget, const QWidget* window, const QPalette & pal, int y_shift=-23, int gradientHeight = 64)
+        void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QWidget* window, const QPalette&  pal, int y_shift=-23, int gradientHeight = 64 )
         { renderWindowBackground( p, clipRect, widget, window, pal.color( window->backgroundRole() ), y_shift, gradientHeight ); }
 
         //! render window background using a given color as a reference
-        void renderWindowBackground(QPainter *p, const QRect &clipRect, const QWidget *widget, const QColor& color, int y_shift=-23, int gradientHeight = 64)
+        void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QColor& color, int y_shift=-23, int gradientHeight = 64 )
         { renderWindowBackground( p, clipRect, widget, widget->window(), color, y_shift, gradientHeight ); }
 
         //! render window background using a given color as a reference
-        void renderWindowBackground(QPainter *p, const QRect &clipRect, const QWidget *widget, const QWidget* window, const QColor& color, int y_shift=-23, int gradientHeight = 64);
+        void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QWidget* window, const QColor& color, int y_shift=-23, int gradientHeight = 64 );
 
         //! dots
-        void renderDot(QPainter*, const QPointF&, const QColor&) const;
+        void renderDot( QPainter*, const QPoint&, const QColor& );
 
         //@}
 
-        static bool lowThreshold(const QColor &color);
-        static bool highThreshold(const QColor &color);
+        bool lowThreshold( const QColor& color );
+        bool highThreshold( const QColor& color );
 
-        static QColor alphaColor(QColor color, qreal alpha);
+        static QColor alphaColor( QColor color, qreal alpha );
 
-        virtual QColor calcLightColor(const QColor &color) const;
-        virtual QColor calcDarkColor(const QColor &color) const;
-        virtual QColor calcShadowColor(const QColor &color) const;
+        virtual const QColor& calcLightColor( const QColor& color );
+        virtual const QColor& calcDarkColor( const QColor& color );
+        virtual const QColor& calcShadowColor( const QColor& color );
 
         //! returns menu background color matching position in a given top level widget
-        virtual QColor backgroundColor(const QColor &color, const QWidget* w, const QPoint& point )
+        virtual const QColor& backgroundColor( const QColor& color, const QWidget* w, const QPoint& point )
         {
             if( !( w && w->window() ) || checkAutoFillBackground( w ) ) return color;
             else return backgroundColor( color, w->window()->height(), w->mapTo( w->window(), point ).y() );
         }
 
         //! returns menu background color matching position in a top level widget of given height
-        virtual QColor backgroundColor(const QColor &color, int height, int y)
-        { return cachedBackgroundColor( color, qMin(qreal(1.0), qreal(y)/qMin(300, 3*height/4) ) ); }
+        virtual const QColor& backgroundColor( const QColor& color, int height, int y )
+        { return backgroundColor( color, qMin( qreal( 1.0 ), qreal( y )/qMin( 300, 3*height/4 ) ) ); }
 
-        virtual QColor backgroundRadialColor(const QColor &color) const;
-        virtual QColor backgroundTopColor(const QColor &color) const;
-        virtual QColor backgroundBottomColor(const QColor &color) const;
+        virtual const QColor& backgroundRadialColor( const QColor& color );
+        virtual const QColor& backgroundTopColor( const QColor& color );
+        virtual const QColor& backgroundBottomColor( const QColor& color );
 
-        virtual QPixmap verticalGradient(const QColor &color, int height, int offset = 0 );
-        virtual QPixmap radialGradient(const QColor &color, int width, int height = 64);
+        virtual QPixmap verticalGradient( const QColor& color, int height, int offset = 0 );
+        virtual QPixmap radialGradient( const QColor& color, int width, int height = 64 );
 
         //! merge background and front color for check marks, arrows, etc. using _contrast
-        virtual QColor decoColor(const QColor &background, const QColor &color) const;
+        virtual const QColor& decoColor( const QColor& background, const QColor& color );
 
         //! returns a region matching given rect, with rounded corners, based on the multipliers
         /*! setting any of the multipliers to zero will result in no corners shown on the corresponding side */
@@ -177,15 +235,15 @@ namespace Oxygen
         //! draw frame that mimics some sort of shadows around a panel
         /*! it is used for menus, detached dock panels and toolbar, as well as window decoration when compositing is disabled */
         virtual void drawFloatFrame(
-            QPainter *p, const QRect r, const QColor &color,
+            QPainter* p, const QRect r, const QColor& color,
             bool drawUglyShadow=true, bool isActive=false,
-            const QColor &frameColor=QColor(),
+            const QColor& frameColor=QColor(),
             TileSet::Tiles tiles = TileSet::Ring
-            ) const;
+            );
 
-        virtual void drawSeparator(QPainter *p, const QRect &r, const QColor &color, Qt::Orientation orientation) const;
+        virtual void drawSeparator( QPainter* p, const QRect& r, const QColor& color, Qt::Orientation orientation );
 
-        virtual TileSet *slab(const QColor&, qreal shade, int size = 7);
+        virtual TileSet* slab( const QColor&, qreal shade, int size = 7 );
 
         //! focus brush
         const KStatefulBrush& viewFocusBrush( void ) const
@@ -195,7 +253,7 @@ namespace Oxygen
         const KStatefulBrush& viewHoverBrush( void ) const
         { return _viewHoverBrush; }
 
-        //! negative text brush (used for close button hover)
+        //! negative text brush ( used for close button hover )
         const KStatefulBrush& viewNegativeTextBrush( void ) const
         { return _viewNegativeTextBrush; }
 
@@ -205,39 +263,65 @@ namespace Oxygen
         */
         const QWidget* checkAutoFillBackground( const QWidget* ) const;
 
-
         protected:
 
-        virtual void drawSlab(QPainter&, const QColor&, qreal shade) const;
-        virtual void drawShadow(QPainter&, const QColor&, int size) const;
-        virtual void drawOuterGlow(QPainter&, const QColor&, int size) const;
+        virtual void drawSlab( QPainter&, const QColor&, qreal shade );
+        virtual void drawShadow( QPainter&, const QColor&, int size );
+        virtual void drawOuterGlow( QPainter&, const QColor&, int size );
 
         //! return background adjusted color matching relative vertical position in window
-        QColor cachedBackgroundColor( const QColor&, qreal ratio );
+        const QColor& backgroundColor( const QColor&, qreal ratio );
 
         static const qreal _glowBias;
         static const qreal _slabThickness;
         static const qreal _shadowGain;
         qreal _contrast;
 
-        QCache<quint64, QPixmap> m_windecoButtonCache;
-        QCache<quint64, QPixmap> m_windecoButtonGlowCache;
+        //!@name pixmap caches
+        //@{
+        typedef BaseCache<QPixmap> PixmapCache;
+        PixmapCache m_windecoButtonCache;
+        PixmapCache m_windecoButtonGlowCache;
+        //@}
+
         Oxygen::Cache<TileSet> m_slabCache;
+
+        //! shortcut to color caches
+        /*! it is made protected because it is also used in the style helper */
+        typedef BaseCache<QColor> ColorCache;
 
         private:
 
-        //! brushes
+        //!@name brushes
+        //@{
         KStatefulBrush _viewFocusBrush;
         KStatefulBrush _viewHoverBrush;
         KStatefulBrush _viewNegativeTextBrush;
+        //@}
 
         KComponentData _componentData;
         KSharedConfigPtr _config;
         qreal _bgcontrast;
 
-        QCache<quint64, QColor> m_backgroundColorCache;
-        QCache<quint64, QPixmap> m_backgroundCache;
+        //!@name color caches
+        //@{
+        ColorCache m_decoColorCache;
+        ColorCache m_lightColorCache;
+        ColorCache m_darkColorCache;
+        ColorCache m_shadowColorCache;
+        ColorCache m_backgroundTopColorCache;
+        ColorCache m_backgroundBottomColorCache;
+        ColorCache m_backgroundRadialColorCache;
+        ColorCache m_backgroundColorCache;
+        //@}
 
+        PixmapCache m_backgroundCache;
+        PixmapCache m_dotCache;
+
+        //! high threshold colors
+        typedef QMap<quint32, bool> ColorMap;
+        ColorMap m_highThreshold;
+        ColorMap m_lowThreshold;
      };
 
 }
