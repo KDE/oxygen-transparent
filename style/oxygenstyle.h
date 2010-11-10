@@ -50,7 +50,6 @@
 #include "oxygenstylehelper.h"
 
 #include <QtCore/QMap>
-#include <QtCore/QSet>
 #include <QtGui/QAbstractScrollArea>
 #include <QtGui/QCommonStyle>
 #include <QtGui/QDockWidget>
@@ -785,18 +784,6 @@ namespace Oxygen
 
         //@}
 
-        //! register transparent widget
-        void registerTransparentWidget( QObject* object )
-        {
-            _transparentWidgets.insert( object );
-            connect( object, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
-        }
-
-        protected Q_SLOTS:
-        //! unregister transparent widget
-        void unregisterTransparentWidget( QObject* object )
-        { _transparentWidgets.remove( object ); }
-
         private:
 
         //! metrics
@@ -947,10 +934,6 @@ namespace Oxygen
 
         //! widget explorer
         WidgetExplorer* _widgetExplorer;
-
-        //! set of transparent widgets (as defined in ::polish)
-        typedef QSet<const QObject*> ObjectSet;
-        ObjectSet _transparentWidgets;
 
         //! tabBar data
         TabBarData* _tabBarData;
