@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
-// oxygenanimationconfigitem.h
-// animation configuration item
+// main.cpp
+// oxygen-demo main
 // -------------------
 //
 // Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
@@ -31,6 +31,8 @@
 #include <KAboutData>
 #include <kdeversion.h>
 
+#include <cassert>
+
 int main(int argc, char *argv[])
 {
     KAboutData aboutData(
@@ -46,6 +48,7 @@ int main(int argc, char *argv[])
 
     KCmdLineArgs::init( argc, argv, &aboutData );
     KApplication app;
+
     app.setWindowIcon( KIcon( "oxygen" ) );
     Oxygen::DemoDialog dialog;
     dialog.show();

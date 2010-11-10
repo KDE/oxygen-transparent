@@ -29,7 +29,6 @@
 #include <KApplication>
 #include <KIcon>
 #include <KAboutData>
-#include <kdeversion.h>
 
 int main(int argc, char *argv[])
 {

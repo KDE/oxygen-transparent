@@ -121,7 +121,12 @@ namespace Oxygen
 
         //! current opacity
         virtual void setCurrentOpacity( qreal value )
-        { current_.opacity_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( current_.opacity_ == value ) return;
+            current_.opacity_ = value;
+            setDirty();
+        }
 
         //! current rect
         virtual const QRect& currentRect( void ) const
@@ -133,7 +138,12 @@ namespace Oxygen
 
         //! previous opacity
         virtual void setPreviousOpacity( qreal value )
-        { previous_.opacity_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( previous_.opacity_ == value ) return;
+            previous_.opacity_ = value;
+            setDirty();
+        }
 
         //! previous rect
         virtual const QRect& previousRect( void ) const
@@ -293,7 +303,12 @@ namespace Oxygen
 
         //! animation opacity
         virtual void setOpacity( qreal value )
-        { opacity_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( opacity_ == value ) return;
+            opacity_ = value;
+            setDirty();
+        }
 
         //! animation progress
         virtual qreal progress( void ) const
@@ -301,18 +316,24 @@ namespace Oxygen
 
         //! animation progress
         virtual void setProgress( qreal value )
-        { progress_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( progress_ == value ) return;
+            progress_ = value;
+            updateAnimatedRect();
+        }
 
-        protected slots:
+        protected:
 
-        //! updated animated rect
-        virtual void updateAnimatedRect( void );
+        virtual void setEntered( bool value )
+        { entered_ = value; }
 
         //! animated rect
         virtual void clearAnimatedRect( void )
         { animatedRect_ = QRect(); }
 
-        protected:
+        //! updated animated rect
+        virtual void updateAnimatedRect( void );
 
         //! timer event
         virtual void timerEvent( QTimerEvent* );

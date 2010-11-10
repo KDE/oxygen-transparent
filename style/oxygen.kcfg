@@ -3,7 +3,6 @@
 <kcfg> 
   <kcfgfile name="oxygenrc"/> 
 
-
   <group name="Common"> 
 
     <!-- background opacity -->
@@ -32,16 +31,22 @@
   <group name="Style"> 
     
     <!-- cache size -->
-    <entry name="MaxCacheSize" type = "Int" >
+    <entry name="CacheEnabled" type = "Bool">
+       <default>true</default>
+    </entry>
+
+    <entry name="MaxCacheSize" type = "Int">
        <default>512</default>
     </entry>
-    
     <entry name="AnimationSteps" type = "Int">
-        <default>10</default>
+       <default>10</default>
+    </entry>
+    <entry name="ShowMnemonics" type = "Bool">
+       <default>true</default>
     </entry>
 
     <!-- tooltips -->
-    <entry name="ToolTipTransparent" type = "Bool" >
+    <entry name="ToolTipTransparent" type = "Bool">
        <default>true</default>
     </entry>
     <entry name="ToolTipDrawStyledFrames" type = "Bool">
@@ -52,7 +57,7 @@
     <entry name="ToolBarDrawItemSeparator" type="Bool">
       <default>true</default>
     </entry>
-    
+
     <!-- views -->
     <entry name="ViewDrawTriangularExpander" type="Bool">
       <default>true</default>
@@ -75,6 +80,12 @@
     <!-- scrollbars -->
     <entry name="ScrollBarWidth" type="Int">
       <default>15</default>
+    </entry>
+    <entry name="ScrollBarAddLineButtons" type="Int">
+      <default>2</default>
+    </entry>
+    <entry name="ScrollBarSubLineButtons" type="Int">
+      <default>1</default>
     </entry>
     <entry name="ScrollBarColored" type="Bool">
       <default>false</default>
@@ -119,15 +130,6 @@
       <default>TS_SINGLE</default>
     </entry>
 
-    <!-- 
-        this enables WidgetExplorer debugging tool.
-        it provides information about widgets, 
-        widgets' geometry, and ancestry tree
-    -->
-    <entry name="WidgetExplorerEnabled" type="Bool">
-      <default>false</default>
-    </entry>
-
     <!-- window dragging -->
     <entry name="WindowDragEnabled" type="Bool">
       <default>true</default>
@@ -139,6 +141,19 @@
           <choice name="WD_FULL" />
       </choices>
       <default>WD_FULL</default>
+    </entry>
+
+    <!-- 
+        this enables WidgetExplorer debugging tool.
+        it provides information about widgets, 
+        widgets' geometry, and ancestry tree
+    -->
+    <entry name="WidgetExplorerEnabled" type="Bool">
+      <default>false</default>
+    </entry>
+
+    <entry name="DrawWidgetRects" type="Bool">
+      <default>false</default>
     </entry>
 
     <!-- 

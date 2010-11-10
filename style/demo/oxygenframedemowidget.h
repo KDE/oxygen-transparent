@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // oxygenframedemowidget.h
-// oxygen tabwidget demo dialog
+// oxygen frames demo widget
 // -------------------
 //
 // Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
@@ -31,9 +31,12 @@
 #include <QtGui/QBoxLayout>
 #include <QtGui/QFrame>
 
+#include "oxygendemowidget.h"
+#include "ui_oxygenframedemowidget.h"
+
 namespace Oxygen
 {
-    class FrameDemoWidget: public QWidget
+    class FrameDemoWidget: public DemoWidget
     {
 
         Q_OBJECT
@@ -49,14 +52,31 @@ namespace Oxygen
 
         protected slots:
 
-        void updateFrameStyle( int );
+        //! groupbox
+        void toggleFlatGroupBox( bool value )
+        { ui.groupBox->setFlat( value ); }
+
+        //! frame style
+        void toggleRaisedFrame( bool value )
+        { if( value ) ui.frame->setFrameStyle( QFrame::StyledPanel|QFrame::Raised ); }
+
+        void togglePlainFrame( bool value )
+        { if( value ) ui.frame->setFrameStyle( QFrame::StyledPanel|QFrame::Plain ); }
+
+        void toggleSunkenFrame( bool value )
+        { if( value ) ui.frame->setFrameStyle( QFrame::StyledPanel|QFrame::Sunken ); }
+
+        //! layout direction
         void updateLayoutDirection( int );
+
+        public slots:
+
+        // benchmarking
+        void benchmark( void );
 
         private:
 
-        QWidget* widget;
-        QBoxLayout* boxLayout;
-        QFrame* frame;
+        Ui_FrameDemoWidget ui;
 
     };
 

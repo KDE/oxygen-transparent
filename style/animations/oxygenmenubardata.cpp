@@ -65,7 +65,7 @@ namespace Oxygen
                 // then implement transition
                 object->event( event );
                 enterEvent( object );
-                return true;
+                break;
             }
 
             case QEvent::Leave:
@@ -74,7 +74,7 @@ namespace Oxygen
                 // then implement transition
                 object->event( event );
                 leaveEvent( object );
-                return true;
+                break;
             }
 
             case QEvent::MouseMove:
@@ -83,16 +83,15 @@ namespace Oxygen
                 // then implement transition
                 object->event( event );
                 mouseMoveEvent( object );
-                return true;
+                break;
             }
 
             case QEvent::MouseButtonPress:
             {
                 // first need to call proper event processing
                 // then implement transition
-                object->event( event );
                 mousePressEvent( object );
-                return true;
+                break;
             }
 
             default: break;
@@ -109,21 +108,17 @@ namespace Oxygen
         AnimationData( parent, target ),
         opacity_(0),
         progress_(0),
-        entered_( false )
+        entered_( true )
     {
 
         target->installEventFilter( this );
 
         animation_ = new Animation( duration, this );
         animation().data()->setDirection( Animation::Forward );
-        animation().data()->setStartValue( 0.1 );
-        animation().data()->setEndValue( 0.9 );
+        animation().data()->setStartValue( 0.0 );
+        animation().data()->setEndValue( 1.0 );
         animation().data()->setTargetObject( this );
         animation().data()->setPropertyName( "opacity" );
-
-        // setup connections
-        connect( animation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( setDirty( void ) ) );
-        connect( animation().data(), SIGNAL( finished( void ) ), SLOT( setDirty( void ) ) );
 
         progressAnimation_ = new Animation( duration, this );
         progressAnimation().data()->setDirection( Animation::Forward );
@@ -132,11 +127,6 @@ namespace Oxygen
         progressAnimation().data()->setTargetObject( this );
         progressAnimation().data()->setPropertyName( "progress" );
         progressAnimation().data()->setEasingCurve( QEasingCurve::Linear );
-
-        // setup connections
-        connect( progressAnimation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( updateAnimatedRect( void ) ) );
-        connect( progressAnimation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( setDirty( void ) ) );
-        connect( progressAnimation().data(), SIGNAL( finished( void ) ), SLOT( setDirty( void ) ) );
 
     }
 
@@ -154,7 +144,7 @@ namespace Oxygen
             {
                 object->event( event );
                 enterEvent( object );
-                return true;
+                break;
             }
 
             case QEvent::Hide:
@@ -163,14 +153,14 @@ namespace Oxygen
                 object->event( event );
                 if( timer_.isActive() ) timer_.stop();
                 timer_.start( 100, this );
-                return true;
+                break;
             }
 
             case QEvent::MouseMove:
             {
                 object->event( event );
                 mouseMoveEvent( object );
-                return true;
+                break;
             }
 
             default: break;
@@ -198,6 +188,9 @@ namespace Oxygen
         animatedRect_.setRight( previousRect().right() + progress()*(currentRect().right() - previousRect().right()) );
         animatedRect_.setTop( previousRect().top() + progress()*(currentRect().top() - previousRect().top()) );
         animatedRect_.setBottom( previousRect().bottom() + progress()*(currentRect().bottom() - previousRect().bottom()) );
+
+        // trigger update
+        setDirty();
 
         return;
 

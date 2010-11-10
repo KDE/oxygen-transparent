@@ -30,6 +30,7 @@
 #include <QtCore/QTextStream>
 #include <QtGui/QApplication>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QPainter>
 
 namespace Oxygen
 {
@@ -37,8 +38,26 @@ namespace Oxygen
     //________________________________________________
     WidgetExplorer::WidgetExplorer( QObject* parent ):
         QObject( parent ),
-        _enabled( false )
-    {}
+        _enabled( false ),
+        _drawWidgetRects( false )
+    {
+
+        _eventTypes.insert( QEvent::Enter, "Enter" );
+        _eventTypes.insert( QEvent::Leave, "Leave" );
+
+        _eventTypes.insert( QEvent::HoverMove, "HoverMove" );
+        _eventTypes.insert( QEvent::HoverEnter, "HoverEnter" );
+        _eventTypes.insert( QEvent::HoverLeave, "HoverLeave" );
+
+        _eventTypes.insert( QEvent::MouseMove, "MouseMove" );
+        _eventTypes.insert( QEvent::MouseButtonPress, "MouseButtonPress" );
+        _eventTypes.insert( QEvent::MouseButtonRelease, "MouseButtonRelease" );
+
+        _eventTypes.insert( QEvent::FocusIn, "FocusIn" );
+        _eventTypes.insert( QEvent::FocusOut, "FocusOut" );
+
+        // _eventTypes.insert( QEvent::Paint, "Paint" );
+    }
 
     //________________________________________________
     void WidgetExplorer::setEnabled( bool value )
@@ -54,9 +73,33 @@ namespace Oxygen
     bool WidgetExplorer::eventFilter( QObject* object, QEvent* event )
     {
 
+        if( object->isWidgetType() )
+        {
+            QString type( _eventTypes[event->type()] );
+            if( !type.isEmpty() )
+            {
+                QTextStream( stdout ) << "Oxygen::WidgetExplorer::eventFilter - widget: " << object << " (" << object->metaObject()->className() << ")";
+                QTextStream( stdout ) << " type: " << type  << endl;
+            }
+        }
 
         switch( event->type() )
         {
+            case QEvent::Paint:
+            if( _drawWidgetRects )
+            {
+                QWidget* widget( qobject_cast<QWidget*>( object ) );
+                if( !widget ) return false;
+
+                QPainter painter( widget );
+                painter.setRenderHints(QPainter::Antialiasing);
+                painter.setBrush( Qt::NoBrush );
+                painter.setPen( Qt::red );
+                painter.drawRect( widget->rect() );
+                painter.end();
+            }
+            break;
+
             case QEvent::MouseButtonPress:
             {
 
@@ -116,7 +159,8 @@ namespace Oxygen
         QString out;
         QTextStream( &out ) << widget << " (" << className << ")"
             << " position: " << r.x() << "," << r.y()
-            << " size: " << r.width() << "," << r.height();
+            << " size: " << r.width() << "," << r.height()
+            << " hover: " << widget->testAttribute( Qt::WA_Hover );
         return out;
     }
 

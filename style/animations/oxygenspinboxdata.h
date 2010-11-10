@@ -93,7 +93,12 @@ namespace Oxygen
 
         //! opacity
         void setUpArrowOpacity( qreal value )
-        { upArrowData_.opacity_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( upArrowData_.opacity_ == value ) return;
+            upArrowData_.opacity_ = value;
+            setDirty();
+        }
 
         //! animation
         Animation::Pointer upArrowAnimation( void ) const
@@ -110,7 +115,12 @@ namespace Oxygen
 
         //! opacity
         void setDownArrowOpacity( qreal value )
-        { downArrowData_.opacity_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( downArrowData_.opacity_ == value ) return;
+            downArrowData_.opacity_ = value;
+            setDirty();
+        }
 
         //! animation
         Animation::Pointer downArrowAnimation( void ) const

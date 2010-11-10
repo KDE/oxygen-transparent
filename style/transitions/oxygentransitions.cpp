@@ -28,6 +28,7 @@
 
 #include "oxygentransitions.h"
 #include "oxygentransitions.moc"
+#include "oxygenpropertynames.h"
 #include "oxygenstyleconfigdata.h"
 
 namespace Oxygen
@@ -50,22 +51,22 @@ namespace Oxygen
     {
 
         // animation steps
-        TransitionWidget::setSteps( OxygenStyleConfigData::animationSteps() );
+        TransitionWidget::setSteps( StyleConfigData::animationSteps() );
 
         // default enability, duration and maxFrame
-        bool animationsEnabled( OxygenStyleConfigData::animationsEnabled() );
+        bool animationsEnabled( StyleConfigData::animationsEnabled() );
 
         // enability
-        comboBoxEngine().setEnabled( animationsEnabled && OxygenStyleConfigData::comboBoxTransitionsEnabled() );
-        labelEngine().setEnabled( animationsEnabled && OxygenStyleConfigData::labelTransitionsEnabled() );
-        lineEditEngine().setEnabled( animationsEnabled && OxygenStyleConfigData::lineEditTransitionsEnabled() );
-        stackedWidgetEngine().setEnabled( animationsEnabled && OxygenStyleConfigData::stackedWidgetTransitionsEnabled() );
+        comboBoxEngine().setEnabled( animationsEnabled && StyleConfigData::comboBoxTransitionsEnabled() );
+        labelEngine().setEnabled( animationsEnabled && StyleConfigData::labelTransitionsEnabled() );
+        lineEditEngine().setEnabled( animationsEnabled && StyleConfigData::lineEditTransitionsEnabled() );
+        stackedWidgetEngine().setEnabled( animationsEnabled && StyleConfigData::stackedWidgetTransitionsEnabled() );
 
         // durations
-        comboBoxEngine().setDuration( OxygenStyleConfigData::comboBoxTransitionsDuration() );
-        labelEngine().setDuration( OxygenStyleConfigData::labelTransitionsDuration() );
-        lineEditEngine().setDuration( OxygenStyleConfigData::lineEditTransitionsDuration() );
-        stackedWidgetEngine().setDuration( OxygenStyleConfigData::stackedWidgetTransitionsDuration() );
+        comboBoxEngine().setDuration( StyleConfigData::comboBoxTransitionsDuration() );
+        labelEngine().setDuration( StyleConfigData::labelTransitionsDuration() );
+        lineEditEngine().setDuration( StyleConfigData::lineEditTransitionsDuration() );
+        stackedWidgetEngine().setDuration( StyleConfigData::stackedWidgetTransitionsDuration() );
 
     }
 
@@ -74,6 +75,11 @@ namespace Oxygen
     {
 
         if( !widget ) return;
+
+        // check against noAnimations propery
+        QVariant propertyValue( widget->property( PropertyNames::noAnimations ) );
+        if( propertyValue.isValid() && propertyValue.toBool() ) return;
+
 
         if( QLabel* label = qobject_cast<QLabel*>( widget ) ) {
 

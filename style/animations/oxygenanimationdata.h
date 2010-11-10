@@ -80,12 +80,6 @@ namespace Oxygen
         //! invalid opacity
         static qreal OpacityInvalid;
 
-        protected slots:
-
-        /*! allows to trigger widget update in specified QRect only */
-        virtual void setDirty( void )
-        { if( target_ ) target_.data()->update(); }
-
         protected:
 
         //! setup animation
@@ -97,6 +91,10 @@ namespace Oxygen
             if( steps_ > 0 ) return std::floor( value*steps_ )/steps_;
             else return value;
         }
+
+        //! trigger target update
+        virtual void setDirty( void ) const
+        { if( target_ ) target_.data()->update(); }
 
         private:
 

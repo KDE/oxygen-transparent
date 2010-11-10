@@ -69,8 +69,8 @@ namespace Oxygen
         else if( widget->parent() && widget->parent()->inherits( "QComboBoxPrivateContainer" ) )
         {
 
-                accepted = true;
-                flat = true;
+            accepted = true;
+            flat = true;
 
         }
 
@@ -236,6 +236,7 @@ namespace Oxygen
         else shadow = new SunkenFrameShadow( area, helper );
         shadow->setParent(widget);
         shadow->updateGeometry();
+        shadow->show();
     }
 
     //____________________________________________________________________________________
@@ -338,7 +339,7 @@ namespace Oxygen
     }
 
     //____________________________________________________________________________________
-    void FrameShadowBase::updateGeometry()
+    void SunkenFrameShadow::updateGeometry()
     {
 
         QWidget *widget = parentWidget();
@@ -350,22 +351,23 @@ namespace Oxygen
 
             case Top:
             cr.setHeight( SHADOW_SIZE_TOP );
-            cr.adjust( -3, -3, 3, 0 );
+            cr.adjust( -1, -1, 1, 0 );
             break;
 
             case Left:
             cr.setWidth(SHADOW_SIZE_LEFT);
-            cr.adjust(-3, SHADOW_SIZE_TOP, 0, -SHADOW_SIZE_BOTTOM);
+            cr.adjust(-1, SHADOW_SIZE_TOP, 0, -SHADOW_SIZE_BOTTOM);
             break;
+
 
             case Bottom:
             cr.setTop(cr.bottom() - SHADOW_SIZE_BOTTOM + 1);
-            cr.adjust( -3, 0, 3, 3 );
+            cr.adjust( -1, 0, 1, 1 );
             break;
 
             case Right:
             cr.setLeft(cr.right() - SHADOW_SIZE_RIGHT + 1);
-            cr.adjust(0, SHADOW_SIZE_TOP, 3, -SHADOW_SIZE_BOTTOM);
+            cr.adjust(0, SHADOW_SIZE_TOP, 1, -SHADOW_SIZE_BOTTOM);
             break;
 
             case Unknown:
@@ -380,10 +382,20 @@ namespace Oxygen
     void SunkenFrameShadow::updateState( bool focus, bool hover, qreal opacity, AnimationMode mode )
     {
         bool changed( false );
-        if( _focus != focus ) { _focus = focus; changed = true; }
-        if( _hover != hover ) { _hover = hover; changed = true; }
-        if( _opacity != opacity ) { _opacity = opacity; changed = true; }
-        if( _mode != mode ) { _mode = mode; changed = true; }
+        if( _focus != focus ) { _focus = focus; changed |= true; }
+        if( _hover != hover ) { _hover = hover; changed |= !_focus; }
+        if( _mode != mode )
+        {
+
+            _mode = mode;
+            changed |=
+                (_mode == AnimationNone) ||
+                (_mode == AnimationFocus) ||
+                (_mode == AnimationHover && !_focus );
+
+        }
+
+        if( _opacity != opacity ) { _opacity = opacity; changed |= (_mode != AnimationNone ); }
         if( changed )
         {
 
@@ -408,7 +420,6 @@ namespace Oxygen
         // this fixes shadows in frames that change frameStyle() after polish()
         if (QFrame *frame = qobject_cast<QFrame *>(parentWidget()))
         { if (frame->frameStyle() != (QFrame::StyledPanel | QFrame::Sunken)) return; }
-
 
         QWidget *parent = parentWidget();
         QRect r = parent->contentsRect();

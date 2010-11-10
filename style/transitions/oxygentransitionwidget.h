@@ -105,7 +105,12 @@ namespace Oxygen
         { return opacity_; }
 
         virtual void setOpacity( qreal value )
-        { opacity_ = digitize( value ); }
+        {
+            value = digitize( value );
+            if( opacity_ == value ) return;
+            opacity_ = value;
+            update();
+        }
 
         //@}
 
@@ -170,12 +175,6 @@ namespace Oxygen
 
         //! emmitted when animation is finished/aborder
         void finished( void );
-
-        protected slots:
-
-        /*! allows to trigger widget update in specified QRect only */
-        virtual void setDirty( void )
-        { update(); }
 
         protected:
 

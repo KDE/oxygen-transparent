@@ -45,13 +45,10 @@ namespace Oxygen
 
         animation_ = new Animation( duration, this );
         animation().data()->setDirection( Animation::Forward );
-        animation().data()->setStartValue( 0.1 );
-        animation().data()->setEndValue( 0.9 );
+        animation().data()->setStartValue( 0.0 );
+        animation().data()->setEndValue( 1.0 );
         animation().data()->setTargetObject( this );
         animation().data()->setPropertyName( "opacity" );
-
-        connect( animation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( setDirty( void ) ) );
-        connect( animation().data(), SIGNAL( finished( void ) ), SLOT( setDirty( void ) ) );
 
         // progress animation
         progressAnimation_ = new Animation( duration, this );
@@ -62,15 +59,9 @@ namespace Oxygen
         progressAnimation().data()->setPropertyName( "progress" );
         progressAnimation().data()->setEasingCurve( QEasingCurve::Linear );
 
-        // setup connections
-        connect( progressAnimation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( updateAnimatedRect( void ) ) );
-        connect( progressAnimation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( setDirty( void ) ) );
-        connect( progressAnimation().data(), SIGNAL( finished( void ) ), SLOT( setDirty( void ) ) );
-
-
         // add all children widgets to event handler
         foreach( QObject* child, target->children() )
-        { if( child->inherits( "QToolButton" ) ) childAddedEvent( child ); }
+        { if( qobject_cast<QToolButton*>( child ) ) childAddedEvent( child ); }
 
     }
 
@@ -152,6 +143,9 @@ namespace Oxygen
         animatedRect_.setRight( previousRect().right() + progress()*(currentRect().right() - previousRect().right()) );
         animatedRect_.setTop( previousRect().top() + progress()*(currentRect().top() - previousRect().top()) );
         animatedRect_.setBottom( previousRect().bottom() + progress()*(currentRect().bottom() - previousRect().bottom()) );
+
+        // trigger update
+        setDirty();
         return;
 
     }
@@ -279,10 +273,7 @@ namespace Oxygen
 
         // add connections
         connect( animation().data(), SIGNAL( valueChanged( const QVariant& ) ), widget, SLOT( update() ), Qt::UniqueConnection  );
-        connect( animation().data(), SIGNAL( finished() ), widget, SLOT( update() ), Qt::UniqueConnection  );
-
         connect( progressAnimation().data(), SIGNAL( valueChanged( const QVariant& ) ), widget, SLOT( update() ), Qt::UniqueConnection  );
-        connect( progressAnimation().data(), SIGNAL( finished() ), widget, SLOT( update() ), Qt::UniqueConnection  );
 
         // add event filter
         widget->removeEventFilter( this );

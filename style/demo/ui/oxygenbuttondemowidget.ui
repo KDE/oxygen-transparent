@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>395</width>
-    <height>366</height>
+    <height>370</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -23,14 +23,14 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QCheckBox" name="checkBox">
           <property name="text">
            <string>Off</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_3">
+         <widget class="QCheckBox" name="checkBox_2">
           <property name="text">
            <string>Partial</string>
           </property>
@@ -40,7 +40,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="checkBox_3">
           <property name="text">
            <string>On</string>
           </property>
@@ -76,7 +76,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QRadioButton" name="radioButton_4">
+         <widget class="QRadioButton" name="radioButton">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -89,14 +89,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioButton_5">
+         <widget class="QRadioButton" name="radioButton_2">
           <property name="text">
            <string>Second Choice</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioButton_6">
+         <widget class="QRadioButton" name="radioButton_3">
           <property name="text">
            <string>Third Choice</string>
           </property>
@@ -137,14 +137,14 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KPushButton" name="pushButton_1">
+       <widget class="KPushButton" name="pushButton">
         <property name="text">
          <string>Normal</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="KPushButton" name="pushButton_5">
+       <widget class="KPushButton" name="pushButton_2">
         <property name="text">
          <string>Normal</string>
         </property>
@@ -203,7 +203,7 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="KPushButton" name="pushButton_6">
+       <widget class="KPushButton" name="pushButton_4">
         <property name="text">
          <string>Normal</string>
         </property>
@@ -220,7 +220,7 @@
        <widget class="KComboBox" name="kcombobox_2"/>
       </item>
       <item row="0" column="5">
-       <widget class="QToolButton" name="toolButton_4">
+       <widget class="QToolButton" name="toolButton">
         <property name="text">
          <string>Normal</string>
         </property>
@@ -245,8 +245,17 @@
       <item row="0" column="0" colspan="4">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QGridLayout" name="gridLayout_2">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
-          <widget class="QToolButton" name="toolButton">
+          <widget class="QToolButton" name="toolButton_3">
            <property name="text">
             <string>Normal</string>
            </property>
@@ -256,7 +265,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QToolButton" name="toolButton_7">
+          <widget class="QToolButton" name="toolButton_4">
            <property name="text">
             <string>Normal</string>
            </property>
@@ -266,7 +275,7 @@
           </widget>
          </item>
          <item row="0" column="2">
-          <widget class="QToolButton" name="toolButton_9">
+          <widget class="QToolButton" name="toolButton_5">
            <property name="text">
             <string>Normal</string>
            </property>
@@ -285,7 +294,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="4" colspan="2">
+         <item row="0" column="4" colspan="4">
           <widget class="QWidget" name="toolBarContainer" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -296,7 +305,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QToolButton" name="toolButton_3">
+          <widget class="QToolButton" name="toolButton_6">
            <property name="text">
             <string>Flat</string>
            </property>
@@ -309,7 +318,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QToolButton" name="toolButton_8">
+          <widget class="QToolButton" name="toolButton_7">
            <property name="text">
             <string>Flat</string>
            </property>
@@ -322,7 +331,7 @@
           </widget>
          </item>
          <item row="1" column="2">
-          <widget class="QToolButton" name="toolButton_10">
+          <widget class="QToolButton" name="toolButton_8">
            <property name="text">
             <string>Flat</string>
            </property>
@@ -331,6 +340,49 @@
            </property>
            <property name="autoRaise">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QToolButton" name="toolButton_9">
+           <property name="text">
+            <string>Up Arrow</string>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::UpArrow</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="5">
+          <widget class="QToolButton" name="toolButton_10">
+           <property name="text">
+            <string>Down Arrow</string>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::DownArrow</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="6">
+          <widget class="QToolButton" name="toolButton_11">
+           <property name="text">
+            <string>Left Arrow</string>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::LeftArrow</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="7">
+          <widget class="QToolButton" name="toolButton_12">
+           <property name="text">
+            <string>Right Arrow</string>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::RightArrow</enum>
            </property>
           </widget>
          </item>
@@ -441,6 +493,31 @@
    <header>kcombobox.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pushButton</tabstop>
+  <tabstop>pushButton_2</tabstop>
+  <tabstop>kcombobox</tabstop>
+  <tabstop>toolButton</tabstop>
+  <tabstop>pushButton_3</tabstop>
+  <tabstop>pushButton_4</tabstop>
+  <tabstop>kcombobox_2</tabstop>
+  <tabstop>toolButton_2</tabstop>
+  <tabstop>flatButtonCheckBox</tabstop>
+  <tabstop>toolButton_3</tabstop>
+  <tabstop>toolButton_4</tabstop>
+  <tabstop>toolButton_5</tabstop>
+  <tabstop>toolButton_6</tabstop>
+  <tabstop>toolButton_7</tabstop>
+  <tabstop>toolButton_8</tabstop>
+  <tabstop>textPosition</tabstop>
+  <tabstop>iconSize</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>checkBox_2</tabstop>
+  <tabstop>checkBox_3</tabstop>
+  <tabstop>radioButton</tabstop>
+  <tabstop>radioButton_2</tabstop>
+  <tabstop>radioButton_3</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

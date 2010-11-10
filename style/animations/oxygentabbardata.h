@@ -29,6 +29,8 @@
 
 #include "oxygenanimationdata.h"
 
+#include <QtGui/QTabBar>
+
 namespace Oxygen
 {
 
@@ -51,15 +53,15 @@ namespace Oxygen
         virtual ~TabBarData( void )
         {}
 
-        //! event filter
-        virtual bool eventFilter( QObject*, QEvent* );
-
         //! duration
         void setDuration( int duration )
         {
             currentIndexAnimation().data()->setDuration( duration );
             previousIndexAnimation().data()->setDuration( duration );
         }
+
+        //! update state
+        bool updateState( const QPoint&, bool );
 
         //!@name current index handling
         //@{
@@ -70,7 +72,11 @@ namespace Oxygen
 
         //! current opacity
         virtual void setCurrentOpacity( qreal value )
-        { current_.opacity_ = digitize( value ); }
+        {
+            if( current_.opacity_ == value ) return;
+            current_.opacity_ = value;
+            setDirty();
+        }
 
         //! current index
         virtual int currentIndex( void ) const
@@ -95,7 +101,11 @@ namespace Oxygen
 
         //! previous opacity
         virtual void setPreviousOpacity( qreal value )
-        { previous_.opacity_ = digitize( value ); }
+        {
+            if( previous_.opacity_ == value ) return;
+            previous_.opacity_ = value;
+            setDirty();
+        }
 
         //! previous index
         virtual int previousIndex( void ) const
@@ -116,17 +126,6 @@ namespace Oxygen
 
         //! return opacity associated to action at given position, if any
         virtual qreal opacity( const QPoint& position ) const;
-
-        protected:
-
-        //! menubar enterEvent
-        virtual void enterEvent( const QObject* object );
-
-        //! menubar enterEvent
-        virtual void leaveEvent( const QObject* object );
-
-        //! menubar mouseMoveEvent
-        virtual void mouseMoveEvent( const QObject* object, const QPoint& );
 
         private:
 

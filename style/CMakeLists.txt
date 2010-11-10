@@ -16,6 +16,8 @@ set(oxygen_PART_SRCS
     animations/oxygendockseparatorengine.cpp
     animations/oxygenenabledata.cpp
     animations/oxygengenericdata.cpp
+    animations/oxygenheaderviewdata.cpp
+    animations/oxygenheaderviewengine.cpp
     animations/oxygenmdiwindowdata.cpp
     animations/oxygenmdiwindowengine.cpp
     animations/oxygenmenubardata.cpp
@@ -53,6 +55,7 @@ set(oxygen_PART_SRCS
     oxygenargbhelper.cpp
     oxygenblurhelper.cpp
     oxygenframeshadow.cpp
+    oxygenpropertynames.cpp
     oxygenstyle.cpp
     oxygenstylehelper.cpp
     oxygenwindowmanager.cpp
@@ -70,11 +73,6 @@ endif( X11_FOUND )
 
 install(TARGETS oxygen  DESTINATION ${PLUGIN_INSTALL_DIR}/plugins/styles/ )
 
-
 ########### install files ###############
 
 install( FILES oxygen.themerc  DESTINATION  ${DATA_INSTALL_DIR}/kstyle/themes )
-
-
-
-

@@ -38,14 +38,11 @@ namespace Oxygen
     {
 
         // setup animation
-        animation.data()->setStartValue( 0.1 );
-        animation.data()->setEndValue( 0.9 );
+        animation.data()->setStartValue( 0.0 );
+        animation.data()->setEndValue( 1.0 );
         animation.data()->setTargetObject( this );
         animation.data()->setPropertyName( property );
 
-        // setup connections
-        connect( animation.data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( setDirty( void ) ) );
-        connect( animation.data(), SIGNAL( finished( void ) ), SLOT( setDirty( void ) ) );
     }
 
 }

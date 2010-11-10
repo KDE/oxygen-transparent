@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // oxygeninputdemowidget.cpp
-// oxygen tabwidget demo dialog
+// oxygen input widgets (e.g. text editors) demo widget
 // -------------------
 //
 // Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
@@ -32,7 +32,7 @@ namespace Oxygen
 
     //________________________________________________________________
     InputDemoWidget::InputDemoWidget( QWidget* parent ):
-        QWidget( parent )
+        DemoWidget( parent )
     {
 
         ui.setupUi( this );
@@ -57,10 +57,69 @@ namespace Oxygen
             "nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla "
             "pariatur?");
         ui.textedit->setLineWrapMode( QTextEdit::NoWrap );
-        connect( ui.checkBox, SIGNAL( toggled( bool ) ), SLOT( toggleFlatWidgets( bool ) ) );
+        connect( ui.flatCheckBox, SIGNAL( toggled( bool ) ), SLOT( toggleFlatWidgets( bool ) ) );
         connect( ui.wrapCheckBox, SIGNAL( toggled( bool ) ), SLOT( toggleWrapMode( bool ) ) );
         ui.wrapCheckBox->setChecked( true );
     }
+
+    //________________________________________________________________
+    void InputDemoWidget::benchmark( void )
+    {
+
+        if( !isVisible() ) return;
+
+        if( true )
+        {
+
+            // klineedit
+            simulator().clearText( ui.klineedit );
+            simulator().writeSampleText( ui.klineedit );
+            simulator().clearText( ui.klineedit );
+
+            simulator().clearText( ui.klineedit_2 );
+            simulator().writeSampleText( ui.klineedit_2 );
+            simulator().clearText( ui.klineedit_2 );
+
+            simulator().clearText( ui.kcombobox->lineEdit() );
+            simulator().writeSampleText( ui.kcombobox->lineEdit() );
+            simulator().clearText( ui.kcombobox->lineEdit() );
+
+            simulator().selectComboBoxItem( ui.kcombobox, 0 );
+            simulator().selectComboBoxItem( ui.kcombobox, 1 );
+            simulator().selectComboBoxItem( ui.kcombobox, 2 );
+            simulator().selectComboBoxItem( ui.kcombobox, 0 );
+
+            simulator().clearText( ui.kintspinbox );
+            simulator().writeText( ui.kintspinbox, "10" );
+            simulator().clearText( ui.kintspinbox );
+            simulator().writeText( ui.kintspinbox, "0" );
+
+        }
+
+        if( true )
+        {
+
+            // toggle flat widgets
+            simulator().click( ui.flatCheckBox );
+            simulator().click( ui.flatCheckBox );
+
+        }
+
+        if( true )
+        {
+            // toggle wrap mode
+            simulator().click( ui.wrapCheckBox );
+            simulator().click( ui.wrapCheckBox );
+
+            simulator().clearText( ui.textedit );
+            simulator().writeSampleText( ui.textedit );
+            simulator().clearText( ui.textedit );
+        }
+
+        simulator().run();
+
+    }
+
 
     //________________________________________________________________
     void InputDemoWidget::toggleFlatWidgets( bool value )

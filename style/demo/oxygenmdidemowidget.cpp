@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // oxygenmdidemowidget.cpp
-// oxygen tabwidget demo dialog
+// oxygen mdi windows demo widget
 // -------------------
 //
 // Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
@@ -37,7 +37,7 @@ namespace Oxygen
 
     //______________________________________________________________
     MdiDemoWidget::MdiDemoWidget( QWidget* parent ):
-        QWidget( parent )
+        DemoWidget( parent )
     {
         setLayout( new QVBoxLayout() );
         QMenuBar* menuBar = new QMenuBar( this );
@@ -65,4 +65,33 @@ namespace Oxygen
 
     }
 
+    //______________________________________________________________
+    void MdiDemoWidget::benchmark( void )
+    {
+        if( !isVisible() ) return;
+
+        if( true )
+        {
+            // slide windows
+            foreach( QMdiSubWindow* window, ui.mdiArea->findChildren<QMdiSubWindow*>() )
+            {
+                simulator().click( window );
+                simulator().slide( window, QPoint( 20, 20 ) );
+                simulator().slide( window, QPoint( -20, -20 ) );
+            }
+
+        }
+
+        if( true )
+        {
+            foreach( QAbstractButton* button, ui.toolBox->findChildren<QAbstractButton*>() )
+            { simulator().click( button ); }
+
+            foreach( QAbstractButton* button, ui.toolBox->findChildren<QAbstractButton*>() )
+            { simulator().click( button ); }
+        }
+
+        simulator().run();
+
+    }
 }

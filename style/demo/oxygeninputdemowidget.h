@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // oxygeninputdemowidget.h
-// oxygen tabwidget demo dialog
+// oxygen input widgets (e.g. text editors) demo widget
 // -------------------
 //
 // Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
@@ -30,11 +30,12 @@
 #include <QtGui/QWidget>
 #include <QtGui/QToolButton>
 
+#include "oxygendemowidget.h"
 #include "ui_oxygeninputdemowidget.h"
 
 namespace Oxygen
 {
-    class InputDemoWidget: public QWidget
+    class InputDemoWidget: public DemoWidget
     {
 
         Q_OBJECT
@@ -47,6 +48,11 @@ namespace Oxygen
         //! destructor
         virtual ~InputDemoWidget( void )
         {}
+
+        public slots:
+
+        //! run benchmark
+        void benchmark( void );
 
         protected slots:
 

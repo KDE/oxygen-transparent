@@ -49,7 +49,7 @@ namespace Oxygen
         QWidget( parent ),
         flags_( None ),
         animation_( new Animation( duration, this ) ),
-        opacity_(0)
+        opacity_( 0 )
     {
 
         // background flags
@@ -63,8 +63,6 @@ namespace Oxygen
         animation_.data()->setPropertyName( "opacity" );
 
         // setup connections
-        connect( animation_.data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( setDirty( void ) ) );
-        connect( animation_.data(), SIGNAL( finished( void ) ), SLOT( setDirty( void ) ) );
         connect( animation_.data(), SIGNAL( finished( void ) ), SIGNAL( finished( void ) ) );
 
     }
