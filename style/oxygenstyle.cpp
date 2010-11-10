@@ -1371,7 +1371,7 @@ namespace Oxygen
 
                 }
 
-                _helper.renderMenuBackground( &painter, r, widget,color );
+                _helper.renderMenuBackground( &painter, r, widget, color );
 
                 // frame
                 if( hasAlpha ) painter.setClipping( false );
@@ -7763,7 +7763,6 @@ namespace Oxygen
             blurHelper().setEnabled( false );
 
         }
-
 
         // if background opacity has changed, one needs to trigger update of all top level windows
         if( opacityChanged )
