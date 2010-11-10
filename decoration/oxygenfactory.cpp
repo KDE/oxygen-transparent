@@ -66,6 +66,9 @@ namespace Oxygen
     bool Factory::reset(unsigned long changed)
     {
 
+        if( changed & SettingColors )
+        { shadowCache().invalidateCaches(); }
+
         // read in the configuration
         setInitialized( false );
         bool configuration_changed = readConfig();
@@ -74,11 +77,13 @@ namespace Oxygen
         if( configuration_changed || (changed & (SettingDecoration | SettingButtons | SettingBorder)) )
         {
 
+            // returning true triggers all decorations to be re-created
             return true;
 
         } else {
 
-            if( changed & SettingColors ) shadowCache().invalidateCaches();
+            // no need to re-create the decorations
+            // trigger repaint only
             resetDecorations(changed);
             return false;
 
@@ -97,6 +102,7 @@ namespace Oxygen
         this is needed to properly handle
         color contrast settings changed
         */
+        helper().invalidateCaches();
         helper().reloadConfig();
 
         // create a config object
@@ -113,6 +119,7 @@ namespace Oxygen
         // initialize shadow cache
         switch( defaultConfiguration().shadowCacheMode() )
         {
+
             case Configuration::CacheDisabled:
             {
                 shadowCache_.setEnabled( false );
@@ -157,6 +164,7 @@ namespace Oxygen
         if( shadowCache().shadowConfigurationChanged( activeShadowConfiguration ) )
         {
             shadowCache().setShadowConfiguration( activeShadowConfiguration );
+            shadowCache().invalidateCaches();
             changed = true;
         }
 
@@ -166,17 +174,11 @@ namespace Oxygen
         if( shadowCache().shadowConfigurationChanged( inactiveShadowConfiguration ) )
         {
             shadowCache().setShadowConfiguration( inactiveShadowConfiguration );
+            shadowCache().invalidateCaches();
             changed = true;
         }
 
-        if( changed )
-        {
-
-            shadowCache().invalidateCaches();
-            helper().invalidateCaches();
-            return true;
-
-        } else return false;
+        return changed;
 
     }
 
@@ -277,7 +279,7 @@ namespace Oxygen
             // propagate all features found in mask to the output configuration
             if( iter->mask() & Exception::FrameBorder ) configuration.setFrameBorder( iter->frameBorder() );
             if( iter->mask() & Exception::BlendColor ) configuration.setBlendColor( iter->blendColor() );
-            if( iter->mask() & Exception::DrawSeparator ) configuration.setDrawSeparator( iter->drawSeparator() );
+            if( iter->mask() & Exception::DrawSeparator ) configuration.setSeparatorMode( iter->separatorMode() );
             if( iter->mask() & Exception::TitleOutline ) configuration.setDrawTitleOutline( iter->drawTitleOutline() );
             if( iter->mask() & Exception::SizeGripMode ) configuration.setSizeGripMode( iter->sizeGripMode() );
             configuration.setHideTitleBar( iter->hideTitleBar() );

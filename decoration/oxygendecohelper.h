@@ -27,13 +27,25 @@
 /*! contains utility functions used at multiple places in oxygen style */
 namespace Oxygen
 {
+
     class DecoHelper : public Helper
     {
 
         public:
 
-        explicit DecoHelper(const QByteArray &componentName);
-        virtual ~DecoHelper() {}
+        //! constructor
+        DecoHelper(const QByteArray &componentName);
+
+        //! destructor
+        virtual ~DecoHelper()
+        {}
+
+        //! dynamically allocated debug area
+        int debugArea( void ) const
+        { return m_debugArea; }
+
+        //! reset all caches
+        virtual void invalidateCaches();
 
         //!@name decoration specific helper functions
         //!
@@ -42,7 +54,25 @@ namespace Oxygen
         virtual QPixmap windecoButtonGlow(const QColor &color, int size = 21);
         //@}
 
+        //
         virtual QRegion decoRoundedMask( const QRect&, int left = 1, int right = 1, int top = 1, int bottom = 1 ) const;
+
+        //! title bar text color
+        const QColor& inactiveTitleBarTextColor( const QPalette& );
+
+        protected:
+
+        //! reduce contrast between two colors
+        QColor reduceContrast(const QColor&, const QColor&, double) const;
+
+        private:
+
+        //! dynamically allocated debug area
+        int m_debugArea;
+
+        //! titleBar text color cache
+        ColorCache m_titleBarTextColorCache;
+
 
     };
 

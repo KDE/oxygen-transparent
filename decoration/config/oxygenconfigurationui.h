@@ -58,6 +58,10 @@ namespace Oxygen
     //! toggle expert mode
     void toggleExpertMode( bool );
 
+    //! expert mode
+    bool expertMode( void ) const
+    { return expertMode_; }
+
     protected slots:
 
     //! shadow mode changed

@@ -52,8 +52,7 @@ namespace Oxygen
 
     //_______________________________________________________________________
     Config::Config( KConfig*, QWidget* parent ):
-        QObject( parent ),
-        expertMode_( false )
+        QObject( parent )
     {
 
         KGlobal::locale()->insertCatalog("kwin_clients");
@@ -69,7 +68,6 @@ namespace Oxygen
 
     }
 
-
     //_______________________________________________________________________
     Config::~Config()
     {
@@ -79,10 +77,7 @@ namespace Oxygen
 
     //_______________________________________________________________________
     void Config::toggleExpertMode( bool value )
-    {
-        expertMode_ = value;
-        userInterface_->toggleExpertMode( value );
-    }
+    { userInterface_->toggleExpertMode( value ); }
 
     //_______________________________________________________________________
     void Config::load( const KConfigGroup& )
@@ -92,7 +87,6 @@ namespace Oxygen
         Configuration configuration( KConfigGroup( configuration_, "Windeco") );
         configuration.readBackgroundOpacity( KConfigGroup( configuration_, "Common") );
         loadConfiguration( configuration );
-
         loadShadowConfiguration( QPalette::Active, ShadowConfiguration( QPalette::Active, KConfigGroup( configuration_, "ActiveShadow") ) );
         loadShadowConfiguration( QPalette::Inactive, ShadowConfiguration( QPalette::Inactive, KConfigGroup( configuration_, "InactiveShadow") ) );
 
@@ -124,16 +118,16 @@ namespace Oxygen
         else if( userInterface_->ui.shadowCacheMode->currentIndex() != userInterface_->ui.shadowCacheMode->findText( configuration.shadowCacheModeName( true ) ) ) modified = true;
 
         else if( userInterface_->ui.backgroundOpacity->value() != configuration.backgroundOpacity()*100/255 ) modified = true;
-        else if( userInterface_->ui.drawSeparator->isChecked() != configuration.drawSeparator() ) modified = true;
+        else if( userInterface_->ui.separatorMode->currentIndex() != configuration.separatorMode() ) modified = true;
         else if( userInterface_->ui.titleOutline->isChecked() !=  configuration.drawTitleOutline() ) modified = true;
-        else if( userInterface_->shadowConfigurations[0]->isChecked() !=  configuration.useOxygenShadows() ) modified = true;
-        else if( userInterface_->shadowConfigurations[1]->isChecked() !=  configuration.useDropShadows() ) modified = true;
         else if( userInterface_->ui.tabsEnabled->isChecked() !=  configuration.tabsEnabled() ) modified = true;
         else if( userInterface_->ui.useAnimations->isChecked() !=  configuration.useAnimations() ) modified = true;
         else if( userInterface_->ui.animateTitleChange->isChecked() !=  configuration.animateTitleChange() ) modified = true;
         else if( userInterface_->ui.narrowButtonSpacing->isChecked() !=  configuration.useNarrowButtonSpacing() ) modified = true;
 
         // shadow configurations
+        else if( userInterface_->shadowConfigurations[0]->isChecked() !=  configuration.useOxygenShadows() ) modified = true;
+        else if( userInterface_->shadowConfigurations[1]->isChecked() !=  configuration.useDropShadows() ) modified = true;
         else if( shadowConfigurationChanged( ShadowConfiguration( QPalette::Active, KConfigGroup( configuration_, "ActiveShadow") ), *userInterface_->shadowConfigurations[0] ) ) modified = true;
         else if( shadowConfigurationChanged( ShadowConfiguration( QPalette::Inactive, KConfigGroup( configuration_, "InactiveShadow") ), *userInterface_->shadowConfigurations[1] ) ) modified = true;
 
@@ -179,7 +173,24 @@ namespace Oxygen
             OxygenConfig::SHADOW_CACHE_MODE,
             Configuration::shadowCacheModeName( Configuration::shadowCacheMode( userInterface_->ui.shadowCacheMode->currentText(), true ), false ) );
 
-        configurationGroup.writeEntry( OxygenConfig::DRAW_SEPARATOR, userInterface_->ui.drawSeparator->isChecked() );
+        switch( userInterface_->ui.separatorMode->currentIndex() )
+        {
+            default:
+            case 0:
+            configurationGroup.writeEntry( OxygenConfig::DRAW_SEPARATOR, false );
+            break;
+
+            case 1:
+            configurationGroup.writeEntry( OxygenConfig::DRAW_SEPARATOR, true );
+            configurationGroup.writeEntry( OxygenConfig::SEPARATOR_ACTIVE_ONLY, true );
+            break;
+
+            case 2:
+            configurationGroup.writeEntry( OxygenConfig::DRAW_SEPARATOR, true );
+            configurationGroup.writeEntry( OxygenConfig::SEPARATOR_ACTIVE_ONLY, false );
+            break;
+        }
+
         configurationGroup.writeEntry( OxygenConfig::DRAW_TITLE_OUTLINE, userInterface_->ui.titleOutline->isChecked() );
         configurationGroup.writeEntry( OxygenConfig::USE_DROP_SHADOWS, userInterface_->shadowConfigurations[1]->isChecked() );
         configurationGroup.writeEntry( OxygenConfig::USE_OXYGEN_SHADOWS, userInterface_->shadowConfigurations[0]->isChecked() );
@@ -188,31 +199,30 @@ namespace Oxygen
         configurationGroup.writeEntry( OxygenConfig::ANIMATE_TITLE_CHANGE, userInterface_->ui.animateTitleChange->isChecked() );
         configurationGroup.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, userInterface_->ui.narrowButtonSpacing->isChecked() );
 
-        // write exceptions
-        userInterface_->ui.exceptions->exceptions().write( *configuration_ );
-
         // write shadow configuration
         configurationGroup.writeEntry( OxygenConfig::SHADOW_MODE,
             Configuration::shadowModeName( Configuration::shadowMode( userInterface_->ui.shadowMode->currentText(), true ), false ) );
         saveShadowConfiguration( QPalette::Active, *userInterface_->shadowConfigurations[0] );
         saveShadowConfiguration( QPalette::Inactive, *userInterface_->shadowConfigurations[1] );
 
+        // write exceptions
+        userInterface_->ui.exceptions->exceptions().write( *configuration_ );
+
         /*
         background opacity gets written to a different group
         because it is common to style and decoration. It does not get written in expert mode, because
         this is handled by the style configuration
         */
-        if( !expertMode_ )
+        if( !userInterface_->expertMode() )
         { KConfigGroup( configuration_, "Common").writeEntry( OxygenConfig::BACKGROUND_OPACITY, (userInterface_->ui.backgroundOpacity->value()*255)/100 ); }
 
         // sync configuration
         configuration_->sync();
 
-        if( !expertMode_ )
+        if( !userInterface_->expertMode() )
         { KGlobalSettings::emitChange( KGlobalSettings::SettingsChanged, 0 ); }
 
     }
-
 
     //_______________________________________________________________________
     void Config::saveShadowConfiguration( QPalette::ColorGroup colorGroup, const ShadowConfigurationUi& ui ) const
@@ -259,7 +269,7 @@ namespace Oxygen
         userInterface_->ui.sizeGripMode->setCurrentIndex( userInterface_->ui.sizeGripMode->findText( configuration.sizeGripModeName( true ) ) );
 
         userInterface_->ui.backgroundOpacity->setValue( configuration.backgroundOpacity()*100/255 );
-        userInterface_->ui.drawSeparator->setChecked( configuration.drawSeparator() );
+        userInterface_->ui.separatorMode->setCurrentIndex( configuration.separatorMode() );
         userInterface_->ui.titleOutline->setChecked( configuration.drawTitleOutline() );
         userInterface_->shadowConfigurations[0]->setChecked( configuration.useOxygenShadows() );
         userInterface_->shadowConfigurations[1]->setChecked( configuration.useDropShadows() );
@@ -287,7 +297,6 @@ namespace Oxygen
     bool Config::shadowConfigurationChanged( const ShadowConfiguration& configuration, const ShadowConfigurationUi& ui ) const
     {
         bool modified( false );
-
         if( ui.ui.shadowSize->value() != configuration.shadowSize() ) modified = true;
         else if( 0.1*ui.ui.verticalOffset->value() != configuration.verticalOffset() ) modified = true;
         else if( ui.ui.innerColor->color() != configuration.innerColor() ) modified = true;
@@ -299,7 +308,6 @@ namespace Oxygen
     //_______________________________________________________________________
     bool Config::exceptionListChanged( void ) const
     {
-
         // get saved list
         ExceptionList exceptions;
         exceptions.read( *configuration_ );

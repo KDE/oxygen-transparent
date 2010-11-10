@@ -51,7 +51,6 @@ namespace Oxygen
         Q_OBJECT
 
         //! declare glow intensity property
-        //!Q_PROPERTY( qreal glowIntensity READ glowIntensity WRITE setGlowIntensity )
         Q_PROPERTY( qreal glowIntensity READ glowIntensityUnbiased WRITE setGlowIntensity )
 
         public:
@@ -85,7 +84,7 @@ namespace Oxygen
 
         //! true if glow is animated
         bool glowIsAnimated( void ) const
-        { return glowAnimation_.data()->isRunning(); }
+        { return glowAnimation_->isRunning(); }
 
         //! true when decoration is forced active
         bool isForcedActive( void ) const
@@ -94,11 +93,20 @@ namespace Oxygen
         //! true when separator is to be drawn
         bool drawSeparator( void ) const
         {
-            return
-                ( glowIsAnimated() || isActive() ) &&
-                configuration().drawSeparator() &&
-                !configuration().hideTitleBar() &&
-                !configuration().drawTitleOutline();
+            if( configuration().drawTitleOutline() ) return false;
+            switch( configuration().separatorMode() )
+            {
+                case Configuration::SeparatorAlways:
+                return true;
+
+                case Configuration::SeparatorActive:
+                return ( glowIsAnimated() || isActive() );
+
+                default:
+                case Configuration::SeparatorNever:
+                return false;
+            }
+
         }
 
         //@}
@@ -119,11 +127,12 @@ namespace Oxygen
         //!@name glow animation
         //@{
 
-        virtual const Animation::Pointer& glowAnimation( void ) const
-        { return glowAnimation_; }
-
         void setGlowIntensity( qreal value )
-        { glowIntensity_ = value; }
+        {
+            if( glowIntensity_ == value ) return;
+            glowIntensity_ = value;
+            widget()->update();
+        }
 
         //! unbiased glow intensity
         qreal glowIntensityUnbiased( void ) const
@@ -136,7 +145,7 @@ namespace Oxygen
         //! true (biased) intensity
         /*! this is needed to have glow go from either 0.2->1 or 0.8->0 depending on the animation direction */
         qreal glowIntensity( void ) const
-        { return glowAnimation().data()->direction() == Animation::Forward ? glowIntensity_ : glowIntensity_-glowBias(); }
+        { return glowAnimation_->direction() == Animation::Forward ? glowIntensity_ : glowIntensity_-glowBias(); }
 
         //@}
 
@@ -345,10 +354,15 @@ namespace Oxygen
         QRegion calcMask( void ) const;
 
         //! text color
-        QColor titlebarTextColor(const QPalette&);
+        QColor titlebarTextColor(const QPalette&) const;
 
         //! text color
-        QColor titlebarTextColor(const QPalette&, bool active);
+        QColor titlebarTextColor(const QPalette& palette, bool active) const
+        {
+            return active ?
+                palette.color(QPalette::Active, QPalette::WindowText):
+                helper().inactiveTitleBarTextColor( palette );
+        }
 
         //! text color
         QColor titlebarContrastColor(const QPalette& palette ) const
@@ -402,10 +416,10 @@ namespace Oxygen
         Configuration configuration_;
 
         //! glow animation
-        Animation::Pointer glowAnimation_;
+        Animation* glowAnimation_;
 
         //! title animation data
-        TitleAnimationData::Pointer titleAnimationData_;
+        TitleAnimationData* titleAnimationData_;
 
         //! glow intensity
         qreal glowIntensity_;
@@ -436,17 +450,6 @@ namespace Oxygen
         QBasicTimer dragStartTimer_;
 
     };
-
-    //!@name utility functions
-    //@{
-
-    // dot
-    void renderDot(QPainter*, const QPointF&, qreal );
-
-    // contrast
-    QColor reduceContrast(const QColor&, const QColor&, double t);
-
-    //@}
 
 } // namespace Oxygen
 

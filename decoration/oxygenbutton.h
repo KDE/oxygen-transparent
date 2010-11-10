@@ -57,7 +57,7 @@ namespace Oxygen
 
             //! constructor
             explicit Button(Client &parent,
-            const QString &tip=NULL,
+            const QString &tip=QString(),
             ButtonType type=ButtonHelp );
 
         //! destructor
@@ -80,13 +80,12 @@ namespace Oxygen
 
         //!@name glow animation
         //@{
-
-        //! return animation object
-        virtual const Animation::Pointer& glowAnimation() const
-        { return glowAnimation_; }
-
         void setGlowIntensity( qreal value )
-        { glowIntensity_ = value; }
+        {
+            if( glowIntensity_ == value ) return;
+            glowIntensity_ = value;
+            update();
+        }
 
         qreal glowIntensity( void ) const
         { return glowIntensity_; }
@@ -114,14 +113,19 @@ namespace Oxygen
         void drawIcon(QPainter*);
 
         //! color
-        QColor buttonDetailColor(const QPalette& );
+        QColor buttonDetailColor(const QPalette& ) const;
 
         //! color
-        QColor buttonDetailColor(const QPalette&, bool active );
+        QColor buttonDetailColor(const QPalette& palette, bool active ) const
+        {
+            return active ?
+                palette.color(QPalette::Active, QPalette::WindowText):
+                helper_.inactiveTitleBarTextColor( palette );
+        }
 
         //! true if animation is in progress
         bool isAnimated( void ) const
-        { return glowAnimation().data()->isRunning(); }
+        { return glowAnimation_->isRunning(); }
 
         //! true if button is active
         bool isActive( void ) const;
@@ -168,7 +172,8 @@ namespace Oxygen
         bool forceInactive_;
 
         //! glow animation
-        Animation::Pointer glowAnimation_;
+        //Animation::Pointer glowAnimation_;
+        Animation* glowAnimation_;
 
         //! glow intensity
         qreal glowIntensity_;

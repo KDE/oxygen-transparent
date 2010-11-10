@@ -65,15 +65,13 @@ namespace Oxygen
         setToolTip(tip);
 
         // setup animation
-        glowAnimation().data()->setStartValue( 0 );
-        glowAnimation().data()->setEndValue( 1.0 );
-        glowAnimation().data()->setTargetObject( this );
-        glowAnimation().data()->setPropertyName( "glowIntensity" );
-        glowAnimation().data()->setEasingCurve( QEasingCurve::InOutQuad );
+        glowAnimation_->setStartValue( 0 );
+        glowAnimation_->setEndValue( 1.0 );
+        glowAnimation_->setTargetObject( this );
+        glowAnimation_->setPropertyName( "glowIntensity" );
+        glowAnimation_->setEasingCurve( QEasingCurve::InOutQuad );
 
         // setup connections
-        connect( glowAnimation().data(), SIGNAL( valueChanged( const QVariant& ) ), SLOT( update( void ) ) );
-        connect( glowAnimation().data(), SIGNAL( finished( void ) ), SLOT( update( void ) ) );
         reset(0);
 
     }
@@ -83,31 +81,13 @@ namespace Oxygen
     {}
 
     //_______________________________________________
-    QColor Button::buttonDetailColor(const QPalette &palette)
+    QColor Button::buttonDetailColor(const QPalette &palette) const
     {
         if( client_.glowIsAnimated() && !forceInactive_ && !client_.isForcedActive()) return KColorUtils::mix(
             buttonDetailColor( palette, false ),
             buttonDetailColor( palette, true ),
             client_.glowIntensity() );
         else return buttonDetailColor( palette, isActive() || client_.isForcedActive() );
-    }
-
-    //_______________________________________________
-    QColor Button::buttonDetailColor(const QPalette &palette, bool active)
-    {
-
-        if( active ) return palette.color(QPalette::Active, QPalette::WindowText);
-        else {
-
-            // todo: re-implement caching
-            QColor ab = palette.color(QPalette::Active, QPalette::Window);
-            QColor af = palette.color(QPalette::Active, QPalette::WindowText);
-            QColor nb = palette.color(QPalette::Inactive, QPalette::Window);
-            QColor nf = palette.color(QPalette::Inactive, QPalette::WindowText);
-            return reduceContrast(nb, nf, qMax(qreal(2.5), KColorUtils::contrastRatio(ab, KColorUtils::mix(ab, af, 0.4))));
-
-        }
-
     }
 
     //___________________________________________________
@@ -127,7 +107,7 @@ namespace Oxygen
 
     //___________________________________________________
     void Button::reset( unsigned long )
-    { glowAnimation().data()->setDuration( client_.configuration().animationsDuration() ); }
+    { glowAnimation_->setDuration( client_.configuration().animationsDuration() ); }
 
 
     //___________________________________________________
@@ -139,8 +119,8 @@ namespace Oxygen
         if( animateButtonHover() )
         {
 
-            glowAnimation().data()->setDirection( Animation::Forward );
-            if( !isAnimated() ) glowAnimation().data()->start();
+            glowAnimation_->setDirection( Animation::Forward );
+            if( !isAnimated() ) glowAnimation_->start();
 
         } else update();
 
@@ -154,8 +134,8 @@ namespace Oxygen
 
         if( status_ == Oxygen::Hovered && animateButtonHover() )
         {
-            glowAnimation().data()->setDirection( Animation::Backward );
-            if( !isAnimated() ) glowAnimation().data()->start();
+            glowAnimation_->setDirection( Animation::Backward );
+            if( !isAnimated() ) glowAnimation_->start();
         }
 
         status_ = Oxygen::Normal;
