@@ -1,7 +1,6 @@
 [Misc]
 Name=Oxygen
 Name[ar]=أكسجين
-Name[ast]=Oxíxenu
 Name[be]=Oxygen
 Name[bg]=Oxygen
 Name[cs]=Oxygen
@@ -19,7 +18,7 @@ Name[hne]=आक्सीजन
 Name[hu]=Oxygen
 Name[it]=Oxygen
 Name[ja]=Oxygen
-Name[km]=អុកស៊ី� ្សែន
+Name[km]=អុកស៊ីហ្សែន
 Name[ko]=Oxygen
 Name[mai]=आक्सीजन
 Name[nds]=Oxygen
@@ -39,9 +38,6 @@ Name[zh_CN]=Oxygen
 Name[zh_TW]=Oxygen
 ConfigPage=kstyle_oxygen_config
 Comment=Styling of the next generation desktop
-Comment[af]=Stilering van die volgende generasie werkskerm
-Comment[ar]=نمط الجيل التالي من سطح المكتب
-Comment[ast]=Estilu de la siguiente xeneración d'escritorios
 Comment[be]=Стыль працоўных сталоў наступнага пакалення
 Comment[en_GB]=Styling of the next generation desktop
 Comment[es]=Estilo del escritorio de la próxima generación
