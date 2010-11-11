@@ -52,6 +52,7 @@ namespace OxygenConfig
     static const QString SHADOW_MODE = "ShadowMode";
     static const QString SHADOW_CACHE_MODE = "ShadowCacheMode";
     static const QString BACKGROUND_OPACITY = "BackgroundOpacity";
+    static const QString OPACITY_FROM_STYLE = "OpacityFromStyle";
 }
 
 namespace Oxygen
@@ -147,9 +148,6 @@ namespace Oxygen
 
         //! write to kconfig group
         virtual void write( KConfigGroup& ) const;
-
-        //! constructor from KConfig
-        void writeBackgroundOpacity( KConfigGroup& ) const;
 
         //!@name title alignment
         //@{
@@ -389,6 +387,14 @@ namespace Oxygen
         virtual int backgroundOpacity( void ) const
         { return backgroundOpacity_; }
 
+        //! read opacity from style
+        virtual void setOpacityFromStyle( bool value )
+        { opacityFromStyle_ = value; }
+
+        //! read opacity from style
+        virtual bool opacityFromStyle( void ) const
+        { return opacityFromStyle_; }
+
         private:
 
         //! title alignment
@@ -408,6 +414,9 @@ namespace Oxygen
 
         //! background opacity
         int backgroundOpacity_;
+
+        //! opacity from style
+        bool opacityFromStyle_;
 
         //! separator
         SeparatorMode separatorMode_;

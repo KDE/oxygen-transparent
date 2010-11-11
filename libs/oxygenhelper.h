@@ -23,6 +23,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#include "oxygentileset.h"
+
 #include <KSharedConfig>
 #include <KComponentData>
 #include <KColorScheme>
@@ -33,7 +35,9 @@
 #include <QtGui/QLinearGradient>
 #include <QtCore/QCache>
 
-#include "oxygentileset.h"
+#ifdef Q_WS_X11
+#include <X11/Xdefs.h>
+#endif
 
 namespace Oxygen
 {
@@ -263,6 +267,17 @@ namespace Oxygen
         */
         const QWidget* checkAutoFillBackground( const QWidget* ) const;
 
+        //!@name argb XProperty
+        //@{
+
+        //! set argb hint to widget
+        virtual void setHasArgb( WId, bool ) const;
+
+        //! true if argb hint is set
+        virtual bool hasArgb( WId ) const;
+
+        //@}
+
         protected:
 
         virtual void drawSlab( QPainter&, const QColor&, qreal shade );
@@ -322,6 +337,12 @@ namespace Oxygen
         typedef QMap<quint32, bool> ColorMap;
         ColorMap m_highThreshold;
         ColorMap m_lowThreshold;
+
+        #ifdef Q_WS_X11
+        //! argb hint atom
+        Atom _argbAtom;
+        #endif
+
      };
 
 }

@@ -55,6 +55,7 @@ namespace Oxygen
         glowAnimation_( new Animation( 200, this ) ),
         titleAnimationData_( new TitleAnimationData( this ) ),
         glowIntensity_(0),
+        transparencyEnabled_( false ),
         initialized_( false ),
         forceActive_( false ),
         mouseButton_( Qt::NoButton ),
@@ -92,7 +93,6 @@ namespace Oxygen
         glowAnimation_->setPropertyName( "glowIntensity" );
         glowAnimation_->setEasingCurve( QEasingCurve::InOutQuad );
         connect( glowAnimation_, SIGNAL( finished( void ) ), this, SLOT( clearForceActive( void ) ) );
-
 
         // title animation data
         titleAnimationData_->initialize();
@@ -138,9 +138,9 @@ namespace Oxygen
         configuration_ = factory_->configuration( *this );
 
         // animations duration
-        glowAnimation_->setDuration( configuration_.animationsDuration() );
-        titleAnimationData_->setDuration( configuration_.animationsDuration() );
-        itemData_.animation().data()->setDuration( configuration_.animationsDuration() );
+        glowAnimation_->setDuration( configuration().animationsDuration() );
+        titleAnimationData_->setDuration( configuration().animationsDuration() );
+        itemData_.animation().data()->setDuration( configuration().animationsDuration() );
         itemData_.setAnimationsEnabled( useAnimations() );
 
         // reset title transitions
@@ -159,8 +159,11 @@ namespace Oxygen
         // reset tab geometry
         itemData_.setDirty( true );
 
+        // transparency
+        transparencyEnabled_ = configuration().transparencyEnabled() && (windowId() == 0 || helper().hasArgb( windowId() ) );
+
         // handle size grip
-        if( configuration_.drawSizeGrip() )
+        if( configuration().drawSizeGrip() )
         {
 
             if( !hasSizeGrip() ) createSizeGrip();
@@ -525,7 +528,7 @@ namespace Oxygen
         if( configuration().blendColor() == Configuration::NoBlending )
         {
 
-            if( compositingActive() && configuration().transparencyEnabled() && !opaque )
+            if( compositingActive() && transparencyEnabled_ && !opaque )
             {
 
                 QColor color( palette.color( QPalette::Window ) );
@@ -543,7 +546,7 @@ namespace Oxygen
 
             const QWidget* window( isPreview() ? this->widget() : widget->window() );
 
-            if( compositingActive() && configuration().transparencyEnabled() && !opaque )
+            if( compositingActive() && transparencyEnabled_ && !opaque )
             {
 
                 QColor color = palette.color( widget->window()->backgroundRole() );
@@ -1458,7 +1461,7 @@ namespace Oxygen
         { updateItemBoundingRects( false ); }
 
         const bool hasTitleOutline( this->hasTitleOutline() );
-        const bool hasAlpha( compositingActive() && configuration().transparencyEnabled() );
+        const bool hasAlpha( compositingActive() && transparencyEnabled_ );
 
         if( hasAlpha && hasTitleOutline )
         {

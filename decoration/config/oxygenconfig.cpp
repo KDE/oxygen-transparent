@@ -85,8 +85,8 @@ namespace Oxygen
 
         // load standard configuration
         Configuration configuration( KConfigGroup( configuration_, "Windeco") );
-        configuration.readBackgroundOpacity( KConfigGroup( configuration_, "Common") );
         loadConfiguration( configuration );
+
         loadShadowConfiguration( QPalette::Active, ShadowConfiguration( QPalette::Active, KConfigGroup( configuration_, "ActiveShadow") ) );
         loadShadowConfiguration( QPalette::Inactive, ShadowConfiguration( QPalette::Inactive, KConfigGroup( configuration_, "InactiveShadow") ) );
 
@@ -198,6 +198,8 @@ namespace Oxygen
         configurationGroup.writeEntry( OxygenConfig::USE_ANIMATIONS, userInterface_->ui.useAnimations->isChecked() );
         configurationGroup.writeEntry( OxygenConfig::ANIMATE_TITLE_CHANGE, userInterface_->ui.animateTitleChange->isChecked() );
         configurationGroup.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, userInterface_->ui.narrowButtonSpacing->isChecked() );
+        configurationGroup.writeEntry( OxygenConfig::OPACITY_FROM_STYLE, userInterface_->ui.opacityFromStyle->isChecked() );
+        configurationGroup.writeEntry( OxygenConfig::BACKGROUND_OPACITY, (userInterface_->ui.backgroundOpacity->value()*255)/100 );
 
         // write shadow configuration
         configurationGroup.writeEntry( OxygenConfig::SHADOW_MODE,
@@ -207,14 +209,6 @@ namespace Oxygen
 
         // write exceptions
         userInterface_->ui.exceptions->exceptions().write( *configuration_ );
-
-        /*
-        background opacity gets written to a different group
-        because it is common to style and decoration. It does not get written in expert mode, because
-        this is handled by the style configuration
-        */
-        if( !userInterface_->expertMode() )
-        { KConfigGroup( configuration_, "Common").writeEntry( OxygenConfig::BACKGROUND_OPACITY, (userInterface_->ui.backgroundOpacity->value()*255)/100 ); }
 
         // sync configuration
         configuration_->sync();
@@ -269,6 +263,7 @@ namespace Oxygen
         userInterface_->ui.sizeGripMode->setCurrentIndex( userInterface_->ui.sizeGripMode->findText( configuration.sizeGripModeName( true ) ) );
 
         userInterface_->ui.backgroundOpacity->setValue( configuration.backgroundOpacity()*100/255 );
+        userInterface_->ui.opacityFromStyle->setChecked( configuration.opacityFromStyle() );
         userInterface_->ui.separatorMode->setCurrentIndex( configuration.separatorMode() );
         userInterface_->ui.titleOutline->setChecked( configuration.drawTitleOutline() );
         userInterface_->shadowConfigurations[0]->setChecked( configuration.useOxygenShadows() );

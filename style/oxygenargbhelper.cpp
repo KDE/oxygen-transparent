@@ -80,6 +80,9 @@ namespace Oxygen
     bool ArgbHelper::registerWidget( QWidget *widget )
     {
 
+        // check blacklisted applications
+        if( _applicationType == AppBlackListed ) return false;
+
         // adjust flags for windows and dialogs
         switch( widget->windowFlags() & Qt::WindowType_Mask )
         {
@@ -91,13 +94,9 @@ namespace Oxygen
                 // do not handle all kind of 'special background' widgets
                 if( widget->windowType() == Qt::Desktop ||
                     widget->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop) ||
-                    widget->testAttribute(Qt::WA_TranslucentBackground) ||
                     widget->testAttribute(Qt::WA_NoSystemBackground) ||
                     widget->testAttribute(Qt::WA_PaintOnScreen)
                     ) break;
-
-                // check blacklisted applications
-                if( _applicationType == AppBlackListed ) break;
 
                 // disable kde screensaver windows
                 /*
@@ -126,6 +125,15 @@ namespace Oxygen
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
 
+
+                // translucent background already set. Do nothing.
+                if( widget->testAttribute(Qt::WA_TranslucentBackground) )
+                {
+                    // set Argb xproperty
+                    _helper.setHasArgb( widget->winId(), true );
+                    break;
+                }
+
                 /*
                 whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
                 Unfortunately some properties are lost, among them the window icon. We save it and restore it manually
@@ -149,6 +157,9 @@ namespace Oxygen
                 // add to set of transparent widgets and connect destruction signal
                 _transparentWidgets.insert( widget );
                 connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
+
+                // set Argb xproperty
+                _helper.setHasArgb( widget->winId(), true );
 
                 return true;
             }

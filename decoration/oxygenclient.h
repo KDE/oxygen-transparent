@@ -424,6 +424,9 @@ namespace Oxygen
         //! glow intensity
         qreal glowIntensity_;
 
+        //! true when transparency is enabled
+        bool transparencyEnabled_;
+
         //! true when initialized
         bool initialized_;
 

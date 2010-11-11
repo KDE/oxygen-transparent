@@ -39,6 +39,7 @@ namespace Oxygen
         blendColor_( RadialBlending ),
         sizeGripMode_( SizeGripWhenNeeded ),
         backgroundOpacity_( 255 ),
+        opacityFromStyle_( true ),
         separatorMode_( SeparatorNever ),
         drawTitleOutline_( false ),
         hideTitleBar_( false ),
@@ -156,6 +157,19 @@ namespace Oxygen
         setShadowCacheMode( shadowCacheMode( group.readEntry(
             OxygenConfig::SHADOW_CACHE_MODE, defaultConfiguration.shadowCacheModeName( false ) ), false ) );
 
+        // background opacity
+        /*
+        this is the decoration specific value
+        it is overwritten by the style ("common") opacity, if opacityFromStyle is set to true
+        */
+        setBackgroundOpacity(
+            group.readEntry( OxygenConfig::BACKGROUND_OPACITY,
+            defaultConfiguration.backgroundOpacity() ) );
+
+        setOpacityFromStyle(
+            group.readEntry( OxygenConfig::OPACITY_FROM_STYLE,
+            defaultConfiguration.opacityFromStyle() ) );
+
     }
 
     //__________________________________________________
@@ -167,6 +181,7 @@ namespace Oxygen
         setBackgroundOpacity(
             group.readEntry( OxygenConfig::BACKGROUND_OPACITY,
             defaultConfiguration.backgroundOpacity() ) );
+
     }
 
     //__________________________________________________
@@ -195,11 +210,10 @@ namespace Oxygen
         group.writeEntry( OxygenConfig::SHADOW_MODE, shadowModeName( false ) );
         group.writeEntry( OxygenConfig::SHADOW_CACHE_MODE, shadowCacheModeName( false ) );
 
-    }
+        group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() );
+        group.writeEntry( OxygenConfig::OPACITY_FROM_STYLE, opacityFromStyle() );
 
-    //__________________________________________________
-    void Configuration::writeBackgroundOpacity( KConfigGroup& group ) const
-    { group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() ); }
+    }
 
     //__________________________________________________
     QString Configuration::titleAlignmentName( Qt::Alignment value, bool translated )
@@ -376,7 +390,9 @@ namespace Oxygen
             transparencyEnabled() == other.transparencyEnabled() &&
             useNarrowButtonSpacing() == other.useNarrowButtonSpacing() &&
             shadowMode() == other.shadowMode() &&
-            shadowCacheMode() == other.shadowCacheMode();
+            shadowCacheMode() == other.shadowCacheMode() &&
+            opacityFromStyle() == other.opacityFromStyle() &&
+            backgroundOpacity() == other.backgroundOpacity();
 
     }
 
