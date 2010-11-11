@@ -95,23 +95,10 @@
          </property>
         </spacer>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Background opacity:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="0" colspan="2">
         <widget class="QWidget" name="backgroundOpacityWidget" native="true">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <property name="margin">
-           <number>0</number>
-          </property>
-          <item>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="1" column="1">
            <spacer name="horizontalSpacer_6">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -127,7 +114,7 @@
             </property>
            </spacer>
           </item>
-          <item>
+          <item row="1" column="2">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Transparent</string>
@@ -137,7 +124,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="3">
            <widget class="QSlider" name="backgroundOpacity">
             <property name="maximum">
              <number>100</number>
@@ -150,10 +137,20 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="4">
            <widget class="QLabel" name="label_8">
             <property name="text">
              <string>Opaque</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="3">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Background opacity:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
