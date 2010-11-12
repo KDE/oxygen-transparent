@@ -45,6 +45,9 @@ namespace Oxygen
 
     ui.setupUi( this );
 
+    // connections
+    connect( ui.opacityFromStyle, SIGNAL( toggled( bool ) ), ui.exceptions, SLOT( toggleOpacityFromStyle( bool ) ) );
+
     // basic configuration
     ui.frameBorder->insertItems(0, QStringList()
       << Configuration::frameBorderName( Configuration::BorderNone, true )

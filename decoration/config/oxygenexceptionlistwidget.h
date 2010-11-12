@@ -55,52 +55,64 @@ namespace Oxygen
         //! emitted when list is changed
         void changed( void );
 
+        public slots:
+
+        //! toggle opacity from style, from 'default' configiration
+        /*! this is needed to properly enable/disable the opacity toggle button in exception dialog */
+        void toggleOpacityFromStyle( bool value )
+        { opacityFromStyle_ = value; }
+
         protected:
 
         //! model
-        const ExceptionModel& _model() const
+        const ExceptionModel& model() const
         { return model_; }
 
         //! model
-        ExceptionModel& _model()
+        ExceptionModel& model()
         { return model_; }
 
         protected slots:
 
         //! update button states
-        virtual void _updateButtons( void );
+        virtual void updateButtons( void );
 
         //! add
-        virtual void _add( void );
+        virtual void add( void );
 
         //! edit
-        virtual void _edit( void );
+        virtual void edit( void );
 
         //! remove
-        virtual void _remove( void );
+        virtual void remove( void );
 
         //! toggle
-        virtual void _toggle( const QModelIndex& );
+        virtual void toggle( const QModelIndex& );
 
         //! move up
-        virtual void _up( void );
+        virtual void up( void );
 
         //! move down
-        virtual void _down( void );
+        virtual void down( void );
+
+        protected:
+
+        //! resize columns
+        void resizeColumns( void ) const;
+
+        //! check exception
+        bool checkException( Exception& );
 
         private:
 
-        //! resize columns
-        void _resizeColumns( void ) const;
-
-        //! check exception
-        bool _checkException( Exception& );
-
         //! default configuration
-        Configuration default_configuration_;
+        Configuration defaultConfiguration_;
 
         //! model
         ExceptionModel model_;
+
+        //! true when opacity is read from style
+        bool opacityFromStyle_;
 
         //! ui
         Ui_OxygenExceptionListWidget ui;

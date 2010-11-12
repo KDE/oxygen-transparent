@@ -117,6 +117,7 @@ namespace Oxygen
         else if( userInterface_->ui.shadowMode->currentIndex() != userInterface_->ui.shadowMode->findText( configuration.shadowModeName( true ) ) ) modified = true;
         else if( userInterface_->ui.shadowCacheMode->currentIndex() != userInterface_->ui.shadowCacheMode->findText( configuration.shadowCacheModeName( true ) ) ) modified = true;
 
+        else if( userInterface_->ui.opacityFromStyle->isChecked() != configuration.opacityFromStyle() ) modified = true;
         else if( userInterface_->ui.backgroundOpacity->value() != configuration.backgroundOpacity()*100/255 ) modified = true;
         else if( userInterface_->ui.separatorMode->currentIndex() != configuration.separatorMode() ) modified = true;
         else if( userInterface_->ui.titleOutline->isChecked() !=  configuration.drawTitleOutline() ) modified = true;
