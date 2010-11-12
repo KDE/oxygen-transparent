@@ -58,6 +58,10 @@ namespace OxygenConfig
 namespace Oxygen
 {
 
+    // forward declaration
+    class Exception;
+
+    //! stores all configuration options needed for decoration appearance
     class Configuration
     {
 
@@ -145,6 +149,9 @@ namespace Oxygen
 
         //! constructor from KConfig
         void readBackgroundOpacity( KConfigGroup );
+
+        //! propagate all features found in exception mask to this configuration
+        void readException( const Exception& );
 
         //! write to kconfig group
         virtual void write( KConfigGroup& ) const;

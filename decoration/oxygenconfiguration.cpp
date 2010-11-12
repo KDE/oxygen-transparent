@@ -25,6 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "oxygenconfiguration.h"
+#include "oxygenexception.h"
 
 #include <KLocale>
 
@@ -175,12 +176,27 @@ namespace Oxygen
     //__________________________________________________
     void Configuration::readBackgroundOpacity( KConfigGroup group )
     {
+        // do nothing if separate opacity is used between style and deco
+        if( !opacityFromStyle() ) return;
 
         // background opacity
         Configuration defaultConfiguration;
         setBackgroundOpacity(
             group.readEntry( OxygenConfig::BACKGROUND_OPACITY,
             defaultConfiguration.backgroundOpacity() ) );
+
+    }
+
+    //__________________________________________________
+    void Configuration::readException( const Exception& exception )
+    {
+        // propagate all features found in mask to the output configuration
+        if( exception.mask() & Exception::FrameBorder ) setFrameBorder( exception.frameBorder() );
+        if( exception.mask() & Exception::BlendColor ) setBlendColor( exception.blendColor() );
+        if( exception.mask() & Exception::DrawSeparator ) setSeparatorMode( exception.separatorMode() );
+        if( exception.mask() & Exception::TitleOutline ) setDrawTitleOutline( exception.drawTitleOutline() );
+        if( exception.mask() & Exception::SizeGripMode ) setSizeGripMode( exception.sizeGripMode() );
+        setHideTitleBar( exception.hideTitleBar() );
 
     }
 
