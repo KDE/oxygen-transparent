@@ -222,6 +222,11 @@ namespace Oxygen
             case AbilityClientGrouping:
             return defaultConfiguration().tabsEnabled();
 
+            #if KDE_IS_VERSION( 4, 5, 76 )
+            case AbilityUsesBlurBehind:
+            return defaultConfiguration().backgroundOpacity() < 255;
+            #endif
+
             // no colors supported at this time
             default:
             return false;
