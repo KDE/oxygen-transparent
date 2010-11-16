@@ -160,7 +160,7 @@ namespace Oxygen
         itemData_.setDirty( true );
 
         // transparency
-        transparencyEnabled_ = configuration().transparencyEnabled() && (windowId() == 0 || helper().hasArgb( windowId() ) );
+        transparencyEnabled_ = configuration().transparencyEnabled() && (windowId() == 0 || ( !configuration().opacityFromStyle() ) || helper().hasArgb( windowId() ) );
 
         // handle size grip
         if( configuration().drawSizeGrip() )
