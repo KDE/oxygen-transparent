@@ -148,8 +148,8 @@ namespace Oxygen
         _transitions( new Transitions( this ) ),
         _windowManager( new WindowManager( this ) ),
         _frameShadowFactory( new FrameShadowFactory( this ) ),
-        _argbHelper( new ArgbHelper( this, *_helper ) ),
-        _blurHelper( new BlurHelper( this, *_helper ) ),
+        _argbHelper( new ArgbHelper( this, helper() ) ),
+        _blurHelper( new BlurHelper( this, helper() ) ),
         _widgetExplorer( new WidgetExplorer( this ) ),
         _tabBarData( new TabBarData( this ) ),
         _frameFocusPrimitive( 0 ),
@@ -4482,7 +4482,7 @@ namespace Oxygen
             if( ( intersected || !animated || animatedRect.isNull() ) && ( active || animated || timerIsActive ) )
             {
 
-                QColor color( palette.color( QPalette::Window ) );
+                QColor color( helper().calcMidColor( palette.color( QPalette::Window ) ) );
                 if( StyleConfigData::menuHighlightMode() != StyleConfigData::MM_DARK )
                 {
 
@@ -5463,13 +5463,15 @@ namespace Oxygen
         // make room for left and right widgets
         // left widget
         const bool verticalTabs( isVerticalTab( tabOpt ) );
+        const bool hasLeftButton( !( option->direction == Qt::RightToLeft ? tabOptV3.rightButtonSize.isEmpty():tabOptV3.leftButtonSize.isEmpty() ) );
+        const bool hasRightButton( !( option->direction == Qt::RightToLeft ? tabOptV3.leftButtonSize.isEmpty():tabOptV3.rightButtonSize.isEmpty() ) );
 
-        if( !tabOptV3.leftButtonSize.isEmpty() )
+        if( hasLeftButton )
         { r.setLeft( r.left() + 4 + ( verticalTabs ? tabOptV3.leftButtonSize.height() : tabOptV3.leftButtonSize.width() ) ); }
 
         // make room for left and right widgets
         // left widget
-        if( !tabOptV3.rightButtonSize.isEmpty() )
+        if( hasRightButton )
         { r.setRight( r.right() - 4 - ( verticalTabs ? tabOptV3.rightButtonSize.height() : tabOptV3.rightButtonSize.width() ) ); }
 
         // compute textRect and iconRect
@@ -5497,10 +5499,10 @@ namespace Oxygen
 
         }
 
-        if( verticalTabs )
+        if( !verticalTabs )
         {
-            textRect = handleRTL( option, textRect );
-            iconRect = handleRTL( option, iconRect );
+            textRect = visualRect(option->direction, r, textRect );
+            iconRect = visualRect(option->direction, r, iconRect );
         }
 
         // render icon
