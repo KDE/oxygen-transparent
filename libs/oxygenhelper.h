@@ -279,6 +279,17 @@ namespace Oxygen
 
         //@}
 
+        //!@name background gradient XProperty
+        //@{
+
+        //! set background gradient hint to widget
+        virtual void setHasBackgroundGradient( WId, bool ) const;
+
+        //! true if background gradient hint is set
+        virtual bool hasBackgroundGradient( WId ) const;
+
+        //@}
+
         protected:
 
         virtual void drawSlab( QPainter&, const QColor&, qreal shade );
@@ -342,9 +353,12 @@ namespace Oxygen
         #ifdef Q_WS_X11
         //! argb hint atom
         Atom _argbAtom;
+
+        //! background gradient hint atom
+        Atom _backgroundGradientAtom;
         #endif
 
-     };
+    };
 
 }
 

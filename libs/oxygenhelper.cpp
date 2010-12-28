@@ -69,8 +69,10 @@ namespace Oxygen
         // create argb atom
         _argbAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_HAS_ARGB", False);
 
-        #endif
+        // create background gradient atom
+        _backgroundGradientAtom = XInternAtom( QX11Info::display(), "_KDE_OXYGEN_BACKGROUND_GRADIENT", False);
 
+        #endif
 
     }
 
@@ -750,6 +752,53 @@ namespace Oxygen
         unsigned long n(0), left(0);
         XGetWindowProperty(
             QX11Info::display(), id, _argbAtom,
+            0, 1L, false,
+            XA_CARDINAL, &type,
+            &format, &n, &left,
+            &data);
+
+        // finish if no data is found
+        if( data == None || n != 1 ) return false;
+        else return *data;
+
+        #else
+
+        return false;
+
+        #endif
+    }
+
+    //____________________________________________________________________
+    void Helper::setHasBackgroundGradient( WId id, bool value ) const
+    {
+
+        if( !id ) return;
+
+        #ifdef Q_WS_X11
+        unsigned long uLongValue( value );
+        XChangeProperty(
+            QX11Info::display(), id, _backgroundGradientAtom, XA_CARDINAL, 32, PropModeReplace,
+            reinterpret_cast<const unsigned char *>(&uLongValue), 1 );
+        #else
+        Q_UNUSED( id );
+        Q_UNUSED( value );
+        #endif
+        return;
+    }
+
+    //____________________________________________________________________
+    bool Helper::hasBackgroundGradient( WId id ) const
+    {
+        if( !id ) return false;
+
+        #ifdef Q_WS_X11
+        Atom type( None );
+        int format(0);
+        unsigned char *data(0);
+
+        unsigned long n(0), left(0);
+        XGetWindowProperty(
+            QX11Info::display(), id, _backgroundGradientAtom,
             0, 1L, false,
             XA_CARDINAL, &type,
             &format, &n, &left,
