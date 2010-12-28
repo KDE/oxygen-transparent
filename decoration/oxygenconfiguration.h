@@ -92,7 +92,8 @@ namespace Oxygen
         //! blend color enumeration
         enum BlendColorType {
             NoBlending,
-            RadialBlending
+            RadialBlending,
+            BlendFromStyle
         };
 
         //! size grip mode

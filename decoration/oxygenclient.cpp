@@ -525,7 +525,11 @@ namespace Oxygen
     void Client::renderWindowBackground( QPainter* painter, const QRect& rect, const QWidget* widget, const QPalette& palette, bool opaque ) const
     {
 
-        if( configuration().blendColor() == Configuration::NoBlending )
+        if(
+            configuration().blendColor() == Configuration::NoBlending ||
+            ( configuration().blendColor() == Configuration::BlendFromStyle &&
+            !helper().hasBackgroundGradient( windowId() )
+            ) )
         {
 
             if( compositingActive() && transparencyEnabled_ && !opaque )

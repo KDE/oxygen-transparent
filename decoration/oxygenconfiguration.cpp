@@ -27,6 +27,7 @@
 #include "oxygenconfiguration.h"
 #include "oxygenexception.h"
 
+#include <QTextStream>
 #include <KLocale>
 
 namespace Oxygen
@@ -37,7 +38,7 @@ namespace Oxygen
         titleAlignment_( Qt::AlignHCenter ),
         buttonSize_( ButtonDefault ),
         frameBorder_( BorderTiny ),
-        blendColor_( RadialBlending ),
+        blendColor_( BlendFromStyle ),
         sizeGripMode_( SizeGripWhenNeeded ),
         backgroundOpacity_( 255 ),
         opacityFromStyle_( true ),
@@ -197,37 +198,40 @@ namespace Oxygen
         if( exception.mask() & Exception::TitleOutline ) setDrawTitleOutline( exception.drawTitleOutline() );
         if( exception.mask() & Exception::SizeGripMode ) setSizeGripMode( exception.sizeGripMode() );
         setHideTitleBar( exception.hideTitleBar() );
-
     }
 
     //__________________________________________________
     void Configuration::write( KConfigGroup& group ) const
     {
 
-        group.writeEntry( OxygenConfig::TITLE_ALIGNMENT, titleAlignmentName( false ) );
-        group.writeEntry( OxygenConfig::BUTTON_SIZE, buttonSizeName( false ) );
-        group.writeEntry( OxygenConfig::BLEND_COLOR, blendColorName( false ) );
-        group.writeEntry( OxygenConfig::FRAME_BORDER, frameBorderName( false ) );
-        group.writeEntry( OxygenConfig::SIZE_GRIP_MODE, sizeGripModeName( false ) );
+        Configuration defaultConfiguration;
 
-        group.writeEntry( OxygenConfig::DRAW_SEPARATOR, separatorMode() != SeparatorNever );
-        group.writeEntry( OxygenConfig::SEPARATOR_ACTIVE_ONLY, separatorMode() == SeparatorActive );
+        if( titleAlignment() != defaultConfiguration.titleAlignment() ) group.writeEntry( OxygenConfig::TITLE_ALIGNMENT, titleAlignmentName( false ) );
+        if( buttonSize() != defaultConfiguration.buttonSize() ) group.writeEntry( OxygenConfig::BUTTON_SIZE, buttonSizeName( false ) );
+        if( blendColor() != defaultConfiguration.blendColor() ) group.writeEntry( OxygenConfig::BLEND_COLOR, blendColorName( false ) );
+        if( frameBorder() != defaultConfiguration.frameBorder() ) group.writeEntry( OxygenConfig::FRAME_BORDER, frameBorderName( false ) );
+        if( sizeGripMode() != defaultConfiguration.sizeGripMode() ) group.writeEntry( OxygenConfig::SIZE_GRIP_MODE, sizeGripModeName( false ) );
 
-        group.writeEntry( OxygenConfig::DRAW_TITLE_OUTLINE, drawTitleOutline() );
-        group.writeEntry( OxygenConfig::HIDE_TITLEBAR, hideTitleBar() );
-        group.writeEntry( OxygenConfig::USE_DROP_SHADOWS, useDropShadows() );
-        group.writeEntry( OxygenConfig::USE_OXYGEN_SHADOWS, useOxygenShadows() );
-        group.writeEntry( OxygenConfig::USE_ANIMATIONS, useAnimations() );
-        group.writeEntry( OxygenConfig::ANIMATE_TITLE_CHANGE, animateTitleChange() );
-        group.writeEntry( OxygenConfig::ANIMATIONS_DURATION, animationsDuration() );
-        group.writeEntry( OxygenConfig::TABS_ENABLED, tabsEnabled() );
-        group.writeEntry( OxygenConfig::TRANSPARENCY_ENABLED, transparencyEnabled() );
-        group.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, useNarrowButtonSpacing() );
-        group.writeEntry( OxygenConfig::SHADOW_MODE, shadowModeName( false ) );
-        group.writeEntry( OxygenConfig::SHADOW_CACHE_MODE, shadowCacheModeName( false ) );
+        if( backgroundOpacity() != defaultConfiguration.backgroundOpacity() ) group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() );
+        if( opacityFromStyle() != defaultConfiguration.opacityFromStyle() ) group.writeEntry( OxygenConfig::OPACITY_FROM_STYLE, opacityFromStyle() );
 
-        group.writeEntry( OxygenConfig::BACKGROUND_OPACITY, backgroundOpacity() );
-        group.writeEntry( OxygenConfig::OPACITY_FROM_STYLE, opacityFromStyle() );
+        if( separatorMode() != defaultConfiguration.separatorMode() )
+        {
+            group.writeEntry( OxygenConfig::DRAW_SEPARATOR, separatorMode() != SeparatorNever );
+            group.writeEntry( OxygenConfig::SEPARATOR_ACTIVE_ONLY, separatorMode() == SeparatorActive );
+        }
+
+        if( drawTitleOutline() != defaultConfiguration.drawTitleOutline() ) group.writeEntry( OxygenConfig::DRAW_TITLE_OUTLINE, drawTitleOutline() );
+        if( hideTitleBar() != defaultConfiguration.hideTitleBar() ) group.writeEntry( OxygenConfig::HIDE_TITLEBAR, hideTitleBar() );
+        if( useDropShadows() != defaultConfiguration.useDropShadows() ) group.writeEntry( OxygenConfig::USE_DROP_SHADOWS, useDropShadows() );
+        if( useOxygenShadows() != defaultConfiguration.useOxygenShadows() ) group.writeEntry( OxygenConfig::USE_OXYGEN_SHADOWS, useOxygenShadows() );
+        if( useAnimations() != defaultConfiguration.useAnimations() ) group.writeEntry( OxygenConfig::USE_ANIMATIONS, useAnimations() );
+        if( animateTitleChange() != defaultConfiguration.animateTitleChange() ) group.writeEntry( OxygenConfig::ANIMATE_TITLE_CHANGE, animateTitleChange() );
+        if( animationsDuration() != defaultConfiguration.animationsDuration() ) group.writeEntry( OxygenConfig::ANIMATIONS_DURATION, animationsDuration() );
+        if( tabsEnabled() != defaultConfiguration.tabsEnabled() ) group.writeEntry( OxygenConfig::TABS_ENABLED, tabsEnabled() );
+        if( useNarrowButtonSpacing() != defaultConfiguration.useNarrowButtonSpacing() ) group.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, useNarrowButtonSpacing() );
+        if( shadowMode() != defaultConfiguration.shadowMode() ) group.writeEntry( OxygenConfig::SHADOW_MODE, shadowModeName( false ) );
+        if( shadowCacheMode() != defaultConfiguration.shadowCacheMode() ) group.writeEntry( OxygenConfig::SHADOW_CACHE_MODE, shadowCacheModeName( false ) );
 
     }
 
@@ -345,6 +349,7 @@ namespace Oxygen
         {
             case NoBlending: out = translated ? i18n( "Solid Color" ):"Solid Color"; break;
             case RadialBlending: out = translated ? i18n( "Radial Gradient" ):"Radial Gradient"; break;
+            case BlendFromStyle: out = translated ? i18n( "Follow Style Hint" ):"Follow Style Hint"; break;
             default: return Configuration().blendColorName( translated );
         }
 
@@ -357,6 +362,7 @@ namespace Oxygen
     {
         if( value == blendColorName( NoBlending, translated ) ) return NoBlending;
         else if( value == blendColorName( RadialBlending, translated ) ) return RadialBlending;
+        else if( value == blendColorName( BlendFromStyle, translated ) ) return BlendFromStyle;
         else return Configuration().blendColor();
     }
 
