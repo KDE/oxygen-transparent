@@ -36,6 +36,7 @@ namespace Oxygen
     //__________________________________________________
     Configuration::Configuration( void ):
         titleAlignment_( Qt::AlignHCenter ),
+        centerTitleOnFullWidth_( true ),
         buttonSize_( ButtonDefault ),
         frameBorder_( BorderTiny ),
         blendColor_( BlendFromStyle ),
@@ -68,6 +69,10 @@ namespace Oxygen
         setTitleAlignment( titleAlignment(
             group.readEntry( OxygenConfig::TITLE_ALIGNMENT,
             defaultConfiguration.titleAlignmentName( false ) ), false ) );
+
+        // center title on full width
+        setCenterTitleOnFullWidth( group.readEntry( OxygenConfig::CENTER_TITLE_ON_FULL_WIDTH,
+            defaultConfiguration.centerTitleOnFullWidth() ) );
 
         // button size
         setButtonSize( buttonSize(
@@ -207,6 +212,7 @@ namespace Oxygen
         Configuration defaultConfiguration;
 
         if( titleAlignment() != defaultConfiguration.titleAlignment() ) group.writeEntry( OxygenConfig::TITLE_ALIGNMENT, titleAlignmentName( false ) );
+        if( centerTitleOnFullWidth() != defaultConfiguration.centerTitleOnFullWidth() ) group.writeEntry( OxygenConfig::CENTER_TITLE_ON_FULL_WIDTH, centerTitleOnFullWidth() );
         if( buttonSize() != defaultConfiguration.buttonSize() ) group.writeEntry( OxygenConfig::BUTTON_SIZE, buttonSizeName( false ) );
         if( blendColor() != defaultConfiguration.blendColor() ) group.writeEntry( OxygenConfig::BLEND_COLOR, blendColorName( false ) );
         if( frameBorder() != defaultConfiguration.frameBorder() ) group.writeEntry( OxygenConfig::FRAME_BORDER, frameBorderName( false ) );
@@ -236,13 +242,19 @@ namespace Oxygen
     }
 
     //__________________________________________________
-    QString Configuration::titleAlignmentName( Qt::Alignment value, bool translated )
+    QString Configuration::titleAlignmentName( Qt::Alignment value, bool translated, bool fullWidth )
     {
         QString out;
         switch( value )
         {
             case Qt::AlignLeft: out = translated ? i18n( "Left" ):"Left"; break;
-            case Qt::AlignHCenter: out = translated ? i18n( "Center" ):"Center"; break;
+            case Qt::AlignHCenter:
+            {
+
+                if( fullWidth ) out = translated ? i18n( "Center (Full Width)" ):"Center (Full Width)";
+                else out = translated ? i18n( "Center" ):"Center";
+
+            } break;
             case Qt::AlignRight: out = translated ? i18n( "Right" ):"Right"; break;
             default: return Configuration().titleAlignmentName( translated );
         }
@@ -255,7 +267,7 @@ namespace Oxygen
     Qt::Alignment Configuration::titleAlignment( QString value, bool translated )
     {
         if (value == titleAlignmentName( Qt::AlignLeft, translated ) ) return Qt::AlignLeft;
-        else if (value == titleAlignmentName( Qt::AlignHCenter, translated ) ) return Qt::AlignHCenter;
+        else if (value == titleAlignmentName( Qt::AlignHCenter, translated, false ) || value == titleAlignmentName( Qt::AlignHCenter, translated, true ) ) return Qt::AlignHCenter;
         else if (value == titleAlignmentName( Qt::AlignRight, translated ) ) return Qt::AlignRight;
         else return Configuration().titleAlignment();
     }
@@ -395,6 +407,7 @@ namespace Oxygen
 
         return
             titleAlignment() == other.titleAlignment() &&
+            centerTitleOnFullWidth() == other.centerTitleOnFullWidth() &&
             buttonSize() == other.buttonSize() &&
             frameBorder() == other.frameBorder() &&
             blendColor() == other.blendColor() &&

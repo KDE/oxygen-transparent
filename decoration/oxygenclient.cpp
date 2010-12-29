@@ -379,8 +379,17 @@ namespace Oxygen
     {
 
         QRect titleRect( this->titleRect().adjusted( 0, -layoutMetric( LM_TitleEdgeTop ), 0, 0 ) );
+
+        // when drawing title outline, shrink the rect so that it matches the actual caption size
         if( active && configuration().drawTitleOutline() && isActive() )
         {
+
+
+            if( configuration().centerTitleOnFullWidth() )
+            {
+                titleRect.setLeft( widget()->rect().left() + layoutMetric( LM_OuterPaddingLeft ) );
+                titleRect.setRight( widget()->rect().right() - layoutMetric( LM_OuterPaddingRight ) );
+            }
 
             const QRect textRect( titleBoundingRect( options()->font( true, false),  titleRect, caption() ) );
             titleRect.setLeft( textRect.left() - layoutMetric( LM_TitleBorderLeft ) );
@@ -388,6 +397,7 @@ namespace Oxygen
 
         } else {
 
+            // buttons are properly accounted for in titleBoundingRect method
             titleRect.setLeft( widget()->rect().left() + layoutMetric( LM_OuterPaddingLeft ) );
             titleRect.setRight( widget()->rect().right() - layoutMetric( LM_OuterPaddingRight ) );
 
@@ -411,11 +421,43 @@ namespace Oxygen
         boundingRect.setBottom( rect.bottom() );
 
         // check bounding rect against input rect
-        if( rect.left() > boundingRect.left() ) { boundingRect.setLeft( rect.left() ); }
-        if( rect.right() < boundingRect.right() ) { boundingRect.setRight( rect.right() ); }
+        boundRectTo( boundingRect, rect );
+
+        if( configuration().centerTitleOnFullWidth() )
+        {
+
+            /*
+            check bounding rect against max available space, for buttons
+            this is not needed if centerTitleOnFullWidth flag is set to false,
+            because it was already done before calling titleBoundingRect
+            */
+            boundRectTo( boundingRect, titleRect() );
+
+        }
 
         return boundingRect;
 
+    }
+
+    //_________________________________________________________
+    void Client::boundRectTo( QRect& rect, const QRect& bound ) const
+    {
+
+        if( bound.left() > rect.left() )
+        {
+            rect.moveLeft( bound.left() );
+            if( bound.right() < rect.right() )
+            { rect.setRight( bound.right() ); }
+
+        } else if( bound.right() < rect.right() ) {
+
+            rect.moveRight( bound.right() );
+            if( bound.left() > rect.left() )
+            { rect.setLeft( bound.left() ); }
+
+        }
+
+        return;
     }
 
     //_________________________________________________________
@@ -975,7 +1017,7 @@ namespace Oxygen
         // see if tag is active
         const int itemCount( itemData_.count() );
 
-        //
+        // check item bounding rect
         if( !item.boundingRect_.isValid() ) return;
 
         // create rect in which text is to be drawn
@@ -996,10 +1038,11 @@ namespace Oxygen
         const QList< ClientGroupItem >& items( clientGroupItems() );
         const QString caption( itemCount == 1 ? this->caption() : items[index].title() );
 
-        // always make sure that titleRect never conflicts with window buttons
-        QRect titleRect( this->titleRect() );
-        if( titleRect.left() > textRect.left() ) { textRect.setLeft( titleRect.left() ); }
-        if( titleRect.right() < textRect.right() ) { textRect.setRight( titleRect.right() ); }
+        if( !configuration().centerTitleOnFullWidth() )
+        { boundRectTo( textRect, titleRect() ); }
+
+        // adjust textRect
+        textRect = titleBoundingRect( painter->font(), textRect, caption );
 
         // title outline
         if( itemCount == 1 )
@@ -1010,13 +1053,9 @@ namespace Oxygen
             {
                 if( itemData_.isAnimated() ) {
 
-                    textRect = titleBoundingRect( painter->font(), textRect, caption );
                     renderTitleOutline( painter, item.boundingRect_, palette );
 
                 } else if( (isActive()||glowIsAnimated()) && configuration().drawTitleOutline() ) {
-
-                    // adjust textRect
-                    textRect = titleBoundingRect( painter->font(), textRect, caption );
 
                     // adjusts boundingRect accordingly
                     QRect boundingRect( item.boundingRect_ );
