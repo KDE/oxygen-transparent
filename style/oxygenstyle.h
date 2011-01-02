@@ -444,7 +444,7 @@ namespace Oxygen
         QSize pushButtonSizeFromContents( const QStyleOption*, const QSize&, const QWidget* ) const;
 
         QSize tabWidgetSizeFromContents( const QStyleOption*, const QSize& size, const QWidget* ) const
-        { return expandSize( size, TabWidget_ContentsMargin ); }
+        { return expandSize( size, TabWidget_ContentsMargin - 2 ); }
 
         QSize tabBarTabSizeFromContents( const QStyleOption*, const QSize& size, const QWidget* ) const;
         QSize toolButtonSizeFromContents( const QStyleOption*, const QSize&, const QWidget* ) const;
@@ -934,8 +934,8 @@ namespace Oxygen
         int _singleButtonHeight;
         int _doubleButtonHeight;
 
-        // mnemonic state
-        Qt::TextFlag _mnemonic;
+        // true if keyboard accelerators must be drawn
+        bool _showMnemonics;
 
         //! helper
         StyleHelper* _helper;
