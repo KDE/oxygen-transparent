@@ -136,6 +136,18 @@ namespace Oxygen
     static const QStyle::StyleHint SH_KCustomStyleElement = ( QStyle::StyleHint )0xff000001;
     static const int X_KdeBase = 0xff000000;
 
+    //_____________________________________________________________________
+    bool TopLevelManager::eventFilter( QObject *object, QEvent *event )
+    {
+
+        // cast to QWidget
+        QWidget *widget = static_cast<QWidget*>( object );
+        if( event->type() == QEvent::Show && _helper.hasDecoration( widget ) )
+        { _helper.setHasBackgroundGradient( widget->winId(), true ); }
+
+        return false;
+    }
+
     //______________________________________________________________
     Style::Style( void ):
         _addLineButtons( DoubleButton ),
@@ -147,6 +159,7 @@ namespace Oxygen
         _animations( new Animations( this ) ),
         _transitions( new Transitions( this ) ),
         _windowManager( new WindowManager( this ) ),
+        _topLevelManager( new TopLevelManager( this, *_helper ) ),
         _frameShadowFactory( new FrameShadowFactory( this ) ),
         _argbHelper( new ArgbHelper( this, helper() ) ),
         _blurHelper( new BlurHelper( this, helper() ) ),
@@ -246,7 +259,10 @@ namespace Oxygen
 
             case Qt::Window:
             case Qt::Dialog:
+
+            // set background as styled
             widget->setAttribute( Qt::WA_StyledBackground );
+            widget->installEventFilter( _topLevelManager );
             break;
 
             case Qt::ToolTip:
@@ -4498,7 +4514,7 @@ namespace Oxygen
                         else color = KColorUtils::mix( color, KColorUtils::tint( color, helper().viewHoverBrush().brush( palette ).color() ) );
                     }
 
-                } else color = helper().calcMidColor( helper().backgroundColor( color, widget, r.center() ) );
+                } else color = helper().backgroundColor( color, widget, r.center() );
 
                 // drawing
                 if( animated && intersected )
@@ -4630,7 +4646,7 @@ namespace Oxygen
                 const QRect currentRect( animations().menuEngine().currentRect( widget, Current ) );
                 const bool intersected( currentRect.contains( r.topLeft() ) );
 
-                const QColor color( helper().menuBackgroundColor( palette.color( QPalette::Window ), widget, r.center() ) );
+                const QColor color( helper().menuBackgroundColor( helper().calcMidColor( palette.color( QPalette::Window ) ), widget, r.center() ) );
 
                 if( animated && intersected ) renderMenuItemRect( option, r, color, palette, painter, animations().menuEngine().opacity( widget, Current ) );
                 else renderMenuItemRect( option, r, color, palette, painter );
@@ -8989,7 +9005,7 @@ namespace Oxygen
 
             if( animatedRect.intersects( r ) )
             {
-                const QColor color( helper().menuBackgroundColor( palette.color( QPalette::Window ), widget, animatedRect.center() ) );
+                const QColor color( helper().menuBackgroundColor( helper().calcMidColor( palette.color( QPalette::Window ) ), widget, animatedRect.center() ) );
                 renderMenuItemRect( option, animatedRect, color, palette, painter );
             }
 
@@ -8999,7 +9015,7 @@ namespace Oxygen
             if( previousRect.intersects( r ) )
             {
 
-                const QColor color( helper().menuBackgroundColor( palette.color( QPalette::Window ), widget, previousRect.center() ) );
+                const QColor color( helper().menuBackgroundColor( helper().calcMidColor( palette.color( QPalette::Window ) ), widget, previousRect.center() ) );
                 renderMenuItemRect( option, previousRect, color, palette, painter );
             }
 
@@ -9009,7 +9025,7 @@ namespace Oxygen
             if( previousRect.intersects( r ) )
             {
                 const qreal opacity(  animations().menuEngine().opacity( widget, Previous ) );
-                const QColor color( helper().menuBackgroundColor( palette.color( QPalette::Window ), widget, previousRect.center() ) );
+                const QColor color( helper().menuBackgroundColor( helper().calcMidColor( palette.color( QPalette::Window ) ), widget, previousRect.center() ) );
                 renderMenuItemRect( option, previousRect, color, palette, painter, opacity );
             }
 
@@ -9037,7 +9053,7 @@ namespace Oxygen
 
             color = KColorUtils::mix( color, KColorUtils::tint( color, palette.color( QPalette::Highlight ), 0.6 ) );
 
-        } else color = helper().calcMidColor( color );
+        }
 
         // special painting for items with submenus
         const QStyleOptionMenuItem* menuItemOption = qstyleoption_cast<const QStyleOptionMenuItem*>( opt );
