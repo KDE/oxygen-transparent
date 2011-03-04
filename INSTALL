@@ -1,0 +1,11 @@
+Basic instructions for compiling:
+
+  cd oxygen-transparent
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix`
+  make -j2
+  sudo make install
+
+You the need to select the style and window decoration named "Oxygen Transparent" from corresponding systemsettings pages.
+You can also run oxygen-transparent-settings from terminal or using krunner, to get all oxygen settings at once, including the background opacity setting.
