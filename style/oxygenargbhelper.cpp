@@ -125,6 +125,8 @@ namespace Oxygen
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
 
+                // some extra protection
+                if( !(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() )) break;
 
                 // translucent background already set. Do nothing.
                 if( widget->testAttribute(Qt::WA_TranslucentBackground) )

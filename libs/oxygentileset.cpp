@@ -24,6 +24,10 @@
 
 namespace Oxygen
 {
+
+    //______________________________________________________________
+    int TileSet::_sideExtent = 32;
+
     //______________________________________________________________
     void TileSet::initPixmap( PixmapList& pixmaps, const QPixmap &pix, int w, int h, const QRect &rect)
     {
@@ -64,8 +68,8 @@ namespace Oxygen
 
         _w3 = pix.width() - (w1 + w2);
         _h3 = pix.height() - (h1 + h2);
-        int w = w2; while (w < 32 && w2 > 0) w += w2;
-        int h = h2; while (h < 32 && h2 > 0) h += h2;
+        int w = w2; while (w < _sideExtent && w2 > 0) w += w2;
+        int h = h2; while (h < _sideExtent && h2 > 0) h += h2;
 
         // initialise pixmap array
         initPixmap( _pixmaps, pix, _w1, _h1, QRect(0, 0, _w1, _h1) );
@@ -88,8 +92,8 @@ namespace Oxygen
 
         int x2 = pix.width() - _w3;
         int y2 = pix.height() - _h3;
-        int w = w2; while (w < 32 && w2 > 0) w += w2;
-        int h = h2; while (h < 32 && h2 > 0) h += h2;
+        int w = w2; while (w < _sideExtent && w2 > 0) w += w2;
+        int h = h2; while (h < _sideExtent && h2 > 0) h += h2;
 
         // initialise pixmap array
         initPixmap( _pixmaps, pix, _w1, _h1, QRect(0, 0, _w1, _h1) );
@@ -169,4 +173,24 @@ namespace Oxygen
         // center
         if ( (t & Center) && h > 0 && w > 0 ) p->drawTiledPixmap(x1, y1, w, h, _pixmaps.at(4));
     }
+
+    //___________________________________________________________
+    void TileSet::save( const QString& basename, const QString& suffix, const char* format, int quality ) const
+    {
+        // check saved pixmaps
+        if( _pixmaps.size() < 9 ) return;
+
+        const char* location[9] = { "top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right" };
+        for( int i=0; i < _pixmaps.size(); i++ )
+        {
+
+            // check pixmap validity
+            if( _pixmaps[i].isNull() ) continue;
+
+            const QString filename = basename + "-" + location[i] + "." + suffix;
+            _pixmaps[i].save( filename, format, quality );
+        }
+
+    }
+
 }

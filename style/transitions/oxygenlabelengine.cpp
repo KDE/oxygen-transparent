@@ -35,14 +35,14 @@ namespace Oxygen
     {
 
         if( !widget ) return false;
-        if( !data_.contains( widget ) )
+        if( !_data.contains( widget ) )
         {
 
             // create new label data
             LabelData* data = new LabelData( this, widget, duration() );
 
             // and insert in map
-            data_.insert( widget, data, enabled() );
+            _data.insert( widget, data, enabled() );
 
         }
 

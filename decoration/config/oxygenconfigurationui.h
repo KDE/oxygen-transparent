@@ -60,7 +60,7 @@ namespace Oxygen
 
     //! expert mode
     bool expertMode( void ) const
-    { return expertMode_; }
+    { return _expertMode; }
 
     protected slots:
 
@@ -75,7 +75,7 @@ namespace Oxygen
     private:
 
     //! expert mode
-    bool expertMode_;
+    bool _expertMode;
 
   };
 

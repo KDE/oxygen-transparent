@@ -53,12 +53,14 @@
 #include "oxygenargbhelper.h"
 #include "oxygenblurhelper.h"
 #include "oxygenframeshadow.h"
+#include "oxygenshadowcache.h"
 #include "oxygenstyleconfigdata.h"
 #include "oxygentransitions.h"
 #include "oxygenwidgetexplorer.h"
 #include "oxygenwindowmanager.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QEvent>
 #include <QtGui/QAbstractButton>
 #include <QtGui/QAbstractItemView>
 #include <QtGui/QApplication>
@@ -81,6 +83,7 @@
 #include <QtGui/QSplitterHandle>
 #include <QtGui/QStylePlugin>
 #include <QtGui/QStyleOption>
+#include <QtGui/QStyleOptionToolButton>
 #include <QtGui/QTextEdit>
 #include <QtGui/QToolBar>
 #include <QtGui/QToolBox>
@@ -113,13 +116,13 @@ namespace Oxygen
 
         //! returns list of valid keys
         QStringList keys() const
-        { return QStringList( QLatin1String( "Oxygen" ) ); }
+        { return QStringList( QLatin1String( "Oxygen Transparent" ) ); }
 
         //! create style
         QStyle *create( const QString &key )
         {
 
-            if( key.toLower() == QLatin1String( "oxygen" ) ) return new Style;
+            if( key.toLower() == QLatin1String( "oxygen transparent" ) ) return new Style;
             else return NULL;
         }
     };
@@ -156,6 +159,7 @@ namespace Oxygen
         _doubleButtonHeight( 28 ),
         _showMnemonics( true ),
         _helper( new StyleHelper( "oxygen" ) ),
+        _shadowCache( new ShadowCache( *_helper ) ),
         _animations( new Animations( this ) ),
         _transitions( new Transitions( this ) ),
         _windowManager( new WindowManager( this ) ),
@@ -202,7 +206,10 @@ namespace Oxygen
 
     //______________________________________________________________
     Style::~Style( void )
-    { delete _helper; }
+    {
+        delete _shadowCache;
+        delete _helper;
+    }
 
     //______________________________________________________________
     void Style::polish( QApplication* app )
@@ -3493,7 +3500,7 @@ namespace Oxygen
             painter->setBrush( inputBrush );
 
             helper().fillHole( *painter, r.adjusted( 0, -1, 0, 0 ) );
-            drawPrimitive( PE_FrameLineEdit, panel, painter, widget );
+            drawFramePrimitive( panel, painter, widget );
 
             painter->restore();
 
@@ -3813,7 +3820,6 @@ namespace Oxygen
         const bool sunken( enabled && ( flags & State_Sunken ) );
 
         // match button color to window background
-        const QToolButton *tool( qobject_cast<const QToolButton *>( widget ) );
         const QColor highlight( helper().viewHoverBrush().brush( palette ).color() );
         QColor color = palette.color( autoRaise ? QPalette::WindowText:QPalette::ButtonText );
         QColor background = palette.color( QPalette::Window );
@@ -3826,7 +3832,8 @@ namespace Oxygen
         bool drawContrast = true;
 
         // toolbuttons
-        if( tool->popupMode()==QToolButton::MenuButtonPopup )
+        const QToolButton *tool( qobject_cast<const QToolButton *>( widget ) );
+        if( tool && tool->popupMode()==QToolButton::MenuButtonPopup )
         {
 
             if( !autoRaise )
@@ -7853,6 +7860,9 @@ namespace Oxygen
             StyleConfigData::maxCacheSize():0 );
 
         helper().setMaxCacheSize( cacheSize );
+
+        // shadow cache
+        shadowCache().readConfig( KConfig( "oxygenrc" ) );
 
         // reinitialize engines
         animations().setupEngines();

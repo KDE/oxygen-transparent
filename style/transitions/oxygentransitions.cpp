@@ -39,10 +39,10 @@ namespace Oxygen
         QObject( parent )
     {
 
-        registerEngine( comboBoxEngine_ = new ComboBoxEngine( this ) );
-        registerEngine( labelEngine_ = new LabelEngine( this ) );
-        registerEngine( lineEditEngine_ = new LineEditEngine( this ) );
-        registerEngine( stackedWidgetEngine_ = new StackedWidgetEngine( this ) );
+        registerEngine( _comboBoxEngine = new ComboBoxEngine( this ) );
+        registerEngine( _labelEngine = new LabelEngine( this ) );
+        registerEngine( _lineEditEngine = new LineEditEngine( this ) );
+        registerEngine( _stackedWidgetEngine = new StackedWidgetEngine( this ) );
 
     }
 
@@ -113,7 +113,7 @@ namespace Oxygen
         // the following allows some optimization of widget unregistration
         // it assumes that a widget can be registered atmost in one of the
         // engines stored in the list.
-        foreach( const BaseEngine::Pointer& engine, engines_ )
+        foreach( const BaseEngine::Pointer& engine, _engines )
         { if( engine && engine.data()->unregisterWidget( widget ) ) break; }
 
     }

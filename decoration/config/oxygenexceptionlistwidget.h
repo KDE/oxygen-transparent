@@ -42,7 +42,7 @@ namespace Oxygen
         public:
 
         //! constructor
-        explicit ExceptionListWidget( QWidget* = 0, Configuration default_configuration = Configuration() );
+        explicit ExceptionListWidget( QWidget* = 0, Configuration defaultConfiguration = Configuration() );
 
         //! set exceptions
         void setExceptions( const ExceptionList& );
