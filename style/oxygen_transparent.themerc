@@ -1,13 +1,5 @@
 [Misc]
 Name=Oxygen Transparent
-Name[es]=Oxígeno transparente
-Name[et]=Oxygen Transparent
-Name[nl]=Oxygen Transparant
-Name[pt]=Transparente do Oxygen
-Name[pt_BR]=Transparente do Oxygen
-Name[sv]=Oxygen genomskinlig
-Name[uk]=Прозорий Oxygen
-Name[x-test]=xxOxygen Transparentxx
 ConfigPage=kstyle_oxygen_transparent_config
 [KDE]
 WidgetStyle=Oxygen Transparent
