@@ -53,7 +53,7 @@
 #include "oxygenargbhelper.h"
 #include "oxygenblurhelper.h"
 #include "oxygenframeshadow.h"
-#include "oxygenshadowcache.h"
+#include "oxygenshadowhelper.h"
 #include "oxygenstyleconfigdata.h"
 #include "oxygentransitions.h"
 #include "oxygenwidgetexplorer.h"
@@ -159,7 +159,7 @@ namespace Oxygen
         _doubleButtonHeight( 28 ),
         _showMnemonics( true ),
         _helper( new StyleHelper( "oxygen" ) ),
-        _shadowCache( new ShadowCache( *_helper ) ),
+        _shadowHelper( new ShadowHelper( this, *_helper ) ),
         _animations( new Animations( this ) ),
         _transitions( new Transitions( this ) ),
         _windowManager( new WindowManager( this ) ),
@@ -206,10 +206,7 @@ namespace Oxygen
 
     //______________________________________________________________
     Style::~Style( void )
-    {
-        delete _shadowCache;
-        delete _helper;
-    }
+    { delete _helper; }
 
     //______________________________________________________________
     void Style::polish( QApplication* app )
@@ -230,6 +227,7 @@ namespace Oxygen
         transitions().registerWidget( widget );
         windowManager().registerWidget( widget );
         frameShadowFactory().registerWidget( widget, helper() );
+        shadowHelper().registerWidget( widget );
 
         // scroll areas
         if( QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>( widget ) )
@@ -270,18 +268,6 @@ namespace Oxygen
             // set background as styled
             widget->setAttribute( Qt::WA_StyledBackground );
             widget->installEventFilter( _topLevelManager );
-            break;
-
-            case Qt::ToolTip:
-            if( !widget->autoFillBackground() )
-            {
-                widget->setAttribute( Qt::WA_TranslucentBackground );
-
-                #ifdef Q_WS_WIN
-                //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
-                widget->setWindowFlags( widget->windowFlags() | Qt::FramelessWindowHint );
-                #endif
-            }
 
             break;
 
@@ -317,6 +303,17 @@ namespace Oxygen
             || qobject_cast<QToolButton*>( widget )
             )
         { widget->setAttribute( Qt::WA_Hover ); }
+
+        // transparent tooltips
+        if( widget->inherits( "QTipLabel" ) )
+        {
+            widget->setAttribute( Qt::WA_TranslucentBackground );
+
+            #ifdef Q_WS_WIN
+            //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
+            widget->setWindowFlags( widget->windowFlags() | Qt::FramelessWindowHint );
+            #endif
+        }
 
         // also enable hover effects in itemviews' viewport
         if( QAbstractItemView *itemView = qobject_cast<QAbstractItemView*>( widget ) )
@@ -486,6 +483,7 @@ namespace Oxygen
         transitions().unregisterWidget( widget );
         windowManager().unregisterWidget( widget );
         frameShadowFactory().unregisterWidget( widget );
+        shadowHelper().unregisterWidget( widget );
         argbHelper().unregisterWidget( widget );
         blurHelper().unregisterWidget( widget );
 
@@ -7861,13 +7859,11 @@ namespace Oxygen
 
         helper().setMaxCacheSize( cacheSize );
 
-        // shadow cache
-        shadowCache().readConfig( KConfig( "oxygenrc" ) );
-
         // reinitialize engines
         animations().setupEngines();
         transitions().setupEngines();
         windowManager().initialize();
+        shadowHelper().reloadConfig();
 
         // widget explorer
         widgetExplorer().setEnabled( StyleConfigData::widgetExplorerEnabled() );

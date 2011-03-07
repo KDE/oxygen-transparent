@@ -55,6 +55,7 @@ set(oxygen_transparent_PART_SRCS
     oxygenblurhelper.cpp
     oxygenframeshadow.cpp
     oxygenpropertynames.cpp
+    oxygenshadowhelper.cpp
     oxygenstyle.cpp
     oxygenstylehelper.cpp
     oxygenwindowmanager.cpp
