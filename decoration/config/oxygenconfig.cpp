@@ -58,7 +58,7 @@ namespace Oxygen
         QObject( parent )
     {
 
-        KGlobal::locale()->insertCatalog("kwin_clients");
+        KGlobal::locale()->insertCatalog("oxygen_transparent");
 
         _configuration = new KConfig( "oxygenrc" );
         KConfigGroup configurationGroup( _configuration, "Windeco");
