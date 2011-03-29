@@ -34,6 +34,8 @@
 #include <KConfig>
 
 #include <QtGui/QMenu>
+#include <QtCore/QTextStream>
+#include <QtCore/QEvent>
 
 #ifdef Q_WS_X11
 #include <QtGui/QX11Info>
@@ -64,8 +66,10 @@ namespace Oxygen
     {
 
         // unregister all stored widgets
-        foreach( QWidget* widget, _widgets )
-        { uninstallX11Shadows( widget ); }
+        /*
+        for( QMap<QWidget*,WId>::const_iterator iter = _widgets.begin(); iter != _widgets.end(); iter++ )
+        { uninstallX11Shadows( iter.value() ); }
+        */
 
         // delete shadow cache
         delete _shadowCache;
@@ -83,12 +87,13 @@ namespace Oxygen
         if( !( qobject_cast<QMenu*>( widget ) || widget->inherits( "QComboBoxPrivateContainer" ) ) )
         { return false; }
 
-        // install pixmaps
-        if( !installX11Shadows( widget ) ) return false;
-
         // store in map and add destroy signal connection
-        _widgets.insert( widget );
+        widget->removeEventFilter( this );
+        widget->installEventFilter( this );
+
+        _widgets.insert( widget, 0 );
         connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( objectDeleted( QObject* ) ) );
+
         return true;
 
     }
@@ -113,8 +118,26 @@ namespace Oxygen
         _shadowSize = shadowCache().shadowSize();
 
         // update property for registered widgets
-        foreach( QWidget* widget, _widgets )
-        { installX11Shadows( widget ); }
+        for( QMap<QWidget*,WId>::const_iterator iter = _widgets.begin(); iter != _widgets.end(); iter++ )
+        { installX11Shadows( iter.key() ); }
+
+    }
+
+    //_______________________________________________________
+    bool ShadowHelper::eventFilter( QObject* object, QEvent* event )
+    {
+
+        // check event type
+        if( event->type() != QEvent::WinIdChange ) return false;
+
+        // cast widget
+        QWidget* widget( static_cast<QWidget*>( object ) );
+
+        // install shadows and update winId
+        if( installX11Shadows( widget ) )
+        { _widgets.insert( widget, widget->winId() ); }
+
+        return true;
 
     }
 
@@ -184,6 +207,16 @@ namespace Oxygen
         #ifdef Q_WS_X11
         if( !widget ) return;
         XDeleteProperty(QX11Info::display(), widget->winId(), _atom);
+        #endif
+
+    }
+
+    //_______________________________________________________
+    void ShadowHelper::uninstallX11Shadows( WId id ) const
+    {
+
+        #ifdef Q_WS_X11
+        XDeleteProperty(QX11Info::display(), id, _atom);
         #endif
 
     }
