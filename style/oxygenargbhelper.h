@@ -101,6 +101,10 @@ namespace Oxygen
         void setBlackList( const QStringList blackList )
         { _blackList = blackList; }
 
+        //! returns true if widget is registered
+        bool isRegistered( QWidget* widget ) const
+        { return _transparentWidgets.contains( widget ); }
+
         //! returns translucent color
         QColor translucentColor( const QColor& color, const QWidget* widget ) const
         { return translucentColor( color, _helper.hasAlphaChannel( widget ) ); }
