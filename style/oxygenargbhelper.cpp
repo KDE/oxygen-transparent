@@ -125,43 +125,8 @@ namespace Oxygen
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
 
-                // some extra protection
-                if( !(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() )) break;
-
-                // translucent background already set. Do nothing.
-                if( widget->testAttribute(Qt::WA_TranslucentBackground) )
-                {
-                    // set Argb xproperty
-                    _helper.setHasArgb( widget->winId(), true );
-                    break;
-                }
-
-                /*
-                whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
-                Unfortunately some properties are lost, among them the window icon. We save it and restore it manually
-                */
-                QIcon icon(widget->windowIcon());
-
-                // set translucent flag
-                widget->setAttribute( Qt::WA_TranslucentBackground );
-
-                // re-install icon
-                widget->setWindowIcon(icon);
-
-                /*
-                HACK: somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
-                we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
-                Copied from bespin. (TODO: try save position and restore)
-                */
-                if( !widget->isVisible() )
-                { widget->move(10000,10000); }
-
-                // add to set of transparent widgets and connect destruction signal
-                _transparentWidgets.insert( widget );
-                connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
-
-                // set Argb xproperty
-                _helper.setHasArgb( widget->winId(), true );
+                if( widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() )
+                { setupTransparency( widget ); }
 
                 return true;
             }
@@ -187,6 +152,68 @@ namespace Oxygen
 
         return false;
 
+    }
+
+    //_______________________________________________________
+    bool ArgbHelper::eventFilter( QObject* object, QEvent* event )
+    {
+
+        // check event type
+        if( event->type() != QEvent::WinIdChange ) return false;
+
+        // cast widget
+        if( QWidget* widget = static_cast<QWidget*>( object ) )
+        { setupTransparency( widget ); }
+
+        return false;
+
+    }
+
+    //______________________________________________________________
+    void ArgbHelper::setupTransparency( QWidget* widget )
+    {
+
+        if( _transparentWidgets.contains( widget ) ) return;
+
+        // some extra protection
+        if( !(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() )) return;
+
+        // translucent background already set. Do nothing.
+        if( widget->testAttribute(Qt::WA_TranslucentBackground) )
+        {
+            // set Argb xproperty
+            _helper.setHasArgb( widget->winId(), true );
+            return;
+        }
+
+        /*
+        whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
+        Unfortunately some properties are lost, among them the window icon. We save it and restore it manually
+        */
+        // QIcon icon(widget->windowIcon());
+
+        // set translucent flag
+        widget->setAttribute( Qt::WA_TranslucentBackground );
+
+        // re-install icon
+        // widget->setWindowIcon(icon);
+
+//         /*
+//         HACK: somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
+//         we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
+//         Copied from bespin. (TODO: try save position and restore)
+//         */
+//         if( !widget->isVisible() )
+//         { widget->move(10000,10000); }
+//
+        // add to set of transparent widgets and connect destruction signal
+        _transparentWidgets.insert( widget );
+        connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
+
+        // set Argb xproperty
+        _helper.setHasArgb( widget->winId(), true );
+
+        return;
     }
 
 }

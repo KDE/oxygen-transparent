@@ -1417,6 +1417,9 @@ namespace Oxygen
             widget->testAttribute( Qt::WA_StyledBackground ) )
             ) return false;
 
+        // check registration to Argb
+        if( !argbHelper().isRegistered( widget ) ) return false;
+
         QPaintEvent* paintEvent( static_cast<QPaintEvent*>( ev ) );
         QPainter p( widget );
         p.setClipRegion( paintEvent->region() );

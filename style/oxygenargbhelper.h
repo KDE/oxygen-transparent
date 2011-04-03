@@ -112,11 +112,19 @@ namespace Oxygen
         //! returns translucent color
         inline QColor translucentColor( const QColor& color, bool hasAlpha ) const;
 
+        //! event filter
+        virtual bool eventFilter( QObject*, QEvent* );
+
         protected slots:
 
         //! unregister transparent widget
         void unregisterTransparentWidget( QObject* object )
         { _transparentWidgets.remove( object ); }
+
+        protected:
+
+        // transparency
+        void setupTransparency( QWidget* );
 
         private:
 
