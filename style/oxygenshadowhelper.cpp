@@ -84,14 +84,21 @@ namespace Oxygen
         if( _widgets.contains( widget ) ) return false;
 
         // check widget type
-        if( !( qobject_cast<QMenu*>( widget ) || widget->inherits( "QComboBoxPrivateContainer" ) ) )
-        { return false; }
+        const bool accepted( qobject_cast<QMenu*>( widget ) || widget->inherits( "QComboBoxPrivateContainer" ) );
+        if( !accepted ) { return false; }
 
         // store in map and add destroy signal connection
         widget->removeEventFilter( this );
         widget->installEventFilter( this );
-
         _widgets.insert( widget, 0 );
+
+        /*
+        need to install shadow directly when widget "created" state is already set
+        since WinID changed is never called when this is the case
+        */
+        if( widget->testAttribute(Qt::WA_WState_Created) && installX11Shadows( widget ) )
+        {  _widgets.insert( widget, widget->winId() ); }
+
         connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( objectDeleted( QObject* ) ) );
 
         return true;
@@ -118,7 +125,7 @@ namespace Oxygen
         _shadowSize = shadowCache().shadowSize();
 
         // update property for registered widgets
-        for( QMap<QWidget*,WId>::const_iterator iter = _widgets.begin(); iter != _widgets.end(); iter++ )
+        for( QMap<QWidget*,WId>::const_iterator iter = _widgets.begin(); iter != _widgets.end(); ++iter )
         { installX11Shadows( iter.key() ); }
 
     }
@@ -184,8 +191,12 @@ namespace Oxygen
             << _shadows.pixmap( 0 ).handle();
 
         // add padding
-        /* all 4 paddings are identical, since offsets are handled when generating the pixmaps */
-        data << _shadowSize << _shadowSize << _shadowSize << _shadowSize;
+        /*
+        all 4 paddings are identical, since offsets are handled when generating the pixmaps.
+        there is one extra pixel needed with respect to actual shadow size, to deal with how
+        menu backgrounds are rendered
+        */
+        data << _shadowSize - 1 << _shadowSize - 1 << _shadowSize - 1 << _shadowSize - 1;
 
         XChangeProperty(
             QX11Info::display(), widget->winId(), _atom, XA_CARDINAL, 32, PropModeReplace,

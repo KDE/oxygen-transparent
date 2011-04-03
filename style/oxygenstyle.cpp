@@ -709,7 +709,6 @@ namespace Oxygen
             case PM_MenuScrollerHeight: return 10;
             case PM_MenuTearoffHeight: return 10;
 
-            //! tabbar
             // tabbars
             case PM_TabBarTabHSpace: return 0;
             case PM_TabBarTabVSpace: return 0;
@@ -6241,7 +6240,7 @@ namespace Oxygen
         const bool hasLeftCornerWidget( tabOpt->cornerWidgets & QStyleOptionTab::LeftCornerWidget );
         const bool hasRightCornerWidget( tabOpt->cornerWidgets & QStyleOptionTab::RightCornerWidget );
 
-        // true if widget is alligned to the frame
+        // true if widget is aligned to the frame
         /* need to check for 'isRightOfSelected' because for some reason the isFirst flag is set when active tab is being moved */
         const bool isFrameAligned( !documentMode && isFirst && !hasLeftCornerWidget && !isRightOfSelected && !isDragged );
         isFirst &= !isRightOfSelected;
