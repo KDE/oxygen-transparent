@@ -30,8 +30,10 @@
 
 #include <KConfig>
 
+#include <QtGui/QDockWidget>
 #include <QtGui/QMenu>
 #include <QtGui/QPainter>
+#include <QtGui/QToolBar>
 #include <QtCore/QTextStream>
 #include <QtCore/QEvent>
 
@@ -43,6 +45,10 @@
 
 namespace Oxygen
 {
+
+    const char* const ShadowHelper::netWMShadowAtomName( "_KDE_NET_WM_SHADOW" );
+    const char* const ShadowHelper::netWMForceShadowPropertyName( "_KDE_NET_WM_FORCE_SHADOW" );
+    const char* const ShadowHelper::netWMSkipShadowPropertyName( "_KDE_NET_WM_SKIP_SHADOW" );
 
     //_____________________________________________________
     ShadowHelper::ShadowHelper( QObject* parent, Helper& helper ):
@@ -73,15 +79,15 @@ namespace Oxygen
     }
 
     //_______________________________________________________
-    bool ShadowHelper::registerWidget( QWidget* widget )
+    bool ShadowHelper::registerWidget( QWidget* widget, bool force )
     {
 
         // make sure widget is not already registered
         if( _widgets.contains( widget ) ) return false;
 
-        // check widget type
-        const bool accepted( qobject_cast<QMenu*>( widget ) || widget->inherits( "QComboBoxPrivateContainer" ) );
-        if( !accepted ) { return false; }
+        // check if widget qualifies
+        if( !( force || acceptWidget( widget ) ) )
+        { return false; }
 
         // store in map and add destroy signal connection
         widget->removeEventFilter( this );
@@ -124,7 +130,7 @@ namespace Oxygen
         _tiles = *shadowCache().tileSet( ShadowCache::Key() );
 
         // update property for registered widgets
-        for( QMap<QWidget*,WId>::const_iterator iter = _widgets.begin(); iter != _widgets.end(); ++iter )
+        for( QMap<QWidget*,WId>::const_iterator iter = _widgets.constBegin(); iter != _widgets.constEnd(); ++iter )
         { installX11Shadows( iter.key() ); }
 
     }
@@ -151,6 +157,40 @@ namespace Oxygen
     void ShadowHelper::objectDeleted( QObject* object )
     { _widgets.remove( static_cast<QWidget*>( object ) ); }
 
+    //_______________________________________________________
+    bool ShadowHelper::isMenu( QWidget* widget ) const
+    { return qobject_cast<QMenu*>( widget ); }
+
+    //_______________________________________________________
+    bool ShadowHelper::isToolTip( QWidget* widget ) const
+    { return widget->inherits( "QTipLabel" ) || (widget->windowFlags() & Qt::WindowType_Mask) == Qt::ToolTip; }
+
+    //_______________________________________________________
+    bool ShadowHelper::acceptWidget( QWidget* widget ) const
+    {
+
+        if( widget->property( netWMSkipShadowPropertyName ).toBool() ) return false;
+        if( widget->property( netWMForceShadowPropertyName ).toBool() ) return true;
+
+        // menus
+        if( qobject_cast<QMenu*>( widget ) ) return true;
+
+        // combobox dropdown lists
+        if( widget->inherits( "QComboBoxPrivateContainer" ) ) return true;
+
+        // tooltips
+        if( (widget->inherits( "QTipLabel" ) || (widget->windowFlags() & Qt::WindowType_Mask) == Qt::ToolTip ) &&
+            !widget->inherits( "Plasma::ToolTip" ) )
+        { return true; }
+
+        // detached widgets
+        if( qobject_cast<QToolBar*>( widget ) || qobject_cast<QDockWidget*>( widget ) )
+        { return true; }
+
+        // reject
+        return false;
+    }
+
     //______________________________________________
     void ShadowHelper::createPixmapHandles( void )
     {
@@ -162,7 +202,7 @@ namespace Oxygen
 
         // create atom
         #ifdef Q_WS_X11
-        if( !_atom ) _atom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_SHADOW", False);
+        if( !_atom ) _atom = XInternAtom( QX11Info::display(), netWMShadowAtomName, False);
         #endif
 
         // make sure size is valid
@@ -172,28 +212,29 @@ namespace Oxygen
         if( _pixmaps.empty() )
         {
 
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 1 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 2 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 5 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 8 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 7 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 6 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 3 ) ) );
-            _pixmaps.push_back( createPixmap( _tiles.pixmap( 0 ) ) );
+            const int shadowOpacity = 150;
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 1 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 2 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 5 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 8 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 7 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 6 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 3 ), shadowOpacity ) );
+            _pixmaps.push_back( createPixmap( _tiles.pixmap( 0 ), shadowOpacity ) );
 
         }
 
     }
 
     //______________________________________________
-    Qt::HANDLE ShadowHelper::createPixmap( const QPixmap& source ) const
+    Qt::HANDLE ShadowHelper::createPixmap( const QPixmap& source, int opacity ) const
     {
 
         // do nothing for invalid pixmaps
         if( source.isNull() ) return 0;
 
         // if available returns the pixmap handle directly
-        if( source.handle() )
+        if( source.handle() && opacity == 255 )
         {
 
             return source.handle();
@@ -221,7 +262,16 @@ namespace Oxygen
                 QPainter painter( &dest );
                 painter.setCompositionMode( QPainter::CompositionMode_Source );
                 painter.drawPixmap( 0, 0, source );
+
+                // add opacity
+                if( opacity < 255 )
+                {
+                    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                    painter.fillRect( dest.rect(), QColor( 0, 0, 0, opacity ) );
+                }
+
             }
+
 
             return pixmap;
             #else
@@ -266,7 +316,16 @@ namespace Oxygen
         there is one extra pixel needed with respect to actual shadow size, to deal with how
         menu backgrounds are rendered
         */
-        data << _size - 1 << _size - 1 << _size - 1 << _size - 1;
+        if( isToolTip( widget ) )
+        {
+
+            data << _size << _size << _size << _size;
+
+        } else {
+
+            data << _size - 1 << _size - 1 << _size - 1 << _size - 1;
+
+        }
 
         XChangeProperty(
             QX11Info::display(), widget->winId(), _atom, XA_CARDINAL, 32, PropModeReplace,

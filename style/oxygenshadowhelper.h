@@ -52,6 +52,11 @@ namespace Oxygen
 
         public:
 
+        //!@name property names
+        static const char* const netWMShadowAtomName;
+        static const char* const netWMForceShadowPropertyName;
+        static const char* const netWMSkipShadowPropertyName;
+
         //! constructor
         ShadowHelper( QObject*, Helper& );
 
@@ -62,7 +67,7 @@ namespace Oxygen
         void reset( void );
 
         //! register widget
-        bool registerWidget( QWidget* );
+        bool registerWidget( QWidget*, bool force = false );
 
         //! unregister widget
         void unregisterWidget( QWidget* );
@@ -80,6 +85,15 @@ namespace Oxygen
 
         protected:
 
+        //! true if widget is a menu
+        bool isMenu( QWidget* ) const;
+
+        //! true if widget is a tooltip
+        bool isToolTip( QWidget* ) const;
+
+        //! accept widget
+        bool acceptWidget( QWidget* ) const;
+
         //! shadow cache
         const ShadowCache& shadowCache( void ) const
         { return *_shadowCache; }
@@ -92,7 +106,7 @@ namespace Oxygen
         void createPixmapHandles( void );
 
         // create pixmap handle from pixmap
-        Qt::HANDLE createPixmap( const QPixmap& ) const;
+        Qt::HANDLE createPixmap( const QPixmap&, int opacity = 255 ) const;
 
         //! install shadow X11 property on given widget
         /*!
