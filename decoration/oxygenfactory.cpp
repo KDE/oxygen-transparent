@@ -107,7 +107,8 @@ namespace Oxygen
 
         // create a config object
         KConfig config("oxygenrc");
-        Configuration configuration( config.group("Windeco" ) );
+        KConfigGroup group( config.group("Windeco") );
+        Configuration configuration( group );
 
         if( configuration.opacityFromStyle() )
         { configuration.readBackgroundOpacity( config.group("Common") ); }
@@ -135,6 +136,12 @@ namespace Oxygen
 
         // read shadowCache configuration
         changed |= shadowCache().readConfig( config );
+
+        // background pixmap
+        {
+            KConfigGroup group( config.group("Common") );
+            helper().setBackgroundPixmap( group.readEntry( "BackgroundPixmap", "" ) );
+        }
 
         return changed;
 

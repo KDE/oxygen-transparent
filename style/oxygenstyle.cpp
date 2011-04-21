@@ -148,7 +148,10 @@ namespace Oxygen
         // cast to QWidget
         QWidget *widget = static_cast<QWidget*>( object );
         if( event->type() == QEvent::Show && _helper.hasDecoration( widget ) )
-        { _helper.setHasBackgroundGradient( widget->winId(), true ); }
+        {
+            _helper.setHasBackgroundGradient( widget->winId(), true );
+            _helper.setHasBackgroundPixmap( widget->winId(), true );
+        }
 
         return false;
     }
@@ -7893,6 +7896,9 @@ namespace Oxygen
 
         // reset helper configuration
         helper().reloadConfig();
+
+        // background pixmap
+        helper().setBackgroundPixmap( StyleConfigData::backgroundPixmap() );
 
         // reset config
         StyleConfigData::self()->readConfig();
