@@ -190,22 +190,20 @@ namespace Oxygen
         whenever you set the translucency flag, Qt will create a new widget under the hood, replacing the old
         Unfortunately some properties are lost, among them the window icon. We save it and restore it manually
         */
-        // QIcon icon(widget->windowIcon());
+
+        // store icon
+        QIcon icon(widget->windowIcon());
+
+        // store position
+        QPoint position( widget->x(), widget->y() );
 
         // set translucent flag
         widget->setAttribute( Qt::WA_TranslucentBackground );
 
         // re-install icon
-        // widget->setWindowIcon(icon);
+        widget->setWindowIcon(icon);
+        if( !widget->isVisible() ) widget->move( position );
 
-//         /*
-//         HACK: somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
-//         we just move it faaaaar away so kwin will take back control and apply smart placement or whatever.
-//         Copied from bespin. (TODO: try save position and restore)
-//         */
-//         if( !widget->isVisible() )
-//         { widget->move(10000,10000); }
-//
         // add to set of transparent widgets and connect destruction signal
         _transparentWidgets.insert( widget );
         connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
