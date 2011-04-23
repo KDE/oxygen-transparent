@@ -150,7 +150,7 @@ namespace Oxygen
         if( event->type() == QEvent::Show && _helper.hasDecoration( widget ) )
         {
             _helper.setHasBackgroundGradient( widget->winId(), true );
-            _helper.setHasBackgroundPixmap( widget->winId(), true );
+            _helper.setHasBackgroundPixmap( widget->winId(), _helper.hasBackgroundPixmap() );
         }
 
         return false;
@@ -8502,10 +8502,10 @@ namespace Oxygen
         // edges
         // for slabs, hover takes precedence over focus ( other way around for holes )
         // but in any case if the button is sunken we don't show focus nor hover
-        TileSet *tile;
+        TileSet *tile(0L);
         if( options & Sunken )
         {
-            tile = helper().slabSunken( color, 0.0 );
+            tile = helper().slabSunken( color );
 
         } else {
 
@@ -8514,7 +8514,8 @@ namespace Oxygen
 
         }
 
-        tile->render( r, painter, tiles );
+        if( tile )
+        { tile->render( r, painter, tiles ); }
 
     }
 
@@ -8572,7 +8573,7 @@ namespace Oxygen
         TileSet *tile( 0 );
         if( ( options & Sunken ) && color.isValid() )
         {
-            tile = helper().slabSunken( color, 0.0 );
+            tile = helper().slabSunken( color );
 
         } else {
 
