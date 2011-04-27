@@ -737,36 +737,43 @@ namespace Oxygen
     }
 
     //________________________________________________________________________________________________________
-    TileSet* Helper::slab( const QColor& color, qreal shade, int size )
+    TileSet *Helper::slab( const QColor& color, const QColor& glow, qreal shade, int size )
     {
-
         Oxygen::Cache<TileSet>::Value* cache( _slabCache.get( color ) );
-        const quint64 key( ( ( int )( 256.0 * shade ) ) << 24 | size );
-        TileSet* tileSet( cache->object( key ) );
+
+        const quint64 key( ( quint64( glow.rgba() ) << 32 ) | ( quint64( 256.0 * shade ) << 24 ) | size );
+        TileSet *tileSet = cache->object( key );
+
+        const qreal hScale( 1 );
+        const int hSize( size*hScale );
+        const int vSize( size );
 
         if ( !tileSet )
         {
-            QPixmap pixmap( size*2, size*2 );
+            QPixmap pixmap( hSize*2,vSize*2 );
             pixmap.fill( Qt::transparent );
 
             QPainter p( &pixmap );
             p.setRenderHints( QPainter::Antialiasing );
             p.setPen( Qt::NoPen );
-            p.setWindow( 0,0,14,14 );
 
-            // shadow
-            drawShadow( p, calcShadowColor( color ), 14 );
-            drawSlab( p, color, shade );
+            const int fixedSize( 14 );
+            p.setWindow( 0,0,fixedSize*hScale, fixedSize );
+
+            // draw all components
+            if( color.isValid() ) drawShadow( p, calcShadowColor( color ), 14 );
+            if( glow.isValid() ) drawOuterGlow( p, glow, 14 );
+            if( color.isValid() ) drawSlab( p, color, shade );
 
             p.end();
 
-            tileSet = new TileSet( pixmap, size, size, size, size, size-1, size, 2, 1 );
+            tileSet = new TileSet( pixmap, hSize, vSize, hSize, vSize, hSize-1, vSize, 2, 1 );
 
             cache->insert( key, tileSet );
         }
-
         return tileSet;
     }
+
 
     //____________________________________________________________________
     const QWidget* Helper::checkAutoFillBackground( const QWidget* w ) const
@@ -965,7 +972,7 @@ namespace Oxygen
         // inside mask
         p.setCompositionMode( QPainter::CompositionMode_DestinationOut );
         p.setBrush( Qt::black );
-        p.drawEllipse( r.adjusted( width, width, -width, -width ) );
+        p.drawEllipse( r.adjusted( width+0.5, width+0.5, -width-1, -width-1 ) );
         p.restore();
 
     }

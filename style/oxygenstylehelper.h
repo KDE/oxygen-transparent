@@ -36,6 +36,17 @@
 /*! contains utility functions used at multiple places in oxygen style */
 namespace Oxygen
 {
+
+    enum HoleOption
+    {
+        HoleFocus = 0x1,
+        HoleHover = 0x2,
+        HoleOutline = 0x4,
+        HoleContrast = 0x8
+    };
+
+    Q_DECLARE_FLAGS(HoleOptions, HoleOption)
+
     class StyleHelper : public Helper
     {
         public:
@@ -106,15 +117,31 @@ namespace Oxygen
 
         void fillSlab( QPainter&, const QRect&, int size = 7 ) const;
 
-        // progressbar
+        //! progressbar
         QPixmap progressBarIndicator( const QPalette&, const QRect& );
 
-        QPixmap dialSlab( const QColor&, qreal shade, int size = 7 );
-        QPixmap dialSlabFocused( const QColor&, const QColor&, qreal shade, int size = 7 );
-        QPixmap roundSlab( const QColor&, qreal shade, int size = 7 );
-        QPixmap roundSlabFocused( const QColor&, const QColor& glowColor, qreal shade, int size = 7 );
+        //! dial
+        QPixmap dialSlab( const QColor& color, qreal shade, int size = 7 )
+        { return dialSlab( color, QColor(), shade, size ); }
 
-        TileSet *slabFocused( const QColor&, const QColor& glowColor, qreal shade, int size = 7 );
+        //! dial
+        QPixmap dialSlab( const QColor&, const QColor&, qreal shade, int size = 7 );
+
+        // round slabs
+        QPixmap roundSlab( const QColor& color, qreal shade, int size = 7 )
+        { return roundSlab( color, QColor(), shade, size ); }
+
+        // round slab
+        QPixmap roundSlab( const QColor&, const QColor& glow, qreal shade, int size = 7 );
+
+        //! slider slab
+        QPixmap sliderSlab( const QColor& color, qreal shade, int size = 7 )
+        { return sliderSlab( color, QColor(), shade, size ); }
+
+        //! slider slab
+        QPixmap sliderSlab( const QColor&, const QColor& glow, qreal shade, int size = 7 );
+
+        //! sunken slab
         TileSet *slabSunken( const QColor&, int size = 7 );
 
         //@}
@@ -126,15 +153,16 @@ namespace Oxygen
 
         //! generic hole
         void renderHole( QPainter *p, const QColor& color, const QRect &r,
-            bool focus=false, bool hover=false,
-            TileSet::Tiles posFlags = TileSet::Ring, bool outline = false )
-        { renderHole( p, color, r, focus, hover, -1, Oxygen::AnimationNone, posFlags, outline ); }
+            HoleOptions options = 0,
+            TileSet::Tiles tiles = TileSet::Ring )
+        { renderHole( p, color, r, options, -1, Oxygen::AnimationNone, tiles ); }
 
         //! generic hole (with animated glow)
-        void renderHole( QPainter *p, const QColor&, const QRect &r,
-            bool focus, bool hover,
+        void renderHole(
+            QPainter*, const QColor&, const QRect &r,
+            HoleOptions,
             qreal opacity, Oxygen::AnimationMode animationMode,
-            TileSet::Tiles posFlags = TileSet::Ring, bool outline = false );
+            TileSet::Tiles = TileSet::Ring );
 
         TileSet *holeFlat( const QColor&, qreal shade, bool fill = true, int size = 7 );
 
@@ -178,18 +206,20 @@ namespace Oxygen
         //!@name holes
         //@{
 
-        //! non focus hole
-        TileSet *hole( const QColor& color, int size = 7, bool outline = false )
-        { return holeFocused( color, QColor(), size, outline ); }
+        //! holes
+        TileSet *hole( const QColor& color, int size = 7, HoleOptions options = 0 )
+        { return hole( color, QColor(), size, options ); }
 
-        //! focused hole
-        TileSet *holeFocused( const QColor&, const QColor& glowColor, int size = 7, bool outline = false );
+        //! holes
+        TileSet *hole( const QColor&, const QColor& glow, int size = 7, HoleOptions = 0 );
 
         //@}
 
         // round slabs
         void drawRoundSlab( QPainter&, const QColor&, qreal );
 
+        // slider slabs
+        void drawSliderSlab( QPainter&, const QColor&, qreal );
 
         private:
 
@@ -198,7 +228,8 @@ namespace Oxygen
 
         Cache<QPixmap> _dialSlabCache;
         Cache<QPixmap> _roundSlabCache;
-        Cache<TileSet> _holeFocusedCache;
+        Cache<QPixmap> _sliderSlabCache;
+        Cache<TileSet> _holeCache;
 
         //! mid color cache
         ColorCache _midColorCache;

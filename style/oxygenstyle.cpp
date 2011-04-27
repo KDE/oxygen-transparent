@@ -744,7 +744,7 @@ namespace Oxygen
             // sliders
             case PM_SliderThickness: return 23;
             case PM_SliderControlThickness: return 23;
-            case PM_SliderLength: return 13;
+            case PM_SliderLength: return 21;
 
             // spinboxes
             case PM_SpinBoxFrameWidth: return SpinBox_FrameWidth;
@@ -2075,8 +2075,7 @@ namespace Oxygen
                 if( const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>( option ) )
                 {
                     const bool horizontal( slider->orientation == Qt::Horizontal );
-                    if( horizontal ) handle.adjust( -1, 0, 1, 0 );
-                    else handle.adjust( 0, 0, 0, 2 );
+                    if( horizontal ) handle.translate( 0, -1 );
                 }
 
                 return handle;
@@ -2092,12 +2091,14 @@ namespace Oxygen
                     {
 
                         const int center( groove.center().y() );
-                        groove = QRect( groove.left(), center-2, groove.width(), 5  ).adjusted( 3, 0, -3, 0 );
+                        groove = QRect( groove.left(), center-Slider_GrooveWidth/2, groove.width(), Slider_GrooveWidth  ).adjusted( 3, 0, -3, 0 );
+                        groove.adjust( 2, 0, -2, 0 );
 
                     } else {
 
                         const int center( groove.center().x() );
-                        groove = QRect( center-2, groove.top(), 5, groove.height() ).adjusted( 0, 3, 0, -3 );
+                        groove = QRect( center-Slider_GrooveWidth/2, groove.top(), Slider_GrooveWidth, groove.height() ).adjusted( 0, 3, 0, -3 );
+                        groove.adjust( 0, 2, 0, -2 );
 
                     }
 
@@ -2594,8 +2595,12 @@ namespace Oxygen
 
             } else {
 
+                HoleOptions options( 0 );
+                if( focusHighlight ) options |= HoleFocus;
+                if( hoverHighlight ) options |= HoleHover;
+
                 helper().renderHole(
-                    painter, palette.color( QPalette::Window ), local, focusHighlight, hoverHighlight,
+                    painter, palette.color( QPalette::Window ), local, options,
                     opacity, mode, TileSet::Ring );
 
             }
@@ -2679,9 +2684,8 @@ namespace Oxygen
         painter->setClipRect( r.adjusted( 0, 0, 0, -19 ) );
         helper().fillSlab( *painter, r );
 
-        TileSet *slopeTileSet = helper().slope( base, 0.0 );
         painter->setClipping( false );
-        slopeTileSet->render( r, painter );
+        helper().slope( base, 1.0 )->render( r, painter );
 
         painter->restore();
         return true;
@@ -3153,16 +3157,19 @@ namespace Oxygen
 
                 slitRect.adjust( 0, 0, 0, -1 );
 
+                HoleOptions options( 0 );
+                if( mouseOver ) options |= HoleHover;
+
                 // flat pressed-down buttons do not get focus effect,
                 // consistently with tool buttons
                 if( enabled && hoverAnimated )
                 {
 
-                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, false, mouseOver, hoverOpacity, AnimationHover, TileSet::Ring );
+                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options, hoverOpacity, AnimationHover, TileSet::Ring );
 
                 } else {
 
-                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, false, mouseOver );
+                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options );
 
                 }
 
@@ -3360,42 +3367,45 @@ namespace Oxygen
         if( flags & ( State_Sunken|State_On ) )
         {
 
-            if( false )
             {
                 // fill hole
                 painter->save();
                 painter->setRenderHint( QPainter::Antialiasing );
                 painter->setPen( Qt::NoPen );
-                painter->setBrush( helper().calcMidColor( palette.color( QPalette::Window ) ) );
-                painter->drawRoundedRect( slitRect.adjusted( 1, 1, -1, -1 ), 3.0, 3.0 );
+                painter->setBrush( helper().calcMidColor( helper().backgroundColor( palette.color( QPalette::Window ), widget, slitRect.center() ) ) );
+                painter->drawRoundedRect( slitRect.adjusted( 1, 1, -1, -1 ), 3.5, 3.5 );
                 painter->restore();
             }
+
+            HoleOptions options( HoleContrast );
+            if( hasFocus && enabled ) options |= HoleFocus;
+            if( mouseOver && enabled ) options |= HoleHover;
 
             if( enabled && hoverAnimated )
             {
 
-                helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, hasFocus, mouseOver, hoverOpacity, AnimationHover, TileSet::Ring );
+                helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options, hoverOpacity, AnimationHover, TileSet::Ring );
 
             } else if( toolBarAnimated ) {
 
                 if( enabled && animatedRect.isNull() && current  )
                 {
 
-                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, hasFocus, mouseOver, toolBarOpacity, AnimationHover, TileSet::Ring );
+                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options, toolBarOpacity, AnimationHover, TileSet::Ring );
 
                 } else {
 
-                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, false, false );
+                    helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, HoleContrast );
 
                 }
 
             } else if( toolBarTimerActive && current ) {
 
-                helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, hasFocus, true );
+                helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options | HoleHover );
 
             } else {
 
-                helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, hasFocus, mouseOver );
+                helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options );
 
             }
 
@@ -3639,7 +3649,6 @@ namespace Oxygen
 
             painter->setBrush( Qt::NoBrush );
             painter->setPen( QPen( gr2, 1.1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin ) );
-            //painter->drawRoundedRect( local, 4, 4 );
             painter->drawRoundedRect( local, 3.5, 3.5 );
 
         } else {
@@ -4933,21 +4942,23 @@ namespace Oxygen
 
         // handle right to left
         indicatorRect = handleRTL( option, indicatorRect );
+        indicatorRect.adjust( -1, -1, 1, 1 );
+        indicatorRect.adjust( 0, -1, 0, 0 );
 
         QPixmap pixmap( helper().progressBarIndicator( palette, indicatorRect ) );
-        painter->drawPixmap( indicatorRect.adjusted( -1, -2, 0, 0 ).topLeft(), pixmap );
+        painter->drawPixmap( indicatorRect.topLeft(), pixmap );
         return true;
 
     }
 
     //___________________________________________________________________________________
-    bool Style::drawProgressBarGrooveControl( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
+    bool Style::drawProgressBarGrooveControl( const QStyleOption* option, QPainter* painter, const QWidget* ) const
     {
 
         const QStyleOptionProgressBarV2 *pbOpt = qstyleoption_cast<const QStyleOptionProgressBarV2 *>( option );
         const Qt::Orientation orientation( pbOpt? pbOpt->orientation : Qt::Horizontal );
-        const QColor color( argbHelper().translucentColor( option->palette.color(QPalette::Window), widget ) );
-        renderScrollBarHole( painter, option->rect, color, orientation );
+
+        renderScrollBarHole( painter, option->rect, option->palette.color( QPalette::Window ), orientation );
 
         return true;
     }
@@ -7284,19 +7295,23 @@ namespace Oxygen
                     helper().fillHole( *painter, r.adjusted( 0, -1, 0, 0 ) );
                     painter->restore();
 
+                    HoleOptions options( 0 );
+                    if( hasFocus && enabled ) options |= HoleFocus;
+                    if( mouseOver && enabled ) options |= HoleHover;
+
                     const QColor color( palette.color( QPalette::Window ) );
                     if( enabled && animations().lineEditEngine().isAnimated( widget, AnimationFocus ) )
                     {
 
-                        helper().renderHole( painter, color, fr, hasFocus, mouseOver, animations().lineEditEngine().opacity( widget, AnimationFocus ), AnimationFocus, TileSet::Ring );
+                        helper().renderHole( painter, color, fr, options, animations().lineEditEngine().opacity( widget, AnimationFocus ), AnimationFocus, TileSet::Ring );
 
                     } else if( enabled && animations().lineEditEngine().isAnimated( widget, AnimationHover ) ) {
 
-                        helper().renderHole( painter, color, fr, hasFocus, mouseOver, animations().lineEditEngine().opacity( widget, AnimationHover ), AnimationHover, TileSet::Ring );
+                        helper().renderHole( painter, color, fr, options, animations().lineEditEngine().opacity( widget, AnimationHover ), AnimationHover, TileSet::Ring );
 
                     } else {
 
-                        helper().renderHole( painter, color, fr, hasFocus && enabled, mouseOver );
+                        helper().renderHole( painter, color, fr, options );
 
                     }
 
@@ -7342,16 +7357,19 @@ namespace Oxygen
 
                         slitRect.adjust( 0, 0, 0, -1 );
 
+                        HoleOptions options( HoleContrast );
+                        if( mouseOver && enabled ) options |= HoleHover;
+
                         // flat pressed-down buttons do not get focus effect,
                         // consistently with tool buttons
                         if( enabled && hoverAnimated )
                         {
 
-                            helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, false, mouseOver, hoverOpacity, AnimationHover, TileSet::Ring );
+                            helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options, hoverOpacity, AnimationHover, TileSet::Ring );
 
                         } else {
 
-                            helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, false, mouseOver );
+                            helper().renderHole( painter, palette.color( QPalette::Window ), slitRect, options );
 
                         }
 
@@ -7613,30 +7631,29 @@ namespace Oxygen
         if( slider->subControls & SC_SliderGroove )
         {
             const QRect groove = sliderSubControlRect( slider, SC_SliderGroove, widget );
-            if( groove.isValid() ) helper().groove( palette.color( QPalette::Window ) )->render( groove, painter );
+            const Qt::Orientation orientation( groove.width() > groove.height() ? Qt::Horizontal : Qt::Vertical );
+            if( groove.isValid() ) helper().scrollHole( palette.color( QPalette::Window ), orientation, true )->render( groove, painter, TileSet::Full );
         }
 
         // handle
         if ( slider->subControls & SC_SliderHandle )
         {
             const QRect handle = sliderSubControlRect( slider, SC_SliderHandle, widget );
-            const QColor buttonColor( helper().backgroundColor( palette.color( QPalette::Button ), widget, handle.center() ) );
+            const QRect r = centerRect( handle, 21, 21 );
+
             const bool handleActive( slider->activeSubControls & SC_SliderHandle );
             StyleOptions opts( 0 );
             if( hasFocus ) opts |= Focus;
+            if( handleActive && mouseOver ) opts |= Hover;
 
             animations().sliderEngine().updateState( widget, enabled && handleActive );
-            if( enabled &&  animations().sliderEngine().isAnimated( widget ) )
-            {
+            const qreal opacity( animations().sliderEngine().opacity( widget ) );
 
-                renderSlab( painter, handle, buttonColor, opts,  animations().sliderEngine().opacity( widget ), AnimationHover, TileSet::Ring );
+            const QColor color( helper().backgroundColor( palette.color( QPalette::Button ), widget, handle.center() ) );
+            const QColor glow( slabShadowColor( color, opts, opacity, AnimationHover ) );
 
-            } else {
+            painter->drawPixmap( r.topLeft(), helper().sliderSlab( color, glow, 0.0 ) );
 
-                if( handleActive && mouseOver ) opts |= Hover;
-                renderSlab( painter, handle, buttonColor, opts );
-
-            }
         }
 
         return true;
@@ -7679,21 +7696,25 @@ namespace Oxygen
                 helper().fillHole( *painter, r.adjusted( 0, -1, 0, 0 ) );
                 painter->restore();
 
+                HoleOptions options( 0 );
+                if( hasFocus && enabled ) options |= HoleFocus;
+                if( mouseOver && enabled ) options |= HoleHover;
+
                 QColor local( palette.color( QPalette::Window ) );
                 animations().lineEditEngine().updateState( widget, AnimationHover, mouseOver );
                 animations().lineEditEngine().updateState( widget, AnimationFocus, hasFocus );
                 if( enabled && animations().lineEditEngine().isAnimated( widget, AnimationFocus ) )
                 {
 
-                    helper().renderHole( painter, local, fr, hasFocus, mouseOver, animations().lineEditEngine().opacity( widget, AnimationFocus ), AnimationFocus, TileSet::Ring );
+                    helper().renderHole( painter, local, fr, options, animations().lineEditEngine().opacity( widget, AnimationFocus ), AnimationFocus, TileSet::Ring );
 
                 } else if( enabled && animations().lineEditEngine().isAnimated( widget, AnimationHover ) ) {
 
-                    helper().renderHole( painter, local, fr, hasFocus, mouseOver, animations().lineEditEngine().opacity( widget, AnimationHover ), AnimationHover, TileSet::Ring );
+                    helper().renderHole( painter, local, fr, options, animations().lineEditEngine().opacity( widget, AnimationHover ), AnimationHover, TileSet::Ring );
 
                 } else {
 
-                    helper().renderHole( painter, local, fr, hasFocus, mouseOver );
+                    helper().renderHole( painter, local, fr, options );
 
                 }
 
@@ -8392,7 +8413,7 @@ namespace Oxygen
         const QColor glow( slabShadowColor( color, opts, opacity, mode ) );
 
         // get main slab
-        QPixmap pix( glow.isValid() ? helper().dialSlabFocused( color, glow, 0.0, dimension ) : helper().dialSlab( color, 0.0, dimension ) );
+        QPixmap pix( helper().dialSlab( color, glow, 0.0, dimension ) );
         const qreal baseOffset( 3.5 );
 
         const QColor light( helper().calcLightColor( color ) );
@@ -8510,7 +8531,7 @@ namespace Oxygen
         } else {
 
             QColor glow = slabShadowColor( color, options, opacity, mode );
-            tile = glow.isValid() ? helper().slabFocused( color, glow, 0.0 ) : helper().slab( color, 0.0 );
+            tile = helper().slab( color, glow, 0.0 );
 
         }
 
@@ -8579,8 +8600,7 @@ namespace Oxygen
 
             // calculate proper glow color based on current settings and opacity
             const QColor glow( slabShadowColor( color, options, opacity, mode ) );
-            if( glow.isValid() ) tile = helper().slabFocused( color, glow , 0.0 );
-            else if( color.isValid() ) tile = helper().slab( color, 0.0 );
+            if( color.isValid() || glow.isValid() ) tile = helper().slab( color, glow , 0.0 );
             else return;
 
         }
@@ -9313,9 +9333,7 @@ namespace Oxygen
 
         const QColor color( palette.color( QPalette::Button ) );
         const QColor glow( slabShadowColor( color, options, opacity, mode ) );
-
-        QPixmap slabPixmap = glow.isValid() ? helper().roundSlabFocused( color, glow, 0.0 ):helper().roundSlab( color, 0.0 );
-        painter->drawPixmap( x, y, slabPixmap );
+        painter->drawPixmap( x, y, helper().roundSlab( color, glow, 0.0 ) );
 
         // draw the radio mark
         if( state == CheckOn )
@@ -9415,12 +9433,13 @@ namespace Oxygen
         }
 
         // glow / shadow
+        qreal radius = 2.5;
         painter->setPen( Qt::NoPen );
         painter->setBrush( helper().alphaColor( glowColor, 0.6 ) );
-        painter->drawRoundedRect( rect.adjusted( -0.8,-0.8,0.8,0.8 ), 3, 3 );
+        painter->drawRoundedRect( rect.adjusted( -0.8,-0.8,0.8,0.8 ), radius, radius );
         painter->setPen( QPen( helper().alphaColor( glowColor, 0.3 ),  1.5 ) );
-        if( horizontal ) painter->drawRoundedRect( rect.adjusted( -1.2,-0.8,1.2,0.8 ), 3, 3 );
-        else painter->drawRoundedRect( rect.adjusted( -0.8,-1.2,0.8,1.2 ), 3, 3 );
+        if( horizontal ) painter->drawRoundedRect( rect.adjusted( -1.2,-0.8,1.2,0.8 ), radius, radius );
+        else painter->drawRoundedRect( rect.adjusted( -0.8,-1.2,0.8,1.2 ), radius, radius );
 
         // colored background
         painter->setPen( Qt::NoPen );
@@ -9430,13 +9449,15 @@ namespace Oxygen
             if( opacity >= 0 ) painter->setBrush( KColorUtils::mix( color, palette.color( QPalette::Highlight ), opacity ) );
             else if( hover ) painter->setBrush(  palette.color( QPalette::Highlight ) );
             else painter->setBrush( color );
-            painter->drawRoundedRect( rect, 2, 2 );
+            painter->drawRoundedRect( rect, radius-1.0, radius-1.0 );
 
         }
 
         // slider gradient
         {
-            QLinearGradient sliderGradient( rect.topLeft(), horizontal ? rect.bottomLeft() : rect.topRight() );
+            QLinearGradient sliderGradient;
+            if( horizontal ) sliderGradient = QLinearGradient( 0, r.top(), 0, r.bottom() );
+            else sliderGradient = QLinearGradient( r.left(), 0, r.right(), 0 );
             if( !StyleConfigData::scrollBarColored() )
             {
                 sliderGradient.setColorAt( 0.0, color );
@@ -9448,7 +9469,7 @@ namespace Oxygen
             }
 
             painter->setBrush( sliderGradient );
-            painter->drawRoundedRect( rect, 2, 2 );
+            painter->drawRoundedRect( rect, radius-1.0, radius-1.0 );
         }
 
         // pattern
@@ -9471,7 +9492,7 @@ namespace Oxygen
             }
 
             painter->setBrush( patternGradient );
-            painter->drawRoundedRect( rect, 2, 2 );
+            painter->drawRoundedRect( rect, radius-1.0, radius-1.0 );
         }
 
         if( StyleConfigData::scrollBarColored() ) {
