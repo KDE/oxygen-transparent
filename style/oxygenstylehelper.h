@@ -73,10 +73,10 @@ namespace Oxygen
         All the actual rendering is performed by the base class
         */
         using Helper::renderWindowBackground;
-        virtual void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QWidget* window, const QColor& color, int y_shift=-23, int gradientHeight = 64 )
+        virtual void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QColor& color, int y_shift=-23, int gradientHeight = 64 )
         {
-            Helper::renderWindowBackground( p, clipRect, widget, window, color, y_shift, gradientHeight );
-            Helper::renderBackgroundPixmap( p, clipRect, widget, window, y_shift, gradientHeight );
+            Helper::renderWindowBackground( p, clipRect, widget, widget->window(), color, y_shift, gradientHeight );
+            Helper::renderBackgroundPixmap( p, clipRect, widget, widget->window(), y_shift, gradientHeight );
         }
 
         // render menu background
@@ -115,8 +115,6 @@ namespace Oxygen
         //!@name slabs
         //@{
 
-        void fillSlab( QPainter&, const QRect&, int size = 7 ) const;
-
         //! progressbar
         QPixmap progressBarIndicator( const QPalette&, const QRect& );
 
@@ -135,14 +133,7 @@ namespace Oxygen
         QPixmap roundSlab( const QColor&, const QColor& glow, qreal shade, int size = 7 );
 
         //! slider slab
-        QPixmap sliderSlab( const QColor& color, qreal shade, int size = 7 )
-        { return sliderSlab( color, QColor(), shade, size ); }
-
-        //! slider slab
-        QPixmap sliderSlab( const QColor&, const QColor& glow, qreal shade, int size = 7 );
-
-        //! sunken slab
-        TileSet *slabSunken( const QColor&, int size = 7 );
+        QPixmap sliderSlab( const QColor&, const QColor& glow, bool sunken, qreal shade, int size = 7 );
 
         //@}
 
@@ -169,6 +160,9 @@ namespace Oxygen
         //! scrollbar hole
         TileSet *scrollHole( const QColor&, Qt::Orientation orientation, bool smallShadow = false );
 
+        //! scrollbar handle
+        TileSet *scrollHandle( const QColor&, const QColor&, int size = 7 );
+
         //@}
 
         //! scrollbar groove
@@ -178,13 +172,13 @@ namespace Oxygen
         TileSet *slitFocused( const QColor& );
 
         //! dock frame
-        TileSet *dockFrame( const QColor&, int size );
+        TileSet *dockFrame( const QColor&, const QColor& );
 
         //! selection
         TileSet *selection( const QColor&, int height, bool custom );
 
-        // these two methods must be public because they are used directly by OxygenStyle to draw dials
-        void drawInverseShadow( QPainter&, const QColor&, int pad, int size, qreal fuzz ) const;
+        //! inverse glow
+        /*! this method must be public because it is used directly by OxygenStyle to draw dials */
         void drawInverseGlow( QPainter&, const QColor&, int pad, int size, int rsize ) const;
 
         //!@name utility functions
@@ -219,7 +213,7 @@ namespace Oxygen
         void drawRoundSlab( QPainter&, const QColor&, qreal );
 
         // slider slabs
-        void drawSliderSlab( QPainter&, const QColor&, qreal );
+        void drawSliderSlab( QPainter&, const QColor&, bool sunken, qreal );
 
         private:
 
@@ -230,6 +224,7 @@ namespace Oxygen
         Cache<QPixmap> _roundSlabCache;
         Cache<QPixmap> _sliderSlabCache;
         Cache<TileSet> _holeCache;
+        Cache<TileSet> _scrollHandleCache;
 
         //! mid color cache
         ColorCache _midColorCache;
@@ -239,7 +234,6 @@ namespace Oxygen
 
         typedef BaseCache<TileSet> TileSetCache;
         TileSetCache _cornerCache;
-        TileSetCache _slabSunkenCache;
         TileSetCache _holeFlatCache;
         TileSetCache _slopeCache;
         TileSetCache _grooveCache;

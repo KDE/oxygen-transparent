@@ -393,11 +393,12 @@ namespace Oxygen
         QRect toolBoxTabContentsRect( const QStyleOption* option, const QWidget* ) const
         { return insideMargin( option->rect, 0, 5, 0, 5, 0 ); }
 
+        //! checkbox contents
         QRect checkBoxContentsRect( const QStyleOption* option, const QWidget* ) const
         { return handleRTL( option, option->rect.adjusted( CheckBox_Size + CheckBox_BoxTextSpace, 0, 0, 0 ) ); }
 
-        QRect progressBarContentsRect( const QStyleOption* option, const QWidget* ) const
-        { return insideMargin( option->rect, ProgressBar_GrooveMargin ); }
+        //! progressbar contents
+        QRect progressBarContentsRect( const QStyleOption* option, const QWidget* ) const;
 
         //! tabBar buttons
         QRect tabBarTabLeftButtonRect( const QStyleOption* option, const QWidget* widget ) const
@@ -549,6 +550,13 @@ namespace Oxygen
         virtual bool drawScrollBarSubPageControl( const QStyleOption*, QPainter*, const QWidget* ) const;
 
         virtual bool drawShapedFrameControl( const QStyleOption*, QPainter*, const QWidget* ) const;
+
+        // size grip
+        virtual bool drawSizeGripControl( const QStyleOption*, QPainter*, const QWidget* ) const
+        {
+            // size grips, whose usage is discouraged in KDE, are not rendered at all by oxygen
+            return true;
+        }
 
         // splitters
         virtual bool drawSplitterControl( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
