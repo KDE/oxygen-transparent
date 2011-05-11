@@ -127,13 +127,6 @@ namespace Oxygen
             changed = true;
         }
 
-        // shadow mode
-        if( configuration.shadowMode() != Configuration::OxygenShadows )
-        {
-            defaultConfiguration().setUseOxygenShadows( false );
-            defaultConfiguration().setUseDropShadows( false );
-        }
-
         // read shadowCache configuration
         changed |= shadowCache().readConfig( config );
 
@@ -176,7 +169,7 @@ namespace Oxygen
 
             // compositing
             case AbilityProvidesShadow: // TODO: UI option to use default shadows instead
-            return defaultConfiguration().shadowMode() != Configuration::KWinShadows;
+            return true;
 
             case AbilityUsesAlphaChannel:
             return true;

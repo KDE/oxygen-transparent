@@ -87,9 +87,7 @@ namespace Oxygen
     {
 
         // load standard configuration
-        Configuration configuration( KConfigGroup( _configuration, "Windeco") );
-        loadConfiguration( configuration );
-
+        loadConfiguration( Configuration( KConfigGroup( _configuration, "Windeco") ) );
         loadShadowConfiguration( QPalette::Active, ShadowConfiguration( QPalette::Active, KConfigGroup( _configuration, "ActiveShadow") ) );
         loadShadowConfiguration( QPalette::Inactive, ShadowConfiguration( QPalette::Inactive, KConfigGroup( _configuration, "InactiveShadow") ) );
 
@@ -117,7 +115,6 @@ namespace Oxygen
         else if( ui->ui.blendColor->currentIndex() != ui->ui.blendColor->findText( configuration.blendColorName( true ) ) ) modified = true;
         else if( ui->ui.frameBorder->currentIndex() != ui->ui.frameBorder->findText( configuration.frameBorderName( true ) ) ) modified = true;
         else if( ui->ui.sizeGripMode->currentIndex() != ui->ui.sizeGripMode->findText( configuration.sizeGripModeName( true ) ) ) modified = true;
-        else if( ui->ui.shadowMode->currentIndex() != ui->ui.shadowMode->findText( configuration.shadowModeName( true ) ) ) modified = true;
         else if( ui->ui.shadowCacheMode->currentIndex() != ui->ui.shadowCacheMode->findText( configuration.shadowCacheModeName( true ) ) ) modified = true;
 
         else if( ui->ui.opacityFromStyle->isChecked() != configuration.opacityFromStyle() ) modified = true;
@@ -156,6 +153,7 @@ namespace Oxygen
         configuration.setBlendColor( Configuration::blendColor( ui->ui.blendColor->currentText(), true ) );
         configuration.setFrameBorder( Configuration::frameBorder( ui->ui.frameBorder->currentText(), true ) );
         configuration.setSizeGripMode( Configuration::sizeGripMode( ui->ui.sizeGripMode->currentText(), true ) );
+        configuration.setShadowCacheMode( Configuration::shadowCacheMode( ui->ui.shadowCacheMode->currentText(), true ) );
         configuration.setSeparatorMode( (Oxygen::Configuration::SeparatorMode) ui->ui.separatorMode->currentIndex() );
         configuration.setDrawTitleOutline( ui->ui.titleOutline->isChecked() );
         configuration.setUseDropShadows( ui->shadowConfigurations[1]->isChecked() );
@@ -172,20 +170,15 @@ namespace Oxygen
         configurationGroup.deleteGroup();
         configuration.write( configurationGroup );
 
-        // write shadow configuration
-        configurationGroup.writeEntry( OxygenConfig::SHADOW_MODE,
-            Configuration::shadowModeName( Configuration::shadowMode( ui->ui.shadowMode->currentText(), true ), false ) );
-        saveShadowConfiguration( QPalette::Active, *ui->shadowConfigurations[0] );
-        saveShadowConfiguration( QPalette::Inactive, *ui->shadowConfigurations[1] );
-
         // write exceptions
         ui->ui.exceptions->exceptions().write( *_configuration );
 
+        // write shadow configuration
+        saveShadowConfiguration( QPalette::Active, *ui->shadowConfigurations[0] );
+        saveShadowConfiguration( QPalette::Inactive, *ui->shadowConfigurations[1] );
+
         // sync configuration
         _configuration->sync();
-
-        if( !ui->expertMode() )
-        { KGlobalSettings::emitChange( KGlobalSettings::SettingsChanged, 0 ); }
 
         QDBusMessage message( QDBusMessage::createSignal("/OxygenWindeco",  "org.kde.Oxygen.Style", "reparseConfiguration") );
         QDBusConnection::sessionBus().send(message);
@@ -251,7 +244,6 @@ namespace Oxygen
         ui->ui.useAnimations->setChecked( configuration.useAnimations() );
         ui->ui.animateTitleChange->setChecked( configuration.animateTitleChange() );
         ui->ui.narrowButtonSpacing->setChecked( configuration.useNarrowButtonSpacing() );
-        ui->ui.shadowMode->setCurrentIndex( ui->ui.shadowMode->findText( configuration.shadowModeName( true ) ) );
         ui->ui.shadowCacheMode->setCurrentIndex( ui->ui.shadowCacheMode->findText( configuration.shadowCacheModeName( true ) ) );
     }
 
@@ -271,6 +263,7 @@ namespace Oxygen
     bool Config::shadowConfigurationChanged( const ShadowConfiguration& configuration, const ShadowConfigurationUi& ui ) const
     {
         bool modified( false );
+
         if( ui.ui.shadowSize->value() != configuration.shadowSize() ) modified = true;
         else if( 0.1*ui.ui.verticalOffset->value() != configuration.verticalOffset() ) modified = true;
         else if( ui.ui.innerColor->color() != configuration.innerColor() ) modified = true;
@@ -282,6 +275,7 @@ namespace Oxygen
     //_______________________________________________________________________
     bool Config::exceptionListChanged( void ) const
     {
+
         // get saved list
         ExceptionList exceptions;
         exceptions.read( *_configuration );

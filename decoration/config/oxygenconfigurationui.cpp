@@ -89,12 +89,6 @@ namespace Oxygen
       << Configuration::sizeGripModeName( Configuration::SizeGripWhenNeeded, true )
       );
 
-    // shadows
-    ui.shadowMode->insertItems(0, QStringList()
-        << Configuration::shadowModeName( Configuration::OxygenShadows, true )
-        << Configuration::shadowModeName( Configuration::KWinShadows, true )
-        << Configuration::shadowModeName( Configuration::NoShadows, true ) );
-
     ui.shadowCacheMode->insertItems(0, QStringList()
         << Configuration::shadowCacheModeName( Configuration::CacheDisabled, true )
         << Configuration::shadowCacheModeName( Configuration::CacheVariable, true )
@@ -107,8 +101,6 @@ namespace Oxygen
     connect( ui.backgroundOpacity, SIGNAL( valueChanged( int ) ), SIGNAL( changed() ) );
     connect( ui.opacityFromStyle, SIGNAL( toggled( bool ) ), SIGNAL( changed() ) );
 
-    connect( ui.shadowMode, SIGNAL( currentIndexChanged(int)), SLOT(shadowModeChanged(int)) );
-    connect( ui.shadowMode, SIGNAL( currentIndexChanged(int)), SIGNAL(changed()) );
     connect( ui.shadowCacheMode, SIGNAL( currentIndexChanged(int)), SIGNAL(changed()) );
     connect( ui.titleOutline, SIGNAL(toggled( bool )), ui.separatorMode, SLOT( setDisabled( bool ) ) );
 
@@ -158,11 +150,4 @@ namespace Oxygen
 
   }
 
-  //_________________________________________________________
-  void ConfigurationUi::shadowModeChanged( int index )
-  {
-    bool enabled( ui.shadowMode->itemText( index ) == Configuration::shadowModeName( Configuration::OxygenShadows, true ) );
-    foreach( ShadowConfigurationUi* shadowConfiguration, shadowConfigurations )
-    { shadowConfiguration->setEnabled( enabled ); }
-  }
 }

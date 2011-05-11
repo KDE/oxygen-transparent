@@ -55,7 +55,6 @@ namespace Oxygen
         _tabsEnabled( true ),
         _transparencyEnabled( true ),
         _useNarrowButtonSpacing( false ),
-        _shadowMode( OxygenShadows ),
         _shadowCacheMode( CacheVariable )
     {}
 
@@ -157,10 +156,6 @@ namespace Oxygen
             OxygenConfig::NARROW_BUTTON_SPACING,
             defaultConfiguration.useNarrowButtonSpacing() ) );
 
-        // shadow  mode
-        setShadowMode( shadowMode( group.readEntry(
-            OxygenConfig::SHADOW_MODE, defaultConfiguration.shadowModeName( false ) ), false ) );
-
         // shadow cache mode
         setShadowCacheMode( shadowCacheMode( group.readEntry(
             OxygenConfig::SHADOW_CACHE_MODE, defaultConfiguration.shadowCacheModeName( false ) ), false ) );
@@ -237,7 +232,6 @@ namespace Oxygen
         if( animationsDuration() != defaultConfiguration.animationsDuration() ) group.writeEntry( OxygenConfig::ANIMATIONS_DURATION, animationsDuration() );
         if( tabsEnabled() != defaultConfiguration.tabsEnabled() ) group.writeEntry( OxygenConfig::TABS_ENABLED, tabsEnabled() );
         if( useNarrowButtonSpacing() != defaultConfiguration.useNarrowButtonSpacing() ) group.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, useNarrowButtonSpacing() );
-        if( shadowMode() != defaultConfiguration.shadowMode() ) group.writeEntry( OxygenConfig::SHADOW_MODE, shadowModeName( false ) );
         if( shadowCacheMode() != defaultConfiguration.shadowCacheMode() ) group.writeEntry( OxygenConfig::SHADOW_CACHE_MODE, shadowCacheModeName( false ) );
 
     }
@@ -425,36 +419,10 @@ namespace Oxygen
             tabsEnabled() == other.tabsEnabled() &&
             transparencyEnabled() == other.transparencyEnabled() &&
             useNarrowButtonSpacing() == other.useNarrowButtonSpacing() &&
-            shadowMode() == other.shadowMode() &&
             shadowCacheMode() == other.shadowCacheMode() &&
             opacityFromStyle() == other.opacityFromStyle() &&
             backgroundOpacity() == other.backgroundOpacity();
 
-    }
-
-    //__________________________________________________
-    QString Configuration::shadowModeName( ShadowMode value, bool translated )
-    {
-        QString out;
-        switch( value )
-        {
-            case OxygenShadows: out = translated ? i18n( "Use Oxygen Shadows" ):"Use Oxygen Shadows"; break;
-            case KWinShadows: out = translated ? i18n( "Use Desktop Effects Shadows" ):"Use Desktop Effects Shadows"; break;
-            case NoShadows: out = translated ? i18n( "Do Not Draw Shadows" ):"Do Not Draw Shadows"; break;
-            default: return Configuration().shadowModeName( translated );
-        }
-
-        return out;
-
-    }
-
-    //__________________________________________________
-    Configuration::ShadowMode Configuration::shadowMode( QString value, bool translated )
-    {
-        if( value == shadowModeName( OxygenShadows, translated ) ) return OxygenShadows;
-        else if( value == shadowModeName( KWinShadows, translated ) ) return KWinShadows;
-        else if( value == shadowModeName( NoShadows, translated ) ) return NoShadows;
-        else return Configuration().shadowMode();
     }
 
     //__________________________________________________

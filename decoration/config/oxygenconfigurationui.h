@@ -62,11 +62,6 @@ namespace Oxygen
     bool expertMode( void ) const
     { return _expertMode; }
 
-    protected slots:
-
-    //! shadow mode changed
-    void shadowModeChanged( int );
-
     signals:
 
     //! emmited when changed
