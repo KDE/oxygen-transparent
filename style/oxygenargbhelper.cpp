@@ -194,8 +194,12 @@ namespace Oxygen
         // store icon
         QIcon icon(widget->windowIcon());
 
-        // store position
-        QPoint position( widget->x(), widget->y() );
+        /*
+        WORKAROUND (imported from bespin, thanks Thomas!):
+        somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
+        we just move it faaaaar away so kwin will take back control and apply smart placement or whatever
+        */
+        QPoint position( 10000, 10000 );
 
         // set translucent flag
         widget->setAttribute( Qt::WA_TranslucentBackground );
