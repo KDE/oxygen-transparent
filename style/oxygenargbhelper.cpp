@@ -194,15 +194,16 @@ namespace Oxygen
         // store icon
         QIcon icon(widget->windowIcon());
 
-        // store position
-        QPoint position( widget->x(), widget->y() );
+        // keep track on whether the widget is already visible
+        const bool wasVisible( widget->isVisible() );
 
         // set translucent flag
+        if( wasVisible ) widget->hide();
         widget->setAttribute( Qt::WA_TranslucentBackground );
 
         // re-install icon
         widget->setWindowIcon(icon);
-        if( !widget->isVisible() ) widget->move( position );
+        if( wasVisible ) widget->show();
 
         // add to set of transparent widgets and connect destruction signal
         _transparentWidgets.insert( widget );
