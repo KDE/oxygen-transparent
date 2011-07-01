@@ -1,10 +1,15 @@
-#ifndef oxygenconfigurationui_h
-#define oxygenconfigurationui_h
+#ifndef oxygenaddeventfilter_h
+#define oxygenaddeventfilter_h
+
 //////////////////////////////////////////////////////////////////////////////
-// oxygenconfigurationui.h
+// oxygenaddeventfilter.h
+// used to block add a child to a widget, blocking AddChild parent events
 // -------------------
 //
-// Copyright (c) 2009 Hugo Pereira Da Costa <hugo.pereira@free.fr>
+// Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+//
+// Largely inspired from BeSpin style
+// Copyright (C) 2007 Thomas Luebking <thomas.luebking@web.de>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -25,59 +30,33 @@
 // IN THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
 
-#include <kdeversion.h>
-#include <KComboBox>
-#include <QtGui/QWidget>
-#include <QtGui/QCheckBox>
-#include <QtCore/QVector>
-
-#include "ui_oxygenconfigurationui.h"
-#include "oxygenshadowconfigurationui.h"
-#include "oxygenexceptionlistwidget.h"
+#include <QtCore/QObject>
+#include <QtCore/QEvent>
 
 namespace Oxygen
 {
 
-  //_____________________________________________
-  class ConfigurationUi: public QWidget
-  {
+    class AddEventFilter: public QObject
+    {
 
-    Q_OBJECT
+        public:
 
-    public:
+        //! constructor
+        AddEventFilter( void ):
+            QObject()
+            {}
 
-    //! constructor
-    ConfigurationUi( QWidget* );
+        //! destructor
+        virtual ~AddEventFilter( void )
+        {}
 
-    //! ui
-    Ui_OxygenConfigurationUI ui;
 
-    //! shadow configuration
-    QVector<ShadowConfigurationUi*> shadowConfigurations;
+        //! event filter
+        /*! blocks all AddChild events */
+        virtual bool eventFilter( QObject*, QEvent* event )
+        { return event->type() == QEvent::ChildAdded; }
 
-    //! toggle expert mode
-    void toggleExpertMode( bool );
-
-    protected slots:
-
-    //! toggle expert mode
-    void toggleExpertModeInternal( void )
-    { toggleExpertModeInternal( !_expertMode ); }
-
-    //! toggle expert mode
-    void toggleExpertModeInternal( bool );
-
-    signals:
-
-    //! emmited when changed
-    bool changed( void );
-
-    private:
-
-    //! expert mode
-    bool _expertMode;
-
-  };
+    };
 
 }
 

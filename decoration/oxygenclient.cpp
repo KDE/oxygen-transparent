@@ -374,7 +374,8 @@ namespace Oxygen
             case LM_OuterPaddingRight:
             case LM_OuterPaddingTop:
             case LM_OuterPaddingBottom:
-            return shadowCache().shadowSize();
+            if( maximized ) return 0;
+            else return shadowCache().shadowSize();
 
             default:
             return KCommonDecoration::layoutMetric(lm, respectWindowState, btn);
@@ -622,7 +623,7 @@ namespace Oxygen
         }
 
         // background pixmap
-        if( helper().hasBackgroundPixmap( windowId() ) )
+        if( isPreview() || helper().hasBackgroundPixmap( windowId() ) )
         {
             int offset = layoutMetric( LM_OuterPaddingTop );
 
@@ -1457,8 +1458,23 @@ namespace Oxygen
     //_________________________________________________________
     void Client::resizeEvent( QResizeEvent* event )
     {
+
+        // prepare item data updates
         _itemData.setDirty( true );
+
+        // resize backing store pixmap
+        if( !compositingActive() )
+        { _pixmap = QPixmap( event->size() ); }
+
+        // base class implementation
         KCommonDecorationUnstable::resizeEvent( event );
+    }
+
+    //_________________________________________________________
+    void Client::paintBackground( QPainter& painter ) const
+    {
+        if( !compositingActive() )
+        { painter.drawPixmap( QPoint(), _pixmap ); }
     }
 
     //_________________________________________________________
@@ -1468,14 +1484,49 @@ namespace Oxygen
         // factory
         if(!( _initialized && _factory->initialized() ) ) return;
 
+        if( compositingActive() )
+        {
+
+            QPainter painter(widget());
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setClipRegion( event->region() );
+            paint( painter );
+
+        } else {
+
+            {
+                // update backing store pixmap
+                QPainter painter( &_pixmap );
+                painter.setRenderHint(QPainter::Antialiasing);
+                painter.setClipRegion( event->region() );
+                paint( painter );
+            }
+
+            QPainter painter( widget() );
+            painter.setClipRegion( event->region() );
+            painter.drawPixmap( QPoint(), _pixmap );
+
+            // update buttons
+            QList<Button*> buttons( widget()->findChildren<Button*>() );
+            foreach( Button* button, buttons )
+            {
+                if( event->rect().intersects( button->geometry() ) )
+                { button->update(); }
+            }
+
+        }
+
+
+
+    }
+
+    //_________________________________________________________
+    void Client::paint( QPainter& painter )
+    {
+
         // palette
         QPalette palette = widget()->palette();
         palette.setCurrentColorGroup( (isActive() ) ? QPalette::Active : QPalette::Inactive );
-
-        // painter
-        QPainter painter(widget());
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setClipRegion( event->region() );
 
         // define frame
         QRect frame = widget()->rect();
@@ -1484,7 +1535,7 @@ namespace Oxygen
         QColor color = palette.window().color();
 
         // draw shadows
-        if( compositingActive() && shadowCache().shadowSize() > 0 )
+        if( compositingActive() && shadowCache().shadowSize() > 0 && !isMaximized() )
         {
 
             TileSet *tileSet( 0 );
