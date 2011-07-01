@@ -53,7 +53,9 @@
 #include "oxygenargbhelper.h"
 #include "oxygenblurhelper.h"
 #include "oxygenframeshadow.h"
+#include "oxygenmdiwindowshadow.h"
 #include "oxygenshadowhelper.h"
+#include "oxygensplitterproxy.h"
 #include "oxygenstyleconfigdata.h"
 #include "oxygentransitions.h"
 #include "oxygenwidgetexplorer.h"
@@ -158,6 +160,7 @@ namespace Oxygen
 
     //______________________________________________________________
     Style::Style( void ):
+        _kGlobalSettingsInitialized( false ),
         _addLineButtons( DoubleButton ),
         _subLineButtons( SingleButton ),
         _singleButtonHeight( 14 ),
@@ -170,10 +173,12 @@ namespace Oxygen
         _windowManager( new WindowManager( this ) ),
         _topLevelManager( new TopLevelManager( this, *_helper ) ),
         _frameShadowFactory( new FrameShadowFactory( this ) ),
+        _mdiWindowShadowFactory( new MdiWindowShadowFactory( this, *_helper ) ),
         _argbHelper( new ArgbHelper( this, helper() ) ),
         _blurHelper( new BlurHelper( this, helper() ) ),
         _widgetExplorer( new WidgetExplorer( this ) ),
         _tabBarData( new TabBarData( this ) ),
+        _splitterFactory( new SplitterFactory( this ) ),
         _frameFocusPrimitive( 0 ),
         _tabBarTabShapeControl( 0 ),
         _hintCounter( X_KdeBase+1 ),
@@ -186,22 +191,6 @@ namespace Oxygen
         // use DBus connection to update on oxygen configuration change
         QDBusConnection dbus = QDBusConnection::sessionBus();
         dbus.connect( QString(), "/OxygenStyle", "org.kde.Oxygen.Style", "reparseConfiguration", this, SLOT( oxygenConfigurationChanged( void ) ) );
-
-//         #if KDE_IS_VERSION( 4, 5, 50 )
-//
-//         // for recent enough version of kde we use KGlobalSettings signal to detect palette changes
-//         KGlobalSettings::self()->activate( KGlobalSettings::ListenForChanges );
-//         connect( KGlobalSettings::self(), SIGNAL( kdisplayPaletteChanged( void ) ), this, SLOT( globalPaletteChanged( void ) ) );
-//
-//         #else
-
-        /*
-        since the above Activate call is not available for older versions of KDE,
-        direct connection to dbus is used to detect global settings changes
-        */
-        dbus.connect( QString(), "/KGlobalSettings", "org.kde.KGlobalSettings", "notifyChange", this, SLOT( globalSettingsChanged( int,int ) ) );
-
-//         #endif
 
         // call the slot directly; this initial call will set up things that also
         // need to be reset when the system palette changes
@@ -232,7 +221,9 @@ namespace Oxygen
         transitions().registerWidget( widget );
         windowManager().registerWidget( widget );
         frameShadowFactory().registerWidget( widget, helper() );
+        mdiWindowShadowFactory().registerWidget( widget );
         shadowHelper().registerWidget( widget );
+        splitterFactory().registerWidget( widget );
 
         // scroll areas
         if( QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>( widget ) )
@@ -281,6 +272,13 @@ namespace Oxygen
             // set background as styled
             widget->setAttribute( Qt::WA_StyledBackground );
             widget->installEventFilter( _topLevelManager );
+
+            // initialize connections to kGlobalSettings
+            /*
+            this musts be done in ::polish and not before,
+            in order to be able to detect Qt-KDE vs Qt-only applications
+            */
+            if( !_kGlobalSettingsInitialized ) initializeKGlobalSettings();
 
             break;
 
@@ -496,7 +494,9 @@ namespace Oxygen
         transitions().unregisterWidget( widget );
         windowManager().unregisterWidget( widget );
         frameShadowFactory().unregisterWidget( widget );
+        mdiWindowShadowFactory().unregisterWidget( widget );
         shadowHelper().unregisterWidget( widget );
+        splitterFactory().unregisterWidget( widget );
         argbHelper().unregisterWidget( widget );
         blurHelper().unregisterWidget( widget );
 
@@ -2187,7 +2187,8 @@ namespace Oxygen
                 space -= sliderSize;
                 if( space <= 0 ) return groove;
 
-                const int pos = qRound( qreal( slOpt->sliderPosition - slOpt->minimum )/ ( slOpt->maximum - slOpt->minimum )*space );
+                int pos = qRound( qreal( slOpt->sliderPosition - slOpt->minimum )/ ( slOpt->maximum - slOpt->minimum )*space );
+                if( slOpt->upsideDown ) pos = space - pos;
                 if( horizontal ) return handleRTL( option, QRect( groove.x() + pos, groove.y(), sliderSize, groove.height() ) );
                 else return handleRTL( option, QRect( groove.x(), groove.y() + pos, groove.width(), sliderSize ) );
             }
@@ -4944,11 +4945,7 @@ namespace Oxygen
 
             int pstep =  int( progress )%( 2*remSize );
             if ( pstep > remSize )
-            {
-                // Bounce about.. We're remWidth + some delta, we want to be remWidth - delta...
-                // - ( ( remWidth + some delta ) - 2* remWidth )  = - ( some deleta - remWidth ) = remWidth - some delta..
-                pstep = -( pstep - 2*remSize );
-            }
+            { pstep = -( pstep - 2*remSize ); }
 
             if ( horizontal ) indicatorRect = QRect( r.x() + pstep, r.y(), indicatorSize, r.height() );
             else indicatorRect = QRect( r.x(), r.y() + pstep, r.width(), indicatorSize );
@@ -4962,11 +4959,13 @@ namespace Oxygen
 
         // handle right to left
         indicatorRect = handleRTL( option, indicatorRect );
-        indicatorRect.adjust( -1, -1, 1, 1 );
-        indicatorRect.adjust( 0, -1, 0, 0 );
+        indicatorRect.adjust( 1, 0, -1, -1 );
 
-        QPixmap pixmap( helper().progressBarIndicator( palette, indicatorRect ) );
-        painter->drawPixmap( indicatorRect.topLeft(), pixmap );
+        if( indicatorRect.isValid() )
+        {
+            QPixmap pixmap( helper().progressBarIndicator( palette, indicatorRect ) );
+            painter->drawPixmap( indicatorRect.topLeft(), pixmap );
+        }
         return true;
 
     }
@@ -8041,13 +8040,6 @@ namespace Oxygen
     }
 
     //_____________________________________________________________________
-    void Style::globalSettingsChanged( int type, int )
-    {
-        if( type == KGlobalSettings::PaletteChanged )
-        { globalPaletteChanged(); }
-    }
-
-    //_____________________________________________________________________
     void Style::globalPaletteChanged( void )
     {
         helper().reloadConfig();
@@ -8368,6 +8360,27 @@ namespace Oxygen
         }
     }
 
+    //_____________________________________________________________
+    void Style::initializeKGlobalSettings( void )
+    {
+
+        if( qApp && !qApp->inherits( "KApplication" ) )
+        {
+            /*
+            for Qt, non-KDE applications, needs to explicitely activate KGlobalSettings.
+            On the other hand, it is done internally in kApplication constructor,
+            so no need to duplicate here.
+            */
+            KGlobalSettings::self()->activate( KGlobalSettings::ListenForChanges );
+        }
+
+        // connect palette changes to local slot, to make sure caches are cleared
+        connect( KGlobalSettings::self(), SIGNAL( kdisplayPaletteChanged( void ) ), this, SLOT( globalPaletteChanged( void ) ) );
+
+        // update flag
+        _kGlobalSettingsInitialized = true;
+
+    }
 
     //______________________________________________________________
     void Style::polishScrollArea( QAbstractScrollArea* scrollArea ) const
@@ -8454,7 +8467,9 @@ namespace Oxygen
         if( sliderOption->maximum == sliderOption->minimum ) angle = M_PI / 2;
         else {
 
-            const qreal fraction( qreal( sliderOption->sliderValue - sliderOption->minimum )/qreal( sliderOption->maximum - sliderOption->minimum ) );
+            qreal fraction( qreal( sliderOption->sliderPosition - sliderOption->minimum )/qreal( sliderOption->maximum - sliderOption->minimum ) );
+            if( !sliderOption->upsideDown ) fraction = 1.0 - fraction;
+
             if( sliderOption->dialWrapping ) angle = 1.5*M_PI - fraction*2*M_PI;
             else  angle = ( M_PI*8 - fraction*10*M_PI )/6;
         }

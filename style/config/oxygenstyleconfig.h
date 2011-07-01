@@ -49,6 +49,9 @@ namespace Oxygen
         virtual ~StyleConfig( void )
         {}
 
+        //! event filter
+        virtual bool eventFilter( QObject*, QEvent* );
+
         Q_SIGNALS:
 
         //! emmited whenever one option is changed.
@@ -70,9 +73,6 @@ namespace Oxygen
         //! toggle expert mode
         virtual void toggleExpertMode( bool );
 
-        //! event
-        virtual void showEvent( QShowEvent* );
-        
         protected Q_SLOTS:
 
         //! update layout
@@ -87,6 +87,13 @@ namespace Oxygen
 
         //! edit black list
         virtual void editExceptions( void );
+
+        //! toggle expert mode
+        virtual void toggleExpertModeInternal( void )
+        { toggleExpertModeInternal( !_expertMode ); }
+
+        //! toggle expert mode
+        virtual void toggleExpertModeInternal( bool );
 
         protected:
 
@@ -104,13 +111,13 @@ namespace Oxygen
 
         //! animation config (expert mode only)
         AnimationConfigWidget* _animationConfigWidget;
-        
+
         //! grey listed applications
         QStringList _opacityGreyList;
-        
+
         //! black listed applications
         QStringList _opacityBlackList;
-        
+
     };
 
 }
