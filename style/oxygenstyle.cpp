@@ -418,6 +418,7 @@ namespace Oxygen
         } else if( qobject_cast<QDockWidget*>( widget ) ) {
 
             widget->setBackgroundRole( QPalette::NoRole );
+            widget->setAttribute( Qt::WA_TranslucentBackground );
             widget->setContentsMargins( 3,3,3,3 );
             addEventFilter( widget );
 
@@ -1303,19 +1304,9 @@ namespace Oxygen
             case QEvent::Resize:
             {
                 // make sure mask is appropriate
-                if( dockWidget->isFloating() )
+                if( dockWidget->isFloating() && !helper().hasAlphaChannel( dockWidget ) )
                 {
-                    if( helper().compositingActive() )
-                    {
-
-                        // TODO: should not be needed
-                        dockWidget->setMask( helper().roundedMask( dockWidget->rect().adjusted( 1, 1, -1, -1 ) ) );
-
-                    } else {
-
-                        dockWidget->setMask( helper().roundedMask( dockWidget->rect() ) );
-
-                    }
+                    dockWidget->setMask( helper().roundedMask( dockWidget->rect() ) );
 
                 } else dockWidget->clearMask();
 
