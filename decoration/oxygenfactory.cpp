@@ -176,7 +176,7 @@ namespace Oxygen
 
             // tabs
             case AbilityClientGrouping:
-            return defaultConfiguration().tabsEnabled();
+            return true;
 
             #if KDE_IS_VERSION( 4, 5, 76 )
             case AbilityUsesBlurBehind:

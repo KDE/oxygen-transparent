@@ -60,17 +60,17 @@ namespace Oxygen
         //! toggle opacity from style, from 'default' configiration
         /*! this is needed to properly enable/disable the opacity toggle button in exception dialog */
         void toggleOpacityFromStyle( bool value )
-        { opacityFromStyle_ = value; }
+        { _opacityFromStyle = value; }
 
         protected:
 
         //! model
         const ExceptionModel& model() const
-        { return model_; }
+        { return _model; }
 
         //! model
         ExceptionModel& model()
-        { return model_; }
+        { return _model; }
 
         protected slots:
 
@@ -106,13 +106,13 @@ namespace Oxygen
         private:
 
         //! default configuration
-        Configuration defaultConfiguration_;
+        Configuration _defaultConfiguration;
 
         //! model
-        ExceptionModel model_;
+        ExceptionModel _model;
 
         //! true when opacity is read from style
-        bool opacityFromStyle_;
+        bool _opacityFromStyle;
 
         //! ui
         Ui_OxygenExceptionListWidget ui;

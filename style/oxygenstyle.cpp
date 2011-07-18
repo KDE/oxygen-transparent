@@ -418,7 +418,6 @@ namespace Oxygen
         } else if( qobject_cast<QDockWidget*>( widget ) ) {
 
             widget->setBackgroundRole( QPalette::NoRole );
-            widget->setAttribute( Qt::WA_TranslucentBackground );
             widget->setContentsMargins( 3,3,3,3 );
             addEventFilter( widget );
 
@@ -1304,10 +1303,19 @@ namespace Oxygen
             case QEvent::Resize:
             {
                 // make sure mask is appropriate
-                if( dockWidget->isFloating() && !helper().hasAlphaChannel( dockWidget ) )
+                if( dockWidget->isFloating() )
                 {
+                    if( helper().compositingActive() )
+                    {
 
-                    dockWidget->setMask( helper().roundedMask( dockWidget->rect() ) );
+                        // TODO: should not be needed
+                        dockWidget->setMask( helper().roundedMask( dockWidget->rect().adjusted( 1, 1, -1, -1 ) ) );
+
+                    } else {
+
+                        dockWidget->setMask( helper().roundedMask( dockWidget->rect() ) );
+
+                    }
 
                 } else dockWidget->clearMask();
 
@@ -1808,7 +1816,6 @@ namespace Oxygen
             case QTabBar::RoundedWest:
             case QTabBar::TriangularWest:
             r = QRect( QPoint( paneRect.x() - w, paneRect.y() ), size );
-            r = visualRect( tabOpt->direction, tabOpt->rect, r );
             if( !documentMode ) r.translate( 2, 0 );
             else r.translate( -2, 0 );
             break;
@@ -1816,7 +1823,6 @@ namespace Oxygen
             case QTabBar::RoundedEast:
             case QTabBar::TriangularEast:
             r = QRect( QPoint( paneRect.x() + paneRect.width(), paneRect.y() ), size );
-            r = visualRect( tabOpt->direction, tabOpt->rect, r );
             if( !documentMode ) r.translate( -2, 0 );
             else r.translate( 2, 0 );
             break;
@@ -1866,7 +1872,6 @@ namespace Oxygen
             case QTabBar::RoundedWest:
             case QTabBar::TriangularWest:
             r = QRect( QPoint( paneRect.x() - w, paneRect.bottom() - h + 1 ), size );
-            r = visualRect( tabOpt->direction, tabOpt->rect, r );
             if( !documentMode ) r.translate( 2, 0 );
             else r.translate( -2, 0 );
             break;
@@ -1874,7 +1879,6 @@ namespace Oxygen
             case QTabBar::RoundedEast:
             case QTabBar::TriangularEast:
             r = QRect( QPoint( paneRect.x() + paneRect.width(), paneRect.bottom() - h + 1 ), size );
-            r = visualRect( tabOpt->direction, tabOpt->rect, r );
             if( !documentMode ) r.translate( -2, 0 );
             else r.translate( 2, 0 );
             break;

@@ -27,7 +27,7 @@
 #include "oxygenexceptionlistwidget.moc"
 #include "oxygenexceptiondialog.h"
 
-#include <QtCore/QSharedPointer>
+#include <QtCore/QWeakPointer>
 #include <KLocale>
 #include <KMessageBox>
 
@@ -36,10 +36,10 @@ namespace Oxygen
 {
 
     //__________________________________________________________
-    ExceptionListWidget::ExceptionListWidget( QWidget* parent, Configuration default_configuration ):
+    ExceptionListWidget::ExceptionListWidget( QWidget* parent, Configuration defaultConfiguration ):
         QWidget( parent ),
-        defaultConfiguration_( default_configuration ),
-        opacityFromStyle_( true )
+        _defaultConfiguration( defaultConfiguration ),
+        _opacityFromStyle( true )
     {
 
         //! ui
@@ -53,12 +53,12 @@ namespace Oxygen
         ui.exceptionListView->sortByColumn( ExceptionModel::TYPE );
         ui.exceptionListView->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Ignored ) );
 
-        KIconLoader* iconLoader = KIconLoader::global();
-        ui.moveUpButton->setIcon( KIcon( "arrow-up", iconLoader ) );
-        ui.moveDownButton->setIcon( KIcon( "arrow-down", iconLoader ) );
-        ui.addButton->setIcon( KIcon( "list-add", iconLoader ) );
-        ui.removeButton->setIcon( KIcon( "list-remove", iconLoader ) );
-        ui.editButton->setIcon( KIcon( "edit-rename", iconLoader ) );
+        KIconLoader* icon_loader = KIconLoader::global();
+        ui.moveUpButton->setIcon( KIcon( "arrow-up", icon_loader ) );
+        ui.moveDownButton->setIcon( KIcon( "arrow-down", icon_loader ) );
+        ui.addButton->setIcon( KIcon( "list-add", icon_loader ) );
+        ui.removeButton->setIcon( KIcon( "list-remove", icon_loader ) );
+        ui.editButton->setIcon( KIcon( "edit-rename", icon_loader ) );
 
         connect( ui.addButton, SIGNAL( clicked() ), SLOT( add() ) );
         connect( ui.editButton, SIGNAL( clicked() ), SLOT( edit() ) );
@@ -99,12 +99,12 @@ namespace Oxygen
     void ExceptionListWidget::updateButtons( void )
     {
 
-        bool has_selection( !ui.exceptionListView->selectionModel()->selectedRows().empty() );
-        ui.removeButton->setEnabled( has_selection );
-        ui.editButton->setEnabled( has_selection );
+        bool hasSelection( !ui.exceptionListView->selectionModel()->selectedRows().empty() );
+        ui.removeButton->setEnabled( hasSelection );
+        ui.editButton->setEnabled( hasSelection );
 
-        ui.moveUpButton->setEnabled( has_selection && !ui.exceptionListView->selectionModel()->isRowSelected( 0, QModelIndex() ) );
-        ui.moveDownButton->setEnabled( has_selection && !ui.exceptionListView->selectionModel()->isRowSelected( model().rowCount()-1, QModelIndex() ) );
+        ui.moveUpButton->setEnabled( hasSelection && !ui.exceptionListView->selectionModel()->isRowSelected( 0, QModelIndex() ) );
+        ui.moveDownButton->setEnabled( hasSelection && !ui.exceptionListView->selectionModel()->isRowSelected( model().rowCount()-1, QModelIndex() ) );
 
     }
 
@@ -114,16 +114,17 @@ namespace Oxygen
     {
 
         // update opacityFromStyle setting
-        defaultConfiguration_.setOpacityFromStyle( opacityFromStyle_ );
+        _defaultConfiguration.setOpacityFromStyle( _opacityFromStyle );
 
         // map dialog
-        QSharedPointer<ExceptionDialog> dialog( new ExceptionDialog( this ) );
-        dialog->setException( defaultConfiguration_ );
-        if( dialog->exec() == QDialog::Rejected ) return;
+        QWeakPointer<ExceptionDialog> dialog( new ExceptionDialog( this ) );
+        dialog.data()->setException( _defaultConfiguration );
+        if( dialog.data()->exec() == QDialog::Rejected || !dialog ) return;
 
         // retrieve exception and check
-        Exception exception( dialog->exception() );
+        Exception exception( dialog.data()->exception() );
         if( !checkException( exception ) ) return;
+        delete dialog.data();
 
         // create new item
         model().add( exception );
@@ -153,15 +154,16 @@ namespace Oxygen
         // retrieve exception
         // update opacityFromStyle setting
         Exception& exception( model().get( current ) );
-        exception.setOpacityFromStyle( opacityFromStyle_ );
+        exception.setOpacityFromStyle( _opacityFromStyle );
 
         // create dialog
-        QSharedPointer<ExceptionDialog> dialog( new ExceptionDialog( this ) );
-        dialog->setException( exception );
+        QWeakPointer<ExceptionDialog> dialog( new ExceptionDialog( this ) );
+        dialog.data()->setException( exception );
 
         // map dialog
-        if( dialog->exec() == QDialog::Rejected ) return;
-        Exception newException = dialog->exception();
+        if( dialog.data()->exec() == QDialog::Rejected || !dialog ) return;
+        Exception newException = dialog.data()->exception();
+        delete dialog.data();
 
         // check if exception was changed
         if( exception == newException ) return;
@@ -217,21 +219,21 @@ namespace Oxygen
         if( selection.empty() ) { return; }
 
         // retrieve selected indexes in list and store in model
-        QModelIndexList selected_indexes( ui.exceptionListView->selectionModel()->selectedRows() );
-        ExceptionModel::List selected_exceptions( model().get( selected_indexes ) );
+        QModelIndexList selectedIndices( ui.exceptionListView->selectionModel()->selectedRows() );
+        ExceptionModel::List selectedExceptions( model().get( selectedIndices ) );
 
-        ExceptionModel::List current_exceptions( model().get() );
+        ExceptionModel::List currentException( model().get() );
         ExceptionModel::List newExceptions;
 
-        for( ExceptionModel::List::const_iterator iter = current_exceptions.begin(); iter != current_exceptions.end(); ++iter )
+        for( ExceptionModel::List::const_iterator iter = currentException.begin(); iter != currentException.end(); ++iter )
         {
 
             // check if new list is not empty, current index is selected and last index is not.
             // if yes, move.
             if(
                 !( newExceptions.empty() ||
-                selected_indexes.indexOf( model().index( *iter ) ) == -1 ||
-                selected_indexes.indexOf( model().index( newExceptions.back() ) ) != -1
+                selectedIndices.indexOf( model().index( *iter ) ) == -1 ||
+                selectedIndices.indexOf( model().index( newExceptions.back() ) ) != -1
                 ) )
             {
                 Exception last( newExceptions.back() );
@@ -245,8 +247,8 @@ namespace Oxygen
         model().set( newExceptions );
 
         // restore selection
-        ui.exceptionListView->selectionModel()->select( model().index( selected_exceptions.front() ),  QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows );
-        for( ExceptionModel::List::const_iterator iter = selected_exceptions.begin(); iter != selected_exceptions.end(); ++iter )
+        ui.exceptionListView->selectionModel()->select( model().index( selectedExceptions.front() ),  QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows );
+        for( ExceptionModel::List::const_iterator iter = selectedExceptions.begin(); iter != selectedExceptions.end(); ++iter )
         { ui.exceptionListView->selectionModel()->select( model().index( *iter ), QItemSelectionModel::Select|QItemSelectionModel::Rows ); }
 
         emit changed();
@@ -263,21 +265,21 @@ namespace Oxygen
         { return; }
 
         // retrieve selected indexes in list and store in model
-        QModelIndexList selected_indexes( ui.exceptionListView->selectionModel()->selectedIndexes() );
-        ExceptionModel::List selected_exceptions( model().get( selected_indexes ) );
+        QModelIndexList selectedIndices( ui.exceptionListView->selectionModel()->selectedIndexes() );
+        ExceptionModel::List selectedExceptions( model().get( selectedIndices ) );
 
-        ExceptionModel::List current_exceptions( model().get() );
+        ExceptionModel::List currentException( model().get() );
         ExceptionModel::List newExceptions;
 
-        for( ExceptionModel::List::reverse_iterator iter = current_exceptions.rbegin(); iter != current_exceptions.rend(); ++iter )
+        for( ExceptionModel::List::reverse_iterator iter = currentException.rbegin(); iter != currentException.rend(); ++iter )
         {
 
             // check if new list is not empty, current index is selected and last index is not.
             // if yes, move.
             if(
                 !( newExceptions.empty() ||
-                selected_indexes.indexOf( model().index( *iter ) ) == -1 ||
-                selected_indexes.indexOf( model().index( newExceptions.back() ) ) != -1
+                selectedIndices.indexOf( model().index( *iter ) ) == -1 ||
+                selectedIndices.indexOf( model().index( newExceptions.back() ) ) != -1
                 ) )
             {
 
@@ -292,8 +294,8 @@ namespace Oxygen
         model().set( ExceptionModel::List( newExceptions.rbegin(), newExceptions.rend() ) );
 
         // restore selection
-        ui.exceptionListView->selectionModel()->select( model().index( selected_exceptions.front() ),  QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows );
-        for( ExceptionModel::List::const_iterator iter = selected_exceptions.begin(); iter != selected_exceptions.end(); ++iter )
+        ui.exceptionListView->selectionModel()->select( model().index( selectedExceptions.front() ),  QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows );
+        for( ExceptionModel::List::const_iterator iter = selectedExceptions.begin(); iter != selectedExceptions.end(); ++iter )
         { ui.exceptionListView->selectionModel()->select( model().index( *iter ), QItemSelectionModel::Select|QItemSelectionModel::Rows ); }
 
         emit changed();
@@ -317,10 +319,11 @@ namespace Oxygen
         {
 
             KMessageBox::error( this, i18n("Regular Expression syntax is incorrect") );
-            QSharedPointer<ExceptionDialog> dialog( new ExceptionDialog( this ) );
-            dialog->setException( exception );
-            if( dialog->exec() == QDialog::Rejected ) return false;
-            exception = dialog->exception();
+            QWeakPointer<ExceptionDialog> dialog( new ExceptionDialog( this ) );
+            dialog.data()->setException( exception );
+            if( dialog.data()->exec() == QDialog::Rejected || !dialog ) return false;
+            exception = dialog.data()->exception();
+            delete dialog.data();
 
         }
 

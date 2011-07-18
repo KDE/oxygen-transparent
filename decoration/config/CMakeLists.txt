@@ -1,10 +1,10 @@
 include_directories( ${KDEBASE_WORKSPACE_SOURCE_DIR}/kwin/lib ../libs/oxygen)
 
-
-set(kwin_oxygen_transparent_config_PART_SRCS
+set(kwin_oxygen_config_PART_SRCS
     ../oxygenconfiguration.cpp
     ../oxygenexception.cpp
     ../oxygenexceptionlist.cpp
+    oxygenanimationconfigwidget.cpp
     oxygenconfig.cpp
     oxygenconfigurationui.cpp
     oxygendetectwidget.cpp
@@ -14,7 +14,7 @@ set(kwin_oxygen_transparent_config_PART_SRCS
     oxygenshadowconfigurationui.cpp
   )
 
-kde4_add_ui_files(kwin_oxygen_transparent_config_PART_SRCS
+kde4_add_ui_files(kwin_oxygen_config_PART_SRCS
    ui/oxygenconfigurationui.ui
    ui/oxygendetectwidget.ui
    ui/oxygenexceptiondialog.ui
@@ -22,7 +22,7 @@ kde4_add_ui_files(kwin_oxygen_transparent_config_PART_SRCS
    ui/oxygenshadowconfigurationui.ui
 )
 
-kde4_add_plugin(kwin_oxygen_transparent_config ${kwin_oxygen_transparent_config_PART_SRCS})
+kde4_add_plugin(kwin_oxygen_transparent_config ${kwin_oxygen_config_PART_SRCS})
 
 target_link_libraries(
     kwin_oxygen_transparent_config
@@ -31,6 +31,7 @@ target_link_libraries(
     ${X11_X11_LIB}
     kdecorations
     oxygentransparentstyle
+    oxygentransparentstyleconfig
   )
 
 install(TARGETS kwin_oxygen_transparent_config  DESTINATION ${PLUGIN_INSTALL_DIR} )
