@@ -42,7 +42,6 @@
 #include <KAboutApplicationDialog>
 #include <KConfigGroup>
 #include <KGlobal>
-#include <KGlobalSettings>
 #include <KLocale>
 
 //_______________________________________________________________________
@@ -68,7 +67,7 @@ namespace Oxygen
         ui = new ConfigurationUi( parent );
 
         load( configurationGroup );
-        connect( ui, SIGNAL(changed()), SLOT( updateChanged() ) );
+        connect( ui, SIGNAL(changed()), SLOT(updateChanged()) );
         ui->show();
 
     }

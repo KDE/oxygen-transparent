@@ -115,7 +115,7 @@ namespace Oxygen
         if( widget->testAttribute(Qt::WA_WState_Created) && installX11Shadows( widget ) )
         {  _widgets.insert( widget, widget->winId() ); }
 
-        connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( objectDeleted( QObject* ) ) );
+        connect( widget, SIGNAL(destroyed(QObject*)), SLOT(objectDeleted(QObject*)) );
 
         return true;
 
@@ -319,7 +319,7 @@ namespace Oxygen
 
     }
 
-//_______________________________________________________
+    //_______________________________________________________
     bool ShadowHelper::installX11Shadows( QWidget* widget )
     {
 
@@ -384,18 +384,8 @@ namespace Oxygen
     {
 
         #ifdef Q_WS_X11
-        if( !widget ) return;
+        if( !( widget && widget->testAttribute(Qt::WA_WState_Created) ) ) return;
         XDeleteProperty(QX11Info::display(), widget->winId(), _atom);
-        #endif
-
-    }
-
-    //_______________________________________________________
-    void ShadowHelper::uninstallX11Shadows( WId id ) const
-    {
-
-        #ifdef Q_WS_X11
-        XDeleteProperty(QX11Info::display(), id, _atom);
         #endif
 
     }
