@@ -12,6 +12,7 @@ Name[sv]=Genomskinlig Oxygen
 Name[uk]=Прозорий Oxygen
 Name[x-test]=xxOxygen Transparentxx
 Name[zh_CN]=透明 Oxygen
+Name[zh_TW]=Oxygen 透明
 ConfigPage=kstyle_oxygen_transparent_config
 [KDE]
 WidgetStyle=Oxygen Transparent

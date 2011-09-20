@@ -13,6 +13,7 @@ Name[sv]=Genomskinlig Oxygen
 Name[uk]=Прозорий Oxygen
 Name[x-test]=xxOxygen Transparentxx
 Name[zh_CN]=透明 Oxygen
+Name[zh_TW]=Oxygen 透明
 
 Comment=Transparent styling of the next generation desktop
 Comment[cs]=Průhledný styl pro desktop nové generace
@@ -28,6 +29,7 @@ Comment[sv]=Genomskinlig stil för nästa generations skrivbord
 Comment[uk]=Прозорий стиль стільниці наступного покоління
 Comment[x-test]=xxTransparent styling of the next generation desktopxx
 Comment[zh_CN]=下一代桌面的透明风格
+Comment[zh_TW]=下一代桌面的透明樣式
 
 X-KDE-Library=kwin3_oxygen_transparent
 
