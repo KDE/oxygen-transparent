@@ -725,7 +725,8 @@ namespace Oxygen
 
         //! mdi subwindow titlebar button
         void renderTitleBarButton( QPainter*, const QStyleOptionTitleBar*, const QWidget*, const SubControl& ) const;
-        void renderTitleBarIcon( QPainter*, const QRectF&, const SubControl& ) const;
+        void renderTitleBarButton( QPainter*, const QRect& r, const QColor&, const QColor&, const SubControl& ) const;
+        void renderTitleBarIcon( QPainter*, const QRect&, const SubControl& ) const;
 
         //! header background
         void renderHeaderBackground( const QRect&, const QPalette&, QPainter*, const QWidget*, bool horizontal, bool reverse ) const;
