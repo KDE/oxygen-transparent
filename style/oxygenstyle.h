@@ -67,6 +67,7 @@ namespace Oxygen
     class Animations;
     class FrameShadowFactory;
     class MdiWindowShadowFactory;
+    class Mnemonics;
     class ShadowHelper;
     class SplitterFactory;
     class StyleHelper;
@@ -364,6 +365,10 @@ namespace Oxygen
         //! blur helper
         BlurHelper& blurHelper( void ) const
         { return *_blurHelper; }
+
+        //! mdi window shadows
+        Mnemonics& mnemonics( void ) const
+        { return *_mnemonics; }
 
         //! widget explorer
         /*!
@@ -855,9 +860,6 @@ namespace Oxygen
         int _doubleButtonHeight;
         //@}
 
-        //! true if keyboard accelerators must be drawn
-        bool _showMnemonics;
-
         //! helper
         StyleHelper* _helper;
 
@@ -881,6 +883,9 @@ namespace Oxygen
 
         //! mdi window shadows
         MdiWindowShadowFactory* _mdiWindowShadowFactory;
+
+        //! keyboard accelerators
+        Mnemonics* _mnemonics;
 
         //! argb helper
         ArgbHelper* _argbHelper;
