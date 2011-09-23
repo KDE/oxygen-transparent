@@ -750,7 +750,8 @@ namespace Oxygen
         {
             CheckOn,
             CheckOff,
-            CheckTriState
+            CheckTriState,
+            CheckSunken
         };
 
         //! checkbox

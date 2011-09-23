@@ -275,6 +275,7 @@ namespace Oxygen
     {
 
         const bool maximized( isMaximized() );
+        const bool shaded( isShade() );
         const bool narrowSpacing( configuration().useNarrowButtonSpacing() );
         const int frameBorder( configuration().frameBorder() );
         const int buttonSize( hideTitleBar() ? 0 : configuration().buttonSize() );
@@ -283,15 +284,35 @@ namespace Oxygen
         {
             case LM_BorderLeft:
             case LM_BorderRight:
-            case LM_BorderBottom:
             {
-                int border( 0 );
+                int border( frameBorder );
                 if( respectWindowState && maximized )
                 {
 
                     border = 0;
 
-                } else if( lm == LM_BorderBottom && frameBorder >= Configuration::BorderNoSide ) {
+                } else if( frameBorder < Configuration::BorderTiny ) {
+
+                    border = 0;
+
+                } else if( !compositingActive() && frameBorder == Configuration::BorderTiny ) {
+
+                    border = qMax( frameBorder, 3 );
+
+                }
+
+                return border;
+            }
+
+            case LM_BorderBottom:
+            {
+                int border( frameBorder );
+                if( (respectWindowState && maximized) || shaded )
+                {
+
+                    border = 0;
+
+                } else if( frameBorder >= Configuration::BorderNoSide ) {
 
                     // for tiny border, the convention is to have a larger bottom area in order to
                     // make resizing easier
@@ -304,10 +325,6 @@ namespace Oxygen
                 } else if( !compositingActive() && frameBorder == Configuration::BorderTiny ) {
 
                     border = qMax( frameBorder, 3 );
-
-                } else {
-
-                    border = frameBorder;
 
                 }
 

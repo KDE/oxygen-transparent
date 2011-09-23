@@ -4060,6 +4060,7 @@ namespace Oxygen
         // get checkbox state
         CheckBoxState state;
         if( flags & State_NoChange ) state = CheckTriState;
+        else if( flags & State_Sunken ) state = CheckSunken;
         else if( flags & State_On ) state = CheckOn;
         else state = CheckOff;
 
@@ -4114,7 +4115,11 @@ namespace Oxygen
         animations().widgetStateEngine().updateState( widget, AnimationHover, mouseOver );
         animations().widgetStateEngine().updateState( widget, AnimationFocus, hasFocus && !mouseOver );
 
-        const CheckBoxState state( ( flags & State_On ) ? CheckOn:CheckOff );
+        CheckBoxState state;
+        if( flags & State_Sunken ) state = CheckSunken;
+        else if( flags & State_On ) state = CheckOn;
+        else state = CheckOff;
+
         if( enabled && animations().widgetStateEngine().isAnimated( widget, AnimationHover ) )
         {
 
@@ -9168,6 +9173,7 @@ namespace Oxygen
             QPen contrastPen( helper().calcLightColor( background ), penThickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin );
             if( state == CheckTriState )
             {
+
                 QVector<qreal> dashes;
                 if( StyleConfigData::checkBoxStyle() == StyleConfigData::CS_CHECK )
                 {
@@ -9184,6 +9190,12 @@ namespace Oxygen
                 }
                 pen.setDashPattern( dashes );
                 contrastPen.setDashPattern( dashes );
+
+            } else if( state == CheckSunken ) {
+
+                pen.setColor( helper().alphaColor( pen.color(), 0.3 ) );
+                contrastPen.setColor( helper().alphaColor( contrastPen.color(), 0.3 ) );
+
             }
 
             painter->save();
@@ -9260,7 +9272,7 @@ namespace Oxygen
         painter->drawPixmap( x, y, helper().roundSlab( color, glow, 0.0 ) );
 
         // draw the radio mark
-        if( state == CheckOn )
+        if( state != CheckOff )
         {
             const qreal radius( 2.6 );
             const qreal dx( 0.5*r.width() - radius );
@@ -9273,11 +9285,15 @@ namespace Oxygen
             const QColor background( palette.color( QPalette::Button ) );
             const QColor color( palette.color( QPalette::ButtonText ) );
 
-            painter->setBrush( helper().calcLightColor( background ) );
+            // contrast
+            if( state == CheckOn ) painter->setBrush( helper().calcLightColor( background ) );
+            else painter->setBrush( helper().alphaColor( helper().calcLightColor( background ), 0.3 ) );
             painter->translate( 0, radius/2 );
             painter->drawEllipse( QRectF( r ).adjusted( dx, dy, -dx, -dy ) );
 
-            painter->setBrush( helper().decoColor( background, color ) );
+            // symbol
+            if( state == CheckOn ) painter->setBrush( helper().decoColor( background, color ) );
+            else painter->setBrush( helper().alphaColor( helper().decoColor( background, color ), 0.3 ) );
             painter->translate( 0, -radius/2 );
             painter->drawEllipse( QRectF( r ).adjusted( dx, dy, -dx, -dy ) );
             painter->restore();
