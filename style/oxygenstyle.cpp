@@ -7975,7 +7975,7 @@ namespace Oxygen
         disable stackedWidget engine in case
         translucent backgrounds are enabled
         */
-        if( helper().compositingActive() && argbHelper().enabled() )
+        if( argbHelper().enabled() )
         {
 
             blurHelper().setEnabled( true );
