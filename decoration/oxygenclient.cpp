@@ -1653,11 +1653,7 @@ namespace Oxygen
         if(  _itemData.isDirty() || _itemData.count() != clientGroupItems().count() )
         { updateItemBoundingRects( false ); }
 
-        const bool hasTitleOutline(
-            clientGroupItems().count() >= 2 ||
-            _itemData.isAnimated() ||
-            ( isActive() && configuration().drawTitleOutline() ) );
-
+        const bool hasTitleOutline( this->hasTitleOutline() );
         const bool hasAlpha( compositingActive() && _transparencyEnabled );
 
         if( hasAlpha && hasTitleOutline )

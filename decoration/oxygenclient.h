@@ -364,7 +364,7 @@ namespace Oxygen
             return
                 clientGroupItems().count() >= 2 ||
                 _itemData.isAnimated() ||
-                ( (isActive()||glowIsAnimated()) && configuration().drawTitleOutline() );
+                ( isActive() && configuration().drawTitleOutline() );
         }
 
         //! calculate mask
