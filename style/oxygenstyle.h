@@ -767,13 +767,13 @@ namespace Oxygen
         //! scrollbar handle (non animated)
         void renderScrollBarHandle(
             QPainter *p, const QRect &r, const QPalette &pal,
-            const Qt::Orientation& orientation, const bool& hover, const bool& hasAlpha = false ) const
-        { renderScrollBarHandle( p, r, pal, orientation, hover, hasAlpha, -1 ); }
+            const Qt::Orientation& orientation, const bool& hover ) const
+        { renderScrollBarHandle( p, r, pal, orientation, hover, -1 ); }
 
         //! scrollbar handle (animated)
         void renderScrollBarHandle(
             QPainter *p, const QRect &r, const QPalette &pal,
-            const Qt::Orientation& orientation, const bool& hover, const bool& hasAlpha, const qreal& opacity) const;
+            const Qt::Orientation& orientation, const bool& hover, const qreal& opacity) const;
 
         //! scrollbar arrow
         void renderScrollBarArrow( QPainter*, const QRect&, const QColor&, const QColor&, ArrowOrientation ) const;
