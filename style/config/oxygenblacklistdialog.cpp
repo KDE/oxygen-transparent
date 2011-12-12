@@ -28,7 +28,7 @@
 
 #include <KIconLoader>
 #include <KMessageBox>
-
+#include <QtCore/QTextStream>
 
 namespace Oxygen
 {
@@ -41,13 +41,13 @@ namespace Oxygen
         // define buttons
         setButtons( Ok|Cancel );
         QWidget* local( new QWidget( this ) );
-        
+
         // setup ui
         ui.setupUi( local );
         ui.listView->setModel( &_model );
         ui.listView->sortByColumn( BlackListModel::NAME );
         ui.listView->setItemDelegate( new Delegate( this ) );
-        
+
         // set icons
         KIconLoader* icon_loader = KIconLoader::global();
         ui.addButton->setIcon( KIcon( "list-add", icon_loader ) );
@@ -60,19 +60,33 @@ namespace Oxygen
         connect( ui.addButton, SIGNAL( clicked() ), SLOT( add() ) );
         connect( ui.removeButton, SIGNAL( clicked() ), SLOT( remove() ) );
         connect( ui.editButton, SIGNAL( clicked() ), SLOT( edit() ) );
-        
+
         updateButtons();
-        
+
         setMainWidget( local );
-        
+
     }
 
     //___________________________________________
-    void BlackListDialog::setLists( const QStringList& greyList, const QStringList& blackList )
+    void BlackListDialog::setLists(
+        const QStringList& internalList,
+        const QStringList& greyList,
+        const QStringList& blackList )
     {
-        
+
+        // store internal list
+        _internalBlackList = internalList;
+
         typedef QMap<QString, bool> Map;
         Map blackListMap;
+
+        // add internal
+        /*
+        all internals are set to disabled. They will be set to enabled
+        if also found in grey list, and not in black list
+        */
+        foreach( const QString& appName, internalList )
+        {  if( !appName.trimmed().isEmpty() )  blackListMap[appName] = true; }
 
         // add grey
         foreach( const QString& appName, greyList )
@@ -86,23 +100,23 @@ namespace Oxygen
         BlackListModel::List items;
         for( Map::const_iterator iter = blackListMap.begin(); iter != blackListMap.end(); iter++ )
         { items.push_back( BlackListPair( iter.key(), iter.value() ) ); }
-        
+
         _model.set( items );
 
         resizeColumns();
-        
+
     }
- 
+
     //___________________________________________
     QStringList BlackListDialog::greyList( void ) const
     {
 
         BlackListModel::List items( _model.get() );
         QStringList list;
-     
+
         foreach( const BlackListPair& pair, items )
         { if( !pair.first.trimmed().isEmpty() ) list << pair.first; }
-        
+
         return list;
     }
 
@@ -112,37 +126,39 @@ namespace Oxygen
 
         BlackListModel::List items( _model.get() );
         QStringList list;
-     
+
         foreach( const BlackListPair& pair, items )
         { if( pair.second && !pair.first.trimmed().isEmpty() ) list << pair.first; }
-        
+
         return list;
     }
 
     //_______________________________________________________
     void BlackListDialog::resizeColumns( void ) const
-    { 
-        ui.listView->resizeColumnToContents( BlackListModel::ENABLED ); 
-        ui.listView->resizeColumnToContents( BlackListModel::NAME ); 
+    {
+        ui.listView->resizeColumnToContents( BlackListModel::ENABLED );
+        ui.listView->resizeColumnToContents( BlackListModel::NAME );
     }
-    
+
     //__________________________________________________________
     void BlackListDialog::updateButtons( void )
     {
 
-        const bool has_selection( !ui.listView->selectionModel()->selectedRows().empty() );
-        ui.removeButton->setEnabled( has_selection );
-        ui.editButton->setEnabled( has_selection );
+        QModelIndex index( ui.listView->selectionModel()->currentIndex() );
+        const bool enabled( index.isValid() && _internalBlackList.indexOf( _model.get( index ).first ) < 0 );
+
+        ui.removeButton->setEnabled( enabled );
+        ui.editButton->setEnabled( enabled );
 
     }
-    
+
     //_______________________________________________________
     void BlackListDialog::toggle( const QModelIndex& index )
     {
 
         if( !index.isValid() ) return;
         if( index.column() != BlackListModel::ENABLED ) return;
-        
+
         // get matching exception
         BlackListPair& pair( _model.get( index ) );
         pair.second = !pair.second;
@@ -155,32 +171,36 @@ namespace Oxygen
     //_______________________________________________________
     void BlackListDialog::add( void )
     {
-        
+
         BlackListPair pair( "", true );
         _model.add( pair );
         QModelIndex index( _model.index( pair ) );
         if( !index.isValid() ) return;
-        
+
         // set index selected
         ui.listView->selectionModel()->select( index,  QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows );
 
         // and edit
         index = _model.index( index.row(), BlackListModel::NAME );
         ui.listView->edit( index );
-        
+
         return;
-        
+
     }
-    
+
     //_______________________________________________________
     void BlackListDialog::remove( void )
     {
 
-        // should use a konfirmation dialog
+        // get selection
+        QModelIndex index( ui.listView->selectionModel()->currentIndex() );
+        if( !index.isValid() ) return;
+
+        // ask confirmation
         if( KMessageBox::questionYesNo( this, i18n("Remove selected exception?") ) == KMessageBox::No ) return;
 
         // remove
-        _model.remove( _model.get( ui.listView->selectionModel()->selectedRows() ) );
+        _model.remove( _model.get( index ) );
         resizeColumns();
         return;
 
@@ -200,7 +220,7 @@ namespace Oxygen
         // and edit
         ui.listView->edit( index );
         return;
-        
+
     }
-    
+
 }
