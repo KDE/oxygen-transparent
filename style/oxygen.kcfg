@@ -13,6 +13,15 @@
     <!-- opacity grey list -->
     <!-- 
       applications listed here appear in the configuration list of black-listed applications 
+      however they are unchecked, unless they also appear in the blacklist or do not appear in the 
+      grey list
+    -->
+    <entry name="OpacityInternalBlackList" type = "StringList"> 
+        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker,kdenlive,nspluginviewer,smplayer,dragon,kaffeine,loopy,kwin</default>
+    </entry>
+
+    <!-- 
+      applications listed here appear in the configuration list of black-listed applications 
       however they are unchecked, unless they also appear in the blacklist
     -->
     <entry name="OpacityGreyList" type = "StringList"> 
@@ -22,7 +31,7 @@
     <!-- opacity black list -->
     <!-- applications listed here cannot be set transparent -->
     <entry name="OpacityBlackList" type = "StringList"> 
-        <default>smplayer,dragon,kaffeine,loopy,kwin</default>
+        <default></default>
     </entry>
 
   </group>

@@ -353,6 +353,7 @@ namespace Oxygen
         // black listing
         _opacityGreyList = StyleConfigData::opacityGreyList();
         _opacityBlackList = StyleConfigData::opacityBlackList();
+        _internalBlackList = StyleConfigData::opacityInternalBlackList();
 
         // animation config widget
         if( _animationConfigWidget ) _animationConfigWidget->load();
@@ -367,7 +368,7 @@ namespace Oxygen
     void StyleConfig::editExceptions( void )
     {
         QSharedPointer<BlackListDialog> dialog( new BlackListDialog( this ) );
-        dialog->setLists( _opacityGreyList, _opacityBlackList );
+        dialog->setLists(  _internalBlackList, _opacityGreyList, _opacityBlackList );
         if( dialog->exec() == QDialog::Rejected ) return;
 
         _opacityGreyList = dialog->greyList();

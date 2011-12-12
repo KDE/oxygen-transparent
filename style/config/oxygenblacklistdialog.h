@@ -46,17 +46,21 @@ namespace Oxygen
         BlackListDialog( QWidget* parent );
 
         //! set lists
-        /*! first argument is grey list. Second argument is blackList */
-        void setLists( const QStringList&, const QStringList& );
-    
+        /*!
+        first argument is internal list
+        second argument is user-set grey list.
+        third argument is user-set blackList
+        */
+        void setLists( const QStringList&, const QStringList&, const QStringList& );
+
         //! get grey list
         QStringList greyList( void ) const;
-        
+
         //! get black list
         QStringList blackList( void ) const;
 
         protected:
-        
+
         void resizeColumns( void ) const;
 
         protected slots:
@@ -75,7 +79,7 @@ namespace Oxygen
 
         //! update button states
         virtual void updateButtons( void );
-        
+
         private:
 
         //! ui
@@ -83,7 +87,10 @@ namespace Oxygen
 
         //! model
         BlackListModel _model;
-        
+
+        //! list of internal applications, that cannot be removed
+        QStringList _internalBlackList;
+
     };
 
 }

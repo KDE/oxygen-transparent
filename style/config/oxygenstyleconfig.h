@@ -112,6 +112,9 @@ namespace Oxygen
         //! animation config (expert mode only)
         AnimationConfigWidget* _animationConfigWidget;
 
+        //! interal black list
+        QStringList _internalBlackList;
+
         //! grey listed applications
         QStringList _opacityGreyList;
 
