@@ -56,7 +56,8 @@ namespace Oxygen
         #ifdef Q_WS_X11
 
         // create atom
-        _atom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_BLUR_BEHIND_REGION", False);
+        _atom_blur = XInternAtom( QX11Info::display(), "_KDE_NET_WM_BLUR_BEHIND_REGION", False);
+        _atom_opaque = XInternAtom( QX11Info::display(), "_NET_WM_OPAQUE_REGION", False);
 
         #endif
 
@@ -198,6 +199,7 @@ namespace Oxygen
         { return; }
 
         const QRegion region( blurRegion( widget ) );
+        const QRegion inverseRegion = QRegion(0, 0, widget->width(), widget->height()) - region;
         if( region.isEmpty() ) {
 
             clear( widget );
@@ -209,7 +211,15 @@ namespace Oxygen
             { data << rect.x() << rect.y() << rect.width() << rect.height(); }
 
             XChangeProperty(
-                QX11Info::display(), widget->winId(), _atom, XA_CARDINAL, 32, PropModeReplace,
+                QX11Info::display(), widget->winId(), _atom_blur, XA_CARDINAL, 32, PropModeReplace,
+                reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
+
+            data.clear();
+            foreach( const QRect& rect, inverseRegion.rects() )
+            { data << rect.x() << rect.y() << rect.width() << rect.height(); }
+
+            XChangeProperty(
+                QX11Info::display(), widget->winId(), _atom_opaque, XA_CARDINAL, 32, PropModeReplace,
                 reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
 
         }
@@ -227,7 +237,8 @@ namespace Oxygen
     void BlurHelper::clear( QWidget* widget ) const
     {
         #ifdef Q_WS_X11
-        XChangeProperty( QX11Info::display(), widget->winId(), _atom, XA_CARDINAL, 32, PropModeReplace, 0, 0 );
+        XDeleteProperty( QX11Info::display(), widget->winId(), _atom_blur );
+        XDeleteProperty( QX11Info::display(), widget->winId(), _atom_opaque );
         #endif
 
     }
