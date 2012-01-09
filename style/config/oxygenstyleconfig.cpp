@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "oxygenanimationconfigwidget.h"
 #include "oxygenstyleconfigdata.h"
 
-#include <QtCore/QSharedPointer>
+#include <QtCore/QPointer>
 #include <QtCore/QTextStream>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusConnection>
@@ -367,13 +367,17 @@ namespace Oxygen
     //__________________________________________________________________
     void StyleConfig::editExceptions( void )
     {
-        QSharedPointer<BlackListDialog> dialog( new BlackListDialog( this ) );
+        QPointer<BlackListDialog> dialog( new BlackListDialog( this ) );
         dialog->setLists(  _internalBlackList, _opacityGreyList, _opacityBlackList );
-        if( dialog->exec() == QDialog::Rejected ) return;
+        if( dialog->exec() == QDialog::Accepted && dialog )
+        {
+            _opacityGreyList = dialog->greyList();
+            _opacityBlackList = dialog->blackList();
+            updateChanged();
+            delete dialog;
+        }
 
-        _opacityGreyList = dialog->greyList();
-        _opacityBlackList = dialog->blackList();
-        updateChanged();
+        return;
 
     }
 
