@@ -98,7 +98,7 @@ namespace Oxygen
 
         // put map into model
         BlackListModel::List items;
-        for( Map::const_iterator iter = blackListMap.begin(); iter != blackListMap.end(); iter++ )
+        for( Map::const_iterator iter = blackListMap.constBegin(); iter != blackListMap.constEnd(); iter++ )
         { items.push_back( BlackListPair( iter.key(), iter.value() ) ); }
 
         _model.set( items );
