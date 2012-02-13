@@ -175,7 +175,7 @@ namespace Oxygen
             return true;
 
             // tabs
-            case AbilityClientGrouping:
+            case AbilityTabbing:
             return true;
 
             #if KDE_IS_VERSION( 4, 5, 76 )
