@@ -33,6 +33,7 @@
         'no-git',
         'no-configure',
         'no-make',
+        'branch:s',
         'help' );
 
     print( "--- oxygen transparent easy setup script\n" );
@@ -75,14 +76,29 @@
         if( -d $source_dir )
         {
 
-            # change to source directory and update
+            # directory exists, simply update (pull)
             chdir_and_echo( "$source_dir" );
+
+            # switch to branch
+            if( $opt_branch )
+            { cmd_and_echo( "git checkout $opt_branch" ); }
+
+            # change to source directory and update
             cmd_and_echo( "git pull" );
 
         } else {
 
+            # checkout sources
+            my $repository="$repository/$base_directory";
+            my $command = "git clone ";
+
+            if( $opt_branch )
+            { $command =  $command." -b ".$opt_branch." "; }
+
+            $command = $command.$repository;
+            cmd_and_echo( $command );
+
             # checkout sources and rename
-            cmd_and_echo( "git clone $repository/$base_directory" );
             cmd_and_echo( "mv oxygen-transparent src" );
 
         }
