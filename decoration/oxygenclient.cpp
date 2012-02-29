@@ -1066,6 +1066,8 @@ namespace Oxygen
     QPixmap Client::renderTitleText( const QRect& rect, const QString& caption, const QColor& color, bool elide ) const
     {
 
+        if( !rect.isValid() ) return QPixmap();
+
         QPixmap out( rect.size() );
         out.fill( Qt::transparent );
         if( caption.isEmpty() || !color.isValid() ) return out;
@@ -1538,7 +1540,7 @@ namespace Oxygen
                 QList<Button*> buttons( widget()->findChildren<Button*>() );
                 foreach( Button* button, buttons )
                 {
-                    if( button->isVisible() && event->rect().intersects( button->geometry() ) )
+                    if( ( button->isVisible() || isPreview() ) && event->rect().intersects( button->geometry() ) )
                     {
                         painter.save();
                         painter.setViewport( button->geometry() );
