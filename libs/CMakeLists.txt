@@ -4,7 +4,9 @@ set(oxygenstyle_LIB_SRCS
     oxygenitemmodel.cpp
     oxygenshadowcache.cpp
     oxygenshadowconfiguration.cpp
-    oxygentileset.cpp)
+    oxygentileset.cpp
+    oxygentileset_x11.cpp
+)
 
 kde4_add_library(oxygentransparentstyle SHARED ${oxygenstyle_LIB_SRCS})
 

@@ -141,7 +141,13 @@ namespace Oxygen
         {
             if( _glowIntensity == value ) return;
             _glowIntensity = value;
+
+            // update widget
             widget()->update();
+
+            // update shadow hint
+            updateShadowHint();
+
         }
 
         //! unbiased glow intensity
@@ -407,6 +413,9 @@ namespace Oxygen
         { return *_sizeGrip; }
 
         //@}
+
+        //! update shadow hint
+        void updateShadowHint( void );
 
         //! remove shadow hint
         void removeShadowHint( void );

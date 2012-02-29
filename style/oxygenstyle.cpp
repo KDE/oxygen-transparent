@@ -2957,8 +2957,10 @@ namespace Oxygen
     //___________________________________________________________________________________
     bool Style::drawIndicatorTabClose( const QStyleOption* option, QPainter* painter, const QWidget* ) const
     {
-
-        if( _tabCloseIcon.isNull() ) return false;
+        if( _tabCloseIcon.isNull() ) { // load the icon on-demand: in the constructor, KDE is not yet ready to find it!
+            _tabCloseIcon = KIcon( "dialog-close" );
+            if( _tabCloseIcon.isNull() ) return false; // still not found? cancel
+        }
         const int size( pixelMetric(QStyle::PM_SmallIconSize) );
         QIcon::Mode mode;
         if( option->state & State_Enabled )
@@ -4949,8 +4951,12 @@ namespace Oxygen
         if( indicatorRect.adjusted( 2, 1, -2, -1 ).isValid() )
         {
             indicatorRect.adjust( 1, 0, -1, -1 );
-            QPixmap pixmap( helper().progressBarIndicator( palette, indicatorRect ) );
-            painter->drawPixmap( indicatorRect.topLeft(), pixmap );
+
+            // calculate dimension
+            int dimension( 20 );
+            if( pbOpt2 ) dimension = qMax( 5, horizontal ? indicatorRect.height() : indicatorRect.width() );
+            TileSet* tileSet( helper().progressBarIndicator( palette, dimension ) );
+            tileSet->render( indicatorRect, painter, TileSet::Full );
         }
 
         return true;
@@ -8183,10 +8189,6 @@ namespace Oxygen
         // frame focus
         if( StyleConfigData::viewDrawFocusIndicator() ) _frameFocusPrimitive = &Style::drawFrameFocusRectPrimitive;
         else _frameFocusPrimitive = &Style::emptyPrimitive;
-
-        // load tab close icon
-        _tabCloseIcon = KIcon( "dialog-close" );
-
     }
 
     //_____________________________________________________________________

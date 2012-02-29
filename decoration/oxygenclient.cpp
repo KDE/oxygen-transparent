@@ -183,8 +183,9 @@ namespace Oxygen
 
         } else if( hasSizeGrip() ) deleteSizeGrip();
 
-        // needs to remove shadow property on window since shadows are handled by the decoration
-        removeShadowHint();
+        // shadow hint
+        if( shadowCache().shadowSize() > 0 ) updateShadowHint();
+        else removeShadowHint();
 
     }
 
@@ -251,9 +252,7 @@ namespace Oxygen
     {
 
         if( isMaximized() ) { return widget()->rect(); }
-        const QRect frame( widget()->rect().adjusted(
-            layoutMetric( LM_OuterPaddingLeft ), layoutMetric( LM_OuterPaddingTop ),
-            -layoutMetric( LM_OuterPaddingRight ), -layoutMetric( LM_OuterPaddingBottom ) ) );
+        const QRect frame( widget()->rect() );
 
         QRegion mask;
         if( configuration().frameBorder() == Configuration::BorderNone && !isShade() )
@@ -394,14 +393,6 @@ namespace Oxygen
             case LM_ButtonMarginTop:
             return 0;
 
-            // outer margin for shadow/glow
-            case LM_OuterPaddingLeft:
-            case LM_OuterPaddingRight:
-            case LM_OuterPaddingTop:
-            case LM_OuterPaddingBottom:
-            if( maximized ) return 0;
-            else return shadowCache().shadowSize();
-
             default:
             return KCommonDecoration::layoutMetric(lm, respectWindowState, btn);
         }
@@ -421,8 +412,8 @@ namespace Oxygen
 
             if( configuration().centerTitleOnFullWidth() )
             {
-                titleRect.setLeft( widget()->rect().left() + layoutMetric( LM_OuterPaddingLeft ) );
-                titleRect.setRight( widget()->rect().right() - layoutMetric( LM_OuterPaddingRight ) );
+                titleRect.setLeft( widget()->rect().left() );
+                titleRect.setRight( widget()->rect().right() );
             }
 
             const QRect textRect( titleBoundingRect( options()->font( true, false),  titleRect, caption() ) );
@@ -432,8 +423,8 @@ namespace Oxygen
         } else {
 
             // buttons are properly accounted for in titleBoundingRect method
-            titleRect.setLeft( widget()->rect().left() + layoutMetric( LM_OuterPaddingLeft ) );
-            titleRect.setRight( widget()->rect().right() - layoutMetric( LM_OuterPaddingRight ) );
+            titleRect.setLeft( widget()->rect().left() );
+            titleRect.setRight( widget()->rect().right() );
 
         }
 
@@ -620,7 +611,7 @@ namespace Oxygen
 
         } else {
 
-            int offset = layoutMetric( LM_OuterPaddingTop );
+            int offset(0);
 
             // radial gradient positionning
             int height = 64 - Configuration::ButtonDefault;
@@ -651,7 +642,7 @@ namespace Oxygen
         // background pixmap
         if( isPreview() || helper().hasBackgroundPixmap( windowId() ) )
         {
-            int offset = layoutMetric( LM_OuterPaddingTop );
+            int offset(0);
 
             // radial gradient positionning
             int height = 64 - Configuration::ButtonDefault;
@@ -659,7 +650,7 @@ namespace Oxygen
             if( isMaximized() ) offset -= 3;
 
             // background pixmap
-            QPoint backgroundPixmapOffset( layoutMetric( LM_OuterPaddingLeft ) + layoutMetric( LM_BorderLeft ), 0 );
+            QPoint backgroundPixmapOffset( 0, 0 );
             helper().setBackgroundPixmapOffset( backgroundPixmapOffset );
 
             const QWidget* window( isPreview() ? this->widget() : widget->window() );
@@ -693,7 +684,6 @@ namespace Oxygen
         }
 
         QRect r = (isPreview()) ? this->widget()->rect():window->rect();
-        r.adjust( layoutMetric( LM_OuterPaddingLeft ), layoutMetric( LM_OuterPaddingTop ), -layoutMetric( LM_OuterPaddingRight ), -layoutMetric( LM_OuterPaddingBottom ) );
         r.adjust(0,0, 1, 1);
 
         // base color
@@ -928,7 +918,6 @@ namespace Oxygen
         }
 
         QRect r = (isPreview()) ? this->widget()->rect():window->rect();
-        r.adjust( layoutMetric( LM_OuterPaddingLeft ), layoutMetric( LM_OuterPaddingTop ), -layoutMetric( LM_OuterPaddingRight ), -layoutMetric( LM_OuterPaddingBottom ) );
 
         // dimensions
         const int titleHeight = layoutMetric(LM_TitleHeight);
@@ -1340,8 +1329,15 @@ namespace Oxygen
         // reset animation
         if( shadowAnimationsEnabled() )
         {
+
             _glowAnimation->setDirection( isActive() ? Animation::Forward : Animation::Backward );
             if(!glowIsAnimated()) { _glowAnimation->start(); }
+
+        } else {
+
+            // update shadow hint
+            updateShadowHint();
+
         }
 
         // update size grip so that it gets the right color
@@ -1367,6 +1363,7 @@ namespace Oxygen
     {
         if( hasSizeGrip() ) sizeGrip().setVisible( !( isShade() || isMaximized() ) );
         KCommonDecorationUnstable::shadeChange();
+        updateShadowHint();
     }
 
     //_________________________________________________________
@@ -1595,33 +1592,6 @@ namespace Oxygen
         // base color
         QColor color = palette.window().color();
 
-        // draw shadows
-        if( compositingActive() && shadowCache().shadowSize() > 0 && !isMaximized() )
-        {
-
-            TileSet *tileSet( 0 );
-            const ShadowCache::Key key( this->key() );
-            if( configuration().useOxygenShadows() && glowIsAnimated() && !isForcedActive() )
-            {
-
-                tileSet = shadowCache().tileSet( key, glowIntensity() );
-
-            } else {
-
-                tileSet = shadowCache().tileSet( key );
-
-            }
-
-            tileSet->render( frame, &painter, TileSet::Ring);
-
-        }
-
-        // adjust frame
-        frame.adjust(
-            layoutMetric(LM_OuterPaddingLeft),
-            layoutMetric(LM_OuterPaddingTop),
-            -layoutMetric(LM_OuterPaddingRight),
-            -layoutMetric(LM_OuterPaddingBottom) );
 
         //  adjust mask
         if( compositingActive() || isPreview() )
@@ -1853,15 +1823,7 @@ namespace Oxygen
             if( drag->target() == 0 && _itemData.count() > 1 )
             {
                 _itemData.setDirty( true );
-                untab( tabId(_sourceItem),
-                    widget()->frameGeometry().adjusted(
-                    layoutMetric( LM_OuterPaddingLeft ),
-                    layoutMetric( LM_OuterPaddingTop ),
-                    -layoutMetric( LM_OuterPaddingRight ),
-                    -layoutMetric( LM_OuterPaddingBottom )
-                    ).translated( QCursor::pos() - event->pos() +
-                    QPoint( layoutMetric( LM_OuterPaddingLeft ), layoutMetric( LM_OuterPaddingTop )))
-                    );
+                untab( tabId(_sourceItem), widget()->frameGeometry().translated( QCursor::pos() - event->pos() ) );
             }
 
             // reset button
@@ -2100,6 +2062,66 @@ namespace Oxygen
         assert( hasSizeGrip() );
         _sizeGrip->deleteLater();
         _sizeGrip = 0;
+    }
+
+    //_________________________________________________________________
+    void Client::updateShadowHint( void )
+    {
+
+        // do nothing if no window id
+        if( !windowId() ) return;
+
+        // create atom
+        if( !_shadowAtom )
+        { _shadowAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_SHADOW", False); }
+
+
+        // store size
+        const int size( shadowCache().shadowSize() );
+
+        // check compositing and size
+        if( !( compositingActive() && size > 0 ) )
+        { return; }
+
+        // shadow cache key
+        const ShadowCache::Key key( this->key() );
+
+        // TileSet
+        TileSet* tileSet;
+
+        if( configuration().useOxygenShadows() && glowIsAnimated() && !isForcedActive() )
+        {
+
+            tileSet = shadowCache().tileSet( key, glowIntensity() );
+
+        } else {
+
+            tileSet = shadowCache().tileSet( key );
+
+        }
+
+        // check
+        if( !tileSet ) return;
+
+        // create data
+        QVector<unsigned long> data;
+        data << tileSet->x11Pixmap( 1 )
+            << tileSet->x11Pixmap( 2 )
+            << tileSet->x11Pixmap( 5 )
+            << tileSet->x11Pixmap( 8 )
+            << tileSet->x11Pixmap( 7 )
+            << tileSet->x11Pixmap( 6 )
+            << tileSet->x11Pixmap( 3 )
+            << tileSet->x11Pixmap( 0 );
+
+        // add padding
+        data << size << size << size << size;
+
+        // update property
+        XChangeProperty(
+            QX11Info::display(), windowId(), _shadowAtom, XA_CARDINAL, 32, PropModeReplace,
+            reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
+
     }
 
     //_________________________________________________________________
