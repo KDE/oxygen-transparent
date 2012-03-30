@@ -28,7 +28,7 @@ target_link_libraries(
     ${KDE4_KDEUI_LIBS}
     ${QT_QTGUI_LIBRARY}
     ${X11_X11_LIB}
-    kdecorations
+    ${KDE4WORKSPACE_KDECORATIONS_LIBS}
     oxygentransparentstyle
     oxygentransparentstyleconfig
   )
