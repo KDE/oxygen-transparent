@@ -1,7 +1,6 @@
 ########### add version number into compilation defines
 add_definitions ( -DAPP_VERSION=\\\"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}\\\")
 add_subdirectory( config )
-include_directories(../libs/oxygen)
 
 ########### next target ###############
 set(kwin_oxygen_transparent_SRCS
