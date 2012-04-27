@@ -1,4 +1,3 @@
-include_directories( ${KDEBASE_WORKSPACE_SOURCE_DIR}/kwin/lib ../libs/oxygen)
 
 set(kwin_oxygen_config_PART_SRCS
     ../oxygenconfiguration.cpp
@@ -29,7 +28,7 @@ target_link_libraries(
     ${KDE4_KDEUI_LIBS}
     ${QT_QTGUI_LIBRARY}
     ${X11_X11_LIB}
-    kdecorations
+    ${KDE4WORKSPACE_KDECORATIONS_LIBS}
     oxygentransparentstyle
     oxygentransparentstyleconfig
   )
