@@ -49,7 +49,7 @@ namespace Oxygen
         @param w2 width of the not-left-or-right chunks
         @param h2 height of the not-top-or-bottom chunks
         */
-        TileSet(const QPixmap&, int w1, int h1, int w2, int h2 );
+        TileSet(const QPixmap&, int w1, int h1, int w2, int h2, bool stretch = false );
 
         /*!
         Create a TileSet from a pixmap. The size of the top/left and bottom/right
@@ -67,7 +67,7 @@ namespace Oxygen
         @param w2 width of the not-left-or-right chunks
         @param h2 height of the not-top-or-bottom chunks
         */
-        TileSet(const QPixmap &pix, int w1, int h1, int w3, int h3, int x2, int y2, int w2, int h2 );
+        TileSet(const QPixmap &pix, int w1, int h1, int w3, int h3, int x2, int y2, int w2, int h2, bool stretch = false );
 
         //! empty constructor
         TileSet();
@@ -75,18 +75,6 @@ namespace Oxygen
         //! destructor
         virtual ~TileSet()
         {}
-
-        //! set stretch
-        void setStretch( bool value )
-        { _stretch = value; }
-
-        //! initialize
-        /*! old pixmaps, if any, are released */
-        void init(const QPixmap&, int w1, int h1, int w2, int h2 );
-
-        //! initialize
-        /*! old pixmaps, if any, are released */
-        void init(const QPixmap &pix, int w1, int h1, int w3, int h3, int x2, int y2, int w2, int h2 );
 
         /*!
         Flags specifying what sides to draw in ::render. Corners are drawn when
@@ -146,29 +134,13 @@ namespace Oxygen
             return _pixmaps[index];
         }
 
-        //! shortcut to list of pixmaps
-        typedef QVector<QPixmap> PixmapList;
-
-        //! get pixmaps
-        const PixmapList& pixmaps( void ) const
-        { return _pixmaps; }
-
-        //! get X11 pixmap
-        virtual Qt::HANDLE x11Pixmap( int ) const
-        { return 0L; }
-
         protected:
 
+        //! shortcut to pixmap list
+        typedef QVector<QPixmap> PixmapList;
+
         //! initialize pixmap
-        virtual void initPixmap( const QPixmap&, int w, int h, const QRect& );
-
-        //! clear pixmaps
-        void clearPixmaps( void )
-        { _pixmaps.clear(); }
-
-        //! add pixmap to list
-        void addPixmap( const QPixmap& pixmap )
-        { _pixmaps.push_back( pixmap ); }
+        void initPixmap( PixmapList&, const QPixmap&, int w, int h, const QRect& );
 
         private:
 
@@ -182,16 +154,14 @@ namespace Oxygen
         //! pixmap arry
         PixmapList _pixmaps;
 
-        //! stretch pixmaps
+        // stretch pixmaps
         bool _stretch;
 
-        //!@name dimensions
-        //@{
+        // dimensions
         int _w1;
         int _h1;
         int _w3;
         int _h3;
-        //@}
 
     };
 
@@ -199,4 +169,4 @@ namespace Oxygen
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Oxygen::TileSet::Tiles)
 
-#endif
+#endif //TILESET_H

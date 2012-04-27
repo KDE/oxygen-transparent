@@ -27,7 +27,7 @@
 // IN THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////
 
-#include "oxygentileset_x11.h"
+#include "oxygentileset.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
@@ -102,6 +102,12 @@ namespace Oxygen
         ShadowCache& shadowCache( void )
         { return *_shadowCache; }
 
+        // create pixmap handles from tileset
+        const QVector<Qt::HANDLE>& createPixmapHandles( bool isDockWidget );
+
+        // create pixmap handle from pixmap
+        Qt::HANDLE createPixmap( const QPixmap& ) const;
+
         //! install shadow X11 property on given widget
         /*!
         shadow atom and property specification available at
@@ -125,8 +131,17 @@ namespace Oxygen
 
         //!@name shadow tilesets
         //@{
-        TileSet_x11 _tiles;
-        TileSet_x11 _dockTiles;
+        TileSet _tiles;
+        TileSet _dockTiles;
+        //@}
+
+        //! number of pixmaps
+        enum { numPixmaps = 8 };
+
+        //!@name pixmaps
+        //@{
+        QVector<Qt::HANDLE> _pixmaps;
+        QVector<Qt::HANDLE> _dockPixmaps;
         //@}
 
         //! shadow size

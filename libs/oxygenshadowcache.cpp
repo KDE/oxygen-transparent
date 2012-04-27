@@ -25,7 +25,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "oxygenshadowcache.h"
-#include "oxygentileset_x11.h"
 
 #include <cassert>
 #include <cmath>
@@ -44,7 +43,6 @@ namespace Oxygen
     //_______________________________________________________
     ShadowCache::ShadowCache( Helper& helper ):
         _helper( helper ),
-        _forceX11Pixmaps( false ),
         _activeShadowConfiguration( ShadowConfiguration( QPalette::Active ) ),
         _inactiveShadowConfiguration( ShadowConfiguration( QPalette::Inactive ) )
     {
@@ -134,8 +132,7 @@ namespace Oxygen
 
         // create tileSet otherwise
         qreal size( shadowSize() + overlap );
-        TileSet* tileSet = _forceX11Pixmaps ? new TileSet_x11():new TileSet();
-        tileSet->init( pixmap( key, key.active ), size, size, size, size, size, size, 1, 1);
+        TileSet* tileSet = new TileSet( pixmap( key, key.active ), size, size, size, size, size, size, 1, 1);
         _shadowCache.insert( hash, tileSet );
 
         return tileSet;
@@ -165,6 +162,7 @@ namespace Oxygen
         p.setRenderHint( QPainter::Antialiasing );
 
         QPixmap inactiveShadow( pixmap( key, false ) );
+        if( !inactiveShadow.isNull() )
         {
             QPainter pp( &inactiveShadow );
             pp.setRenderHint( QPainter::Antialiasing );
@@ -173,6 +171,7 @@ namespace Oxygen
         }
 
         QPixmap activeShadow( pixmap( key, true ) );
+        if( !activeShadow.isNull() )
         {
             QPainter pp( &activeShadow );
             pp.setRenderHint( QPainter::Antialiasing );
@@ -184,9 +183,7 @@ namespace Oxygen
         p.drawPixmap( QPointF(0,0), activeShadow );
         p.end();
 
-        TileSet* tileSet = _forceX11Pixmaps ? new TileSet_x11():new TileSet();
-        tileSet->init(shadow, size, size, 1, 1);
-
+        TileSet* tileSet = new TileSet(shadow, size, size, 1, 1);
         _animatedShadowCache.insert( hash, tileSet );
         return tileSet;
 

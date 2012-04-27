@@ -385,9 +385,7 @@ namespace Oxygen
 
             // generate tileSet and save in cache
             const int radius = qMin( 3, pixmap.width()/2 );
-            tileSet = new TileSet();
-            tileSet->setStretch( true );
-            tileSet->init( pixmap, radius, radius, pixmap.width()-2*radius, pixmap.height()-2*radius );
+            tileSet = new TileSet( pixmap, radius, radius, pixmap.width()-2*radius, pixmap.height()-2*radius, true );
             _progressBarCache.insert( key, tileSet );
         }
 

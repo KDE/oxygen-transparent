@@ -72,10 +72,6 @@ namespace Oxygen
             }
         }
 
-        //! force use of X11 pixmaps (in TileSets)
-        void setForceX11Pixmaps( bool value )
-        { _forceX11Pixmaps = value; }
-
         //! max animation index
         int maxIndex( void ) const
         { return _maxIndex; }
@@ -258,9 +254,6 @@ namespace Oxygen
 
         //! caching enable state
         bool _enabled;
-
-        //! force X11 pixmaps
-        bool _forceX11Pixmaps;
 
         //! max index
         /*! it is used to set caches max cost, and calculate animation opacity */

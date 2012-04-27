@@ -183,9 +183,8 @@ namespace Oxygen
 
         } else if( hasSizeGrip() ) deleteSizeGrip();
 
-        // shadow hint
-        if( shadowCache().shadowSize() > 0 ) updateShadowHint();
-        else removeShadowHint();
+        // needs to remove shadow property on window since shadows are handled by the decoration
+        removeShadowHint();
 
     }
 
@@ -400,7 +399,8 @@ namespace Oxygen
             case LM_OuterPaddingRight:
             case LM_OuterPaddingTop:
             case LM_OuterPaddingBottom:
-            return (isPreview() && compositingActive() ) ? shadowCache().shadowSize():0;
+            if( maximized ) return 0;
+            else return shadowCache().shadowSize();
 
             default:
             return KCommonDecoration::layoutMetric(lm, respectWindowState, btn);
@@ -1017,6 +1017,7 @@ namespace Oxygen
                 renderTitleText( painter, rect, color, contrast );
 
             } else if( !caption().isEmpty() ) {
+
                 renderTitleText( painter, rect, caption(), color, contrast );
 
             }
@@ -1342,15 +1343,8 @@ namespace Oxygen
         // reset animation
         if( shadowAnimationsEnabled() )
         {
-
             _glowAnimation->setDirection( isActive() ? Animation::Forward : Animation::Backward );
             if(!glowIsAnimated()) { _glowAnimation->start(); }
-
-        } else {
-
-            // update shadow hint
-            updateShadowHint();
-
         }
 
         // update size grip so that it gets the right color
@@ -1376,7 +1370,6 @@ namespace Oxygen
     {
         if( hasSizeGrip() ) sizeGrip().setVisible( !( isShade() || isMaximized() ) );
         KCommonDecorationUnstable::shadeChange();
-        updateShadowHint();
     }
 
     //_________________________________________________________
@@ -1515,6 +1508,10 @@ namespace Oxygen
         // prepare item data updates
         _itemData.setDirty( true );
 
+        // mark title animation as dirty
+        if( event->oldSize().width() != event->size().width() )
+        { _titleAnimationData->setDirty( true ); }
+
         // resize backing store pixmap
         if( !compositingActive() )
         { _pixmap = QPixmap( event->size() ); }
@@ -1606,8 +1603,25 @@ namespace Oxygen
         QColor color = palette.window().color();
 
         // draw shadows
-        if( compositingActive() && shadowCache().shadowSize() > 0 && isPreview() )
-        { shadowCache().tileSet( key() )->render( frame, &painter, TileSet::Ring); }
+        if( compositingActive() && shadowCache().shadowSize() > 0 && !isMaximized() )
+        {
+
+            TileSet *tileSet( 0 );
+            const ShadowCache::Key key( this->key() );
+            if( configuration().useOxygenShadows() && glowIsAnimated() && !isForcedActive() )
+            {
+
+                tileSet = shadowCache().tileSet( key, glowIntensity() );
+
+            } else {
+
+                tileSet = shadowCache().tileSet( key );
+
+            }
+
+            tileSet->render( frame, &painter, TileSet::Ring);
+
+        }
 
         // adjust frame
         frame.adjust(
@@ -1958,11 +1972,15 @@ namespace Oxygen
 
         const long source = QString( groupData->data( tabDragMimeType() ) ).toLong();
         int clickedIndex( tabIndexAt( point, true ) );
-        if(clickedIndex < 0) tab_A_behind_B(source, tabId(_itemData.count() - 1));
-        else if( clickedIndex ) tab_A_behind_B(source, tabId(clickedIndex));
-        else tab_A_before_B(source, tabId(clickedIndex));
+        if (clickedIndex < 0)
+            tab_A_behind_B(source, tabId(_itemData.count() - 1));
+        else if (clickedIndex)
+            tab_A_behind_B(source, tabId(clickedIndex));
+        else
+            tab_A_before_B(source, tabId(clickedIndex));
 
-        if( widget() == event->source() ) updateTitleRect();
+        if( widget() == event->source() )
+            updateTitleRect();
 
         _titleAnimationData->reset();
         return true;
@@ -2089,66 +2107,6 @@ namespace Oxygen
         assert( hasSizeGrip() );
         _sizeGrip->deleteLater();
         _sizeGrip = 0;
-    }
-
-    //_________________________________________________________________
-    void Client::updateShadowHint( void )
-    {
-
-        // do nothing if no window id
-        if( !windowId() ) return;
-
-        // create atom
-        if( !_shadowAtom )
-        { _shadowAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_SHADOW", False); }
-
-
-        // store size
-        const int size( shadowCache().shadowSize() );
-
-        // check compositing and size
-        if( !( compositingActive() && size > 0 ) )
-        { return; }
-
-        // shadow cache key
-        const ShadowCache::Key key( this->key() );
-
-        // TileSet
-        TileSet* tileSet;
-
-        if( configuration().useOxygenShadows() && glowIsAnimated() && !isForcedActive() )
-        {
-
-            tileSet = shadowCache().tileSet( key, glowIntensity() );
-
-        } else {
-
-            tileSet = shadowCache().tileSet( key );
-
-        }
-
-        // check
-        if( !tileSet ) return;
-
-        // create data
-        QVector<unsigned long> data;
-        data << tileSet->x11Pixmap( 1 )
-            << tileSet->x11Pixmap( 2 )
-            << tileSet->x11Pixmap( 5 )
-            << tileSet->x11Pixmap( 8 )
-            << tileSet->x11Pixmap( 7 )
-            << tileSet->x11Pixmap( 6 )
-            << tileSet->x11Pixmap( 3 )
-            << tileSet->x11Pixmap( 0 );
-
-        // add padding
-        data << size << size << size << size;
-
-        // update property
-        XChangeProperty(
-            QX11Info::display(), windowId(), _shadowAtom, XA_CARDINAL, 32, PropModeReplace,
-            reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
-
     }
 
     //_________________________________________________________________

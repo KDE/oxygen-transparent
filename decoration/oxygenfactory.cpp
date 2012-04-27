@@ -50,10 +50,6 @@ namespace Oxygen
         _helper( "oxygenDeco" ),
         _shadowCache( _helper )
     {
-
-        // force X11 pixmaps in shadow cache
-        _shadowCache.setForceX11Pixmaps( true );
-
         readConfig();
         setInitialized( true );
     }
@@ -166,7 +162,16 @@ namespace Oxygen
             case AbilityButtonSpacer:
             case AbilityButtonShade:
 
-            // case AbilityUsesAlphaChannel:
+            //       // colors
+            //       case AbilityColorTitleBack:
+            //       case AbilityColorTitleFore:
+            //       case AbilityColorFrame:
+
+            // compositing
+            case AbilityProvidesShadow: // TODO: UI option to use default shadows instead
+            return true;
+
+            case AbilityUsesAlphaChannel:
             return true;
 
             // tabs

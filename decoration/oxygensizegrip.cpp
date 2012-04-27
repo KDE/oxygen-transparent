@@ -220,6 +220,7 @@ namespace Oxygen
                 client().layoutMetric( Client::LM_OuterPaddingBottom )+
                 client().layoutMetric( Client::LM_BorderBottom )
                 );
+
         } else {
 
             position -= QPoint(
