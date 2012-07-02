@@ -37,6 +37,7 @@
 #include <KLocale>
 #include <KColorUtils>
 #include <KDebug>
+#include <KStyle>
 
 #include <QtGui/QApplication>
 #include <QtGui/QLabel>
@@ -195,7 +196,7 @@ namespace Oxygen
         {
 
             case DB_MenuClose:
-            return true;
+            return configuration().closeFromMenuButton();
 
             case DB_WindowMask:
             return false;
@@ -623,13 +624,8 @@ namespace Oxygen
             int offset = layoutMetric( LM_OuterPaddingTop );
 
             // radial gradient positionning
-            int height = 64 - Configuration::ButtonDefault;
-            if( !hideTitleBar() ) height += configuration().buttonSize();
-            if( isMaximized() )
-            {
-                offset -= 3;
-                height -= 3;
-            }
+            const int height = hideTitleBar() ? 0:configuration().buttonSize();
+            if( isMaximized() ) offset -= 3;
 
             const QWidget* window( isPreview() ? this->widget() : widget->window() );
 
@@ -654,8 +650,7 @@ namespace Oxygen
             int offset = layoutMetric( LM_OuterPaddingTop );
 
             // radial gradient positionning
-            int height = 64 - Configuration::ButtonDefault;
-            if( !hideTitleBar() ) height += configuration().buttonSize();
+            const int height = hideTitleBar() ? 0:configuration().buttonSize();
             if( isMaximized() ) offset -= 3;
 
             // background pixmap
@@ -1840,11 +1835,23 @@ namespace Oxygen
 
             }
 
-            drag->setPixmap( itemDragPixmap( clickedIndex, geometry ) );
+            // adjust geometry to include shadow size
+            const int shadowSize( shadowCache().shadowSize() );
+            const bool drawShadow(
+                compositingActive() &&
+                KStyle::customStyleHint( "SH_ArgbDndWindow", widget() ) &&
+                shadowSize > 0 );
+
+            if( drawShadow )
+            { geometry.adjust( -shadowSize, -shadowSize, shadowSize, shadowSize ); }
+
+            // compute pixmap and assign
+            drag->setPixmap( itemDragPixmap( clickedIndex, geometry, drawShadow ) );
 
             // note: the pixmap is moved just above the pointer on purpose
             // because overlapping pixmap and pointer slows down the pixmap a lot.
             QPoint hotSpot( QPoint( event->pos().x() - geometry.left(), -1 ) );
+            if( drawShadow ) hotSpot += QPoint( 0, shadowSize );
 
             // make sure the horizontal hotspot position is not too far away (more than 1px)
             // from the pixmap
@@ -2023,21 +2030,39 @@ namespace Oxygen
     }
 
     //________________________________________________________________
-    QPixmap Client::itemDragPixmap( int index, const QRect& geometry )
+    QPixmap Client::itemDragPixmap( int index, QRect geometry, bool drawShadow )
     {
         const bool itemValid( index >= 0 && index < tabCount() );
 
         QPixmap pixmap( geometry.size() );
+        pixmap.fill( Qt::transparent );
         QPainter painter( &pixmap );
         painter.setRenderHints(QPainter::SmoothPixmapTransform|QPainter::Antialiasing);
 
         painter.translate( -geometry.topLeft() );
 
+        // draw shadows
+        if( drawShadow )
+        {
+
+            // shadow
+            const int shadowSize( shadowCache().shadowSize() );
+            TileSet *tileSet( shadowCache().tileSet( ShadowCache::Key() ) );
+            tileSet->render( geometry, &painter, TileSet::Ring);
+            geometry.adjust( shadowSize, shadowSize, -shadowSize, -shadowSize );
+
+            renderCorners( &painter, geometry, widget()->palette() );
+
+        }
+
+        // mask
+        painter.setClipRegion( helper().roundedMask( geometry ), Qt::IntersectClip );
+
         // render window background
         renderWindowBackground( &painter, geometry, widget(), widget()->palette() );
 
         // darken background if item is inactive
-        const bool itemActive = !( itemValid && tabId(index) != currentTabId() );
+        const bool itemActive = (tabCount() <= 1) || !( itemValid && tabId(index) != currentTabId() );
         if( !itemActive )
         {
 
@@ -2064,26 +2089,18 @@ namespace Oxygen
             titlebarTextColor( widget()->palette(), isActive() && itemActive ),
             titlebarContrastColor( widget()->palette() ) );
 
+        // adjust geometry for floatFrame when compositing is on.
+        if( drawShadow )
+        { geometry.adjust(-1, -1, 1, 1 ); }
+
         // floating frame
         helper().drawFloatFrame(
             &painter, geometry, widget()->palette().window().color(),
-            true, false,
+            !drawShadow, false,
             KDecoration::options()->color(ColorTitleBar)
             );
 
         painter.end();
-
-        // create pixmap mask
-        QBitmap bitmap( geometry.size() );
-        {
-            bitmap.clear();
-            QPainter painter( &bitmap );
-            QPainterPath path;
-            path.addRegion( helper().roundedMask( geometry.translated( -geometry.topLeft() ) ) );
-            painter.fillPath( path, Qt::color1 );
-        }
-
-        pixmap.setMask( bitmap );
         return pixmap;
 
     }

@@ -258,7 +258,7 @@ namespace Oxygen
                 // gaussian shadow is used
                 int nPoints( (10*gradientSize)/fixedSize );
                 Gaussian f( 0.46, 0.34 );
-                QColor c = shadowConfiguration.outerColor();
+                QColor c = shadowConfiguration.useOuterColor() ? shadowConfiguration.outerColor():shadowConfiguration.innerColor();
                 for( int i = 0; i < nPoints; i++ )
                 {
                     qreal x = qreal(i)/nPoints;
@@ -285,7 +285,7 @@ namespace Oxygen
                 // parabolic shadow is used
                 int nPoints( (10*gradientSize)/fixedSize );
                 Parabolic f( 1.0, 0.22 );
-                QColor c = shadowConfiguration.outerColor();
+                QColor c = shadowConfiguration.useOuterColor() ? shadowConfiguration.outerColor():shadowConfiguration.innerColor();
                 for( int i = 0; i < nPoints; i++ )
                 {
                     qreal x = qreal(i)/nPoints;
@@ -312,7 +312,7 @@ namespace Oxygen
 
                 int nPoints( (10*gradientSize)/fixedSize );
                 Gaussian f( 0.54, 0.21);
-                QColor c = shadowConfiguration.outerColor();
+                QColor c = shadowConfiguration.useOuterColor() ? shadowConfiguration.outerColor():shadowConfiguration.innerColor();
                 for( int i = 0; i < nPoints; i++ )
                 {
                     qreal x = qreal(i)/nPoints;
@@ -338,7 +338,7 @@ namespace Oxygen
 
                 int nPoints( (20*gradientSize)/fixedSize );
                 Gaussian f( 0.155, 0.445);
-                QColor c = shadowConfiguration.outerColor();
+                QColor c = shadowConfiguration.useOuterColor() ? shadowConfiguration.outerColor():shadowConfiguration.innerColor();
                 for( int i = 0; i < nPoints; i++ )
                 {
                     qreal x = qreal(i)/nPoints;

@@ -104,13 +104,9 @@ namespace Oxygen
         //! inner color
         void setInnerColor( QColor );
 
-        //! mid color
-        QColor midColor( void ) const
-        { return _midColor; }
-
         //! outer color
         QColor outerColor( void ) const
-        { return useOuterColor() ? _outerColor : _outerColor2; }
+        { return _outerColor; }
 
         //! outer color
         void setOuterColor( QColor );
@@ -136,24 +132,6 @@ namespace Oxygen
                 _useOuterColor == other._useOuterColor;
         }
 
-        protected:
-
-        //! mid color
-        void setMidColor( QColor );
-
-        //! calculated outer color
-        QColor outerColor2( void ) const
-        { return _outerColor2; }
-
-        //! calculated outer color
-        void setOuterColor2( QColor );
-
-        //! calculate mid color
-        QColor calcMidColor( void ) const;
-
-        //! calculate outer color
-        QColor calcOuterColor( void ) const;
-
         private:
 
         //! color group
@@ -171,14 +149,8 @@ namespace Oxygen
         //! inner color
         QColor _innerColor;
 
-        //! mid color
-        QColor _midColor;
-
         //! outer color
         QColor _outerColor;
-
-        //! calculated outer color
-        QColor _outerColor2;
 
         //! use outer color
         bool _useOuterColor;
