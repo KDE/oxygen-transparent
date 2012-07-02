@@ -55,7 +55,7 @@ namespace Oxygen
         QPainter p( this );
         p.setRenderHints( QPainter::Antialiasing );
         p.setClipRegion( event->region() );
-        _tileSet.render( rect(), &p );
+        _tileSet.render( rect().adjusted( 1, 1, -1, -1 ), &p );
 
     }
 
