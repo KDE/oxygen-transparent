@@ -49,6 +49,7 @@ namespace Oxygen
         _hideTitleBar( false ),
         _useDropShadows( true ),
         _useOxygenShadows( true ),
+        _closeFromMenuButton( false ),
         _transparencyEnabled( true ),
         _useNarrowButtonSpacing( false ),
         _animationsEnabled( true ),
@@ -134,6 +135,11 @@ namespace Oxygen
         setTransparencyEnabled( group.readEntry(
             OxygenConfig::TRANSPARENCY_ENABLED,
             defaultConfiguration.transparencyEnabled() ) );
+
+        // close from menu button
+        setCloseFromMenuButton( group.readEntry(
+            OxygenConfig::CLOSE_FROM_MENU_BUTTON,
+            defaultConfiguration.closeFromMenuButton() ) );
 
         // buttonSpacing
         setUseNarrowButtonSpacing( group.readEntry(
@@ -245,6 +251,7 @@ namespace Oxygen
         if( hideTitleBar() != defaultConfiguration.hideTitleBar() ) group.writeEntry( OxygenConfig::HIDE_TITLEBAR, hideTitleBar() );
         if( useDropShadows() != defaultConfiguration.useDropShadows() ) group.writeEntry( OxygenConfig::USE_DROP_SHADOWS, useDropShadows() );
         if( useOxygenShadows() != defaultConfiguration.useOxygenShadows() ) group.writeEntry( OxygenConfig::USE_OXYGEN_SHADOWS, useOxygenShadows() );
+        if( closeFromMenuButton() != defaultConfiguration.closeFromMenuButton() ) group.writeEntry( OxygenConfig::CLOSE_FROM_MENU_BUTTON, closeFromMenuButton() );
         if( useNarrowButtonSpacing() != defaultConfiguration.useNarrowButtonSpacing() ) group.writeEntry( OxygenConfig::NARROW_BUTTON_SPACING, useNarrowButtonSpacing() );
 
         // animations
@@ -439,6 +446,7 @@ namespace Oxygen
             hideTitleBar() == other.hideTitleBar() &&
             useDropShadows() == other.useDropShadows() &&
             useOxygenShadows() == other.useOxygenShadows() &&
+            closeFromMenuButton() == other.closeFromMenuButton() &&
             transparencyEnabled() == other.transparencyEnabled() &&
             useNarrowButtonSpacing() == other.useNarrowButtonSpacing() &&
             opacityFromStyle() == other.opacityFromStyle() &&

@@ -45,6 +45,7 @@ namespace OxygenConfig
     static const QString TRANSPARENCY_ENABLED = "TransparencyEnabled";
     static const QString ANIMATIONS_ENABLED = "AnimationsEnabled";
     static const QString NARROW_BUTTON_SPACING = "UseNarrowButtonSpacing";
+    static const QString CLOSE_FROM_MENU_BUTTON = "CloseFromMenuButton";
     static const QString BACKGROUND_OPACITY = "BackgroundOpacity";
     static const QString OPACITY_FROM_STYLE = "OpacityFromStyle";
 
@@ -306,6 +307,14 @@ namespace Oxygen
         virtual void setUseOxygenShadows( bool value )
         { _useOxygenShadows = value; }
 
+        //! close from menu button
+        virtual bool closeFromMenuButton( void ) const
+        { return _closeFromMenuButton; }
+
+        //! close from menu button
+        virtual void setCloseFromMenuButton( bool value )
+        { _closeFromMenuButton = value; }
+
         //!@name animations
         //@{
 
@@ -455,6 +464,9 @@ namespace Oxygen
 
         //! transparency
         bool _transparencyEnabled;
+
+        //! close window from menu button
+        bool _closeFromMenuButton;
 
         //! narrow button spacing
         bool _useNarrowButtonSpacing;

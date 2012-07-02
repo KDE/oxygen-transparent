@@ -183,6 +183,7 @@ namespace Oxygen
         _hintCounter( X_KdeBase+1 ),
         _controlCounter( X_KdeBase ),
         _subElementCounter( X_KdeBase ),
+        SH_ArgbDndWindow( newStyleHint( "SH_ArgbDndWindow" ) ),
         CE_CapacityBar( newControlElement( "CE_CapacityBar" ) )
 
     {
@@ -296,6 +297,10 @@ namespace Oxygen
         if( !argbHelper().isBlackListed( widget ) )
         { blurHelper().registerWidget( widget ); }
 
+        // enforce translucency for drag and drop window
+        if( widget->testAttribute( Qt::WA_X11NetWmWindowTypeDND ) && helper().compositingActive() )
+        { widget->setAttribute( Qt::WA_TranslucentBackground ); }
+
         if(
             qobject_cast<QAbstractItemView*>( widget )
             || qobject_cast<QAbstractSpinBox*>( widget )
@@ -393,13 +398,7 @@ namespace Oxygen
         } else if( widget->inherits( "Q3ToolBar" ) || qobject_cast<QToolBar*>( widget ) ) {
 
             widget->setBackgroundRole( QPalette::NoRole );
-            widget->setAttribute( Qt::WA_TranslucentBackground );
             addEventFilter( widget );
-
-            #ifdef Q_WS_WIN
-            //FramelessWindowHint is needed on windows to make WA_TranslucentBackground work properly
-            widget->setWindowFlags( widget->windowFlags() | Qt::FramelessWindowHint );
-            #endif
 
         } else if( qobject_cast<QTabBar*>( widget ) ) {
 
@@ -793,8 +792,10 @@ namespace Oxygen
         // to avoid warning at compilation
         if( hint == SH_KCustomStyleElement )
         {
+
             if( widget ) return _styleElements.value( widget->objectName(), 0 );
             else return 0;
+
         }
 
         /*
@@ -1473,14 +1474,17 @@ namespace Oxygen
             case QEvent::Show:
             case QEvent::Resize:
             {
+
                 // make sure mask is appropriate
-                if( toolBar->isFloating() && !helper().hasAlphaChannel( toolBar ) )
+                if( toolBar->isFloating() )
                 {
 
+                    // TODO: should not be needed
                     toolBar->setMask( helper().roundedMask( toolBar->rect() ) );
 
-                } else  toolBar->clearMask();
+                } else toolBar->clearMask();
                 return false;
+
             }
 
             case QEvent::Paint:
@@ -2976,6 +2980,9 @@ namespace Oxygen
         if( flags&State_UpArrow || ( headerOpt && headerOpt->sortIndicator==QStyleOptionHeader::SortUp ) ) orientation = ArrowUp;
         else if( flags&State_DownArrow || ( headerOpt && headerOpt->sortIndicator==QStyleOptionHeader::SortDown ) ) orientation = ArrowDown;
         if( orientation == ArrowNone ) return true;
+
+        // invert arrows if requested by (hidden) options
+        if( StyleConfigData::viewInvertSortIndicator() ) orientation = (orientation == ArrowUp) ? ArrowDown:ArrowUp;
 
         // flags, rect and palette
         const QRect& r( option->rect );
@@ -4956,10 +4963,10 @@ namespace Oxygen
         if( !busyIndicator )
         {
             const qreal widthFrac = qMin( (qreal)1.0, progress / steps );
-            indicatorSize = widthFrac*( horizontal ? r.width() : r.height() );
+            indicatorSize = widthFrac*( horizontal ? r.width() : r.height() ) - (horizontal ? 2:1);
         }
 
-        if( indicatorSize )
+        if( indicatorSize > 0 )
         {
             if ( horizontal ) painter->setClipRect( handleRTL( option, QRect( r.x(), r.y(), indicatorSize, r.height() ) ) );
             else if ( !reverseLayout )  painter->setClipRect( QRect( r.height()-indicatorSize, 0, r.height(), r.width() ) );
