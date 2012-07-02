@@ -356,7 +356,7 @@ namespace Oxygen
         // mask
         p.setCompositionMode(QPainter::CompositionMode_DestinationOut);
         p.setBrush( Qt::black );
-        p.drawEllipse( QRectF( size-4, size-4, 8, 8 ) );
+        p.drawEllipse( QRectF( size-3, size-3, 6, 6 ) );
 
         p.end();
         return shadow;
