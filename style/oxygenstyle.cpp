@@ -398,6 +398,7 @@ namespace Oxygen
         } else if( widget->inherits( "Q3ToolBar" ) || qobject_cast<QToolBar*>( widget ) ) {
 
             widget->setBackgroundRole( QPalette::NoRole );
+            widget->setAttribute( Qt::WA_TranslucentBackground );
             addEventFilter( widget );
 
         } else if( qobject_cast<QTabBar*>( widget ) ) {
