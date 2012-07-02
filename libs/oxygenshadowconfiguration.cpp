@@ -44,7 +44,6 @@ namespace Oxygen
         {
 
             _shadowSize = 40;
-            _horizontalOffset = 0;
             _verticalOffset = 0.1;
             _useOuterColor = true;
 
@@ -56,7 +55,6 @@ namespace Oxygen
         } else {
 
             _shadowSize = 40;
-            _horizontalOffset = 0;
             _verticalOffset = 0.2;
             _useOuterColor = false;
 
@@ -78,7 +76,6 @@ namespace Oxygen
         ShadowConfiguration defaultConfiguration( ShadowConfiguration::colorGroup() );
 
         setShadowSize( group.readEntry( OxygenConfig::SHADOW_SIZE, defaultConfiguration.shadowSize() ) );
-        setHorizontalOffset( group.readEntry( OxygenConfig::SHADOW_HOFFSET, defaultConfiguration.horizontalOffset() ) );
         setVerticalOffset( group.readEntry( OxygenConfig::SHADOW_VOFFSET, defaultConfiguration.verticalOffset() ) );
         setUseOuterColor( group.readEntry( OxygenConfig::SHADOW_USE_OUTER_COLOR, defaultConfiguration.useOuterColor() ) );
 
@@ -94,7 +91,6 @@ namespace Oxygen
     {
         ShadowConfiguration defaultConfiguration( _colorGroup );
         if( shadowSize() != defaultConfiguration.shadowSize() ) group.writeEntry( OxygenConfig::SHADOW_SIZE, shadowSize() );
-        if( horizontalOffset() != defaultConfiguration.horizontalOffset() ) group.writeEntry( OxygenConfig::SHADOW_HOFFSET, horizontalOffset() );
         if( verticalOffset() != defaultConfiguration.verticalOffset() ) group.writeEntry( OxygenConfig::SHADOW_VOFFSET, verticalOffset() );
         if( innerColor() != defaultConfiguration.innerColor() ) group.writeEntry( OxygenConfig::SHADOW_INNER_COLOR, innerColor().name() );
         if( outerColor() != defaultConfiguration.outerColor() ) group.writeEntry( OxygenConfig::SHADOW_OUTER_COLOR, outerColor().name() );

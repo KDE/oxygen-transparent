@@ -36,7 +36,6 @@ namespace OxygenConfig
 {
 
     static const QString SHADOW_SIZE = "Size";
-    static const QString SHADOW_HOFFSET= "HorizontalOffset";
     static const QString SHADOW_VOFFSET= "VerticalOffset";
     static const QString SHADOW_INNER_COLOR = "InnerColor";
     static const QString SHADOW_OUTER_COLOR = "OuterColor";
@@ -90,14 +89,6 @@ namespace Oxygen
         void setShadowSize( qreal value )
         { _shadowSize = value; }
 
-        //! horizontal offset
-        qreal horizontalOffset( void ) const
-        { return _horizontalOffset; }
-
-        //! horizontal offset
-        void setHorizontalOffset( qreal value )
-        { _horizontalOffset = value; }
-
         //! vertical offset
         qreal verticalOffset( void ) const
         { return _verticalOffset; }
@@ -139,7 +130,6 @@ namespace Oxygen
                 _colorGroup == other._colorGroup &&
                 _enabled == other._enabled &&
                 _shadowSize == other._shadowSize &&
-                _horizontalOffset == other._horizontalOffset &&
                 _verticalOffset == other._verticalOffset &&
                 _innerColor == other._innerColor &&
                 ( _useOuterColor == false || _outerColor == other._outerColor ) &&
@@ -174,9 +164,6 @@ namespace Oxygen
 
         //! shadow size
         qreal _shadowSize;
-
-        //! horizontal offset
-        qreal _horizontalOffset;
 
         //! vertical offset
         qreal _verticalOffset;
