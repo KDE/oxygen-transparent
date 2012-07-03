@@ -125,9 +125,8 @@ namespace Oxygen
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
 
-                if( widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() )
-                { setupTransparency( widget ); }
-
+                // setup transparency and return
+                setupTransparency( widget );
                 return true;
             }
 
@@ -154,29 +153,12 @@ namespace Oxygen
 
     }
 
-    //_______________________________________________________
-    bool ArgbHelper::eventFilter( QObject* object, QEvent* event )
-    {
-
-        // check event type
-        if( event->type() != QEvent::WinIdChange ) return false;
-
-        // cast widget
-        if( QWidget* widget = static_cast<QWidget*>( object ) )
-        { setupTransparency( widget ); }
-
-        return false;
-
-    }
-
     //______________________________________________________________
     void ArgbHelper::setupTransparency( QWidget* widget )
     {
 
+        // check whether already registered
         if( _transparentWidgets.contains( widget ) ) return;
-
-        // some extra protection
-        if( !(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() )) return;
 
         // translucent background already set. Do nothing.
         if( widget->testAttribute(Qt::WA_TranslucentBackground) )
@@ -194,19 +176,23 @@ namespace Oxygen
         // store icon
         QIcon icon(widget->windowIcon());
 
-        /*
-        WORKAROUND (imported from bespin, thanks Thomas!):
-        somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
-        we just move it faaaaar away so kwin will take back control and apply smart placement or whatever
-        */
-        QPoint position( -10000, 10000 );
-
         // set translucent flag
         widget->setAttribute( Qt::WA_TranslucentBackground );
 
         // re-install icon
         widget->setWindowIcon(icon);
-        if( !widget->isVisible() ) widget->move( position );
+        if( !widget->isVisible() )
+        {
+
+            /*
+            WORKAROUND (imported from bespin, thanks Thomas!):
+            somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
+            we just move it faaaaar away so kwin will take back control and apply smart placement or whatever
+            */
+            QPoint position( -10000, 10000 );
+            widget->move( position );
+
+        }
 
         // add to set of transparent widgets and connect destruction signal
         _transparentWidgets.insert( widget );
