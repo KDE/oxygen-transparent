@@ -199,7 +199,8 @@ namespace Oxygen
         connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
 
         // set Argb xproperty
-        _helper.setHasArgb( widget->winId(), true );
+        if( widget->testAttribute(Qt::WA_WState_Created) && widget->internalWinId() )
+        { _helper.setHasArgb( widget->winId(), true ); }
 
         return;
     }
