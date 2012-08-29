@@ -17,7 +17,7 @@
       grey list
     -->
     <entry name="OpacityInternalBlackList" type = "StringList"> 
-        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker,kdenlive,nspluginviewer,smplayer,dragon,kaffeine,loopy,kwin,bangarang</default>
+        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker,kdenlive,nspluginviewer,smplayer,dragon,kaffeine,loopy,kwin,bangarang,kpartsplugin,djview</default>
     </entry>
 
     <!-- 
