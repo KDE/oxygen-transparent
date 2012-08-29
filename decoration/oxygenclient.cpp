@@ -1760,7 +1760,8 @@ namespace Oxygen
             const int clickedIndex( tabIndexAt( point ) );
             _mouseButton = Qt::NoButton;
             if ( tabIndexAt( point ) > -1)
-                showWindowMenu( widget()->mapToGlobal( event->pos() ), tabId(clickedIndex) );
+            { showWindowMenu( widget()->mapToGlobal( event->pos() ), tabId(clickedIndex) ); }
+
             accepted = true; // displayClientMenu can possibly destroy the deco...
 
         }
@@ -1772,8 +1773,7 @@ namespace Oxygen
     {
 
         bool accepted( false );
-        if( _mouseButton == event->button() &&
-            buttonToWindowOperation( _mouseButton ) != OperationsOp )
+        if( _mouseButton == event->button() && buttonToWindowOperation( _mouseButton ) != OperationsOp )
         {
 
             const QPoint point = event->pos();
@@ -1895,19 +1895,18 @@ namespace Oxygen
         // check if drag enter is allowed
         if( !event->mimeData()->hasFormat( tabDragMimeType() ) || hideTitleBar() ) return false;
 
-        //
+        // accept event
         event->acceptProposedAction();
+
+        // animate
         if( event->source() != widget() )
         {
 
-            const QPoint position( event->pos() );
-            _itemData.animate( AnimationEnter, tabIndexAt( position, true ) );
+            _itemData.animate( AnimationEnter, tabIndexAt( event->pos(), true ) );
 
         } else if( _itemData.count() > 1 )  {
 
-            const QPoint position( event->pos() );
-            const int clickedIndex( tabIndexAt( position, false ) );
-            _itemData.animate( AnimationEnter|AnimationSameTarget, clickedIndex );
+            _itemData.animate( AnimationEnter|AnimationSameTarget, tabIndexAt( event->pos(), true ) );
 
         }
 
@@ -1931,7 +1930,6 @@ namespace Oxygen
 
         }
 
-
         return true;
 
     }
@@ -1942,19 +1940,17 @@ namespace Oxygen
 
         // check format
         if( !event->mimeData()->hasFormat( tabDragMimeType() ) ) return false;
+
+        // animate
         if( event->source() != widget() )
         {
 
-            const QPoint position( event->pos() );
-            _itemData.animate( AnimationMove, tabIndexAt( position, true ) );
+            _itemData.animate( AnimationMove, tabIndexAt( event->pos(), true ) );
 
         } else if( _itemData.count() > 1 )  {
 
             if( _dragStartTimer.isActive() ) _dragStartTimer.stop();
-
-            const QPoint position( event->pos() );
-            const int clickedIndex( tabIndexAt( position, false ) );
-            _itemData.animate( AnimationMove|AnimationSameTarget, clickedIndex );
+            _itemData.animate( AnimationMove|AnimationSameTarget, tabIndexAt( event->pos(), true ) );
 
         }
 
@@ -1974,20 +1970,15 @@ namespace Oxygen
 
         _itemData.setDirty( true );
 
-        if( widget() != event->source() )
-            setForceActive( true );
+        if( widget() != event->source() ) setForceActive( true );
 
         const long source = QString( groupData->data( tabDragMimeType() ) ).toLong();
-        int clickedIndex( tabIndexAt( point, true ) );
-        if (clickedIndex < 0)
-            tab_A_behind_B(source, tabId(_itemData.count() - 1));
-        else if (clickedIndex)
-            tab_A_behind_B(source, tabId(clickedIndex));
-        else
-            tab_A_before_B(source, tabId(clickedIndex));
+        const int clickedIndex( tabIndexAt( point, true ) );
+        if( clickedIndex < 0 ) tab_A_behind_B( source, tabId(_itemData.count()-1) );
+        else tab_A_before_B( source, tabId(clickedIndex) );
 
-        if( widget() == event->source() )
-            updateTitleRect();
+        // update title
+        if( widget() == event->source() ) updateTitleRect();
 
         _titleAnimationData->reset();
         return true;

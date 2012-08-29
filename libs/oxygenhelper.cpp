@@ -245,7 +245,7 @@ namespace Oxygen
     void Helper::renderDot( QPainter* p, const QPoint& point, const QColor& baseColor )
     {
 
-        const quint64 key( baseColor.rgba() );
+        const quint64 key( colorKey(baseColor) );
         QPixmap* pixmap( _dotCache.object( key ) );
 
         if( !pixmap )
@@ -285,7 +285,7 @@ namespace Oxygen
     //____________________________________________________________________
     bool Helper::lowThreshold( const QColor& color )
     {
-        const quint32 key( color.rgba() );
+        const quint32 key( colorKey(color) );
         ColorMap::iterator iter( _lowThreshold.find( key ) );
         if( iter != _lowThreshold.end() ) return iter.value();
         else {
@@ -302,7 +302,7 @@ namespace Oxygen
     //____________________________________________________________________
     bool Helper::highThreshold( const QColor& color )
     {
-        const quint32 key( color.rgba() );
+        const quint32 key( colorKey(color) );
         ColorMap::iterator iter( _highThreshold.find( key ) );
         if( iter != _highThreshold.end() ) return iter.value();
         else {
@@ -326,7 +326,7 @@ namespace Oxygen
     //____________________________________________________________________
     const QColor& Helper::backgroundRadialColor( const QColor& color )
     {
-        const quint64 key( color.rgba() );
+        const quint64 key( colorKey(color) );
         QColor* out( _backgroundRadialColorCache.object( key ) );
         if( !out )
         {
@@ -342,7 +342,7 @@ namespace Oxygen
     //_________________________________________________________________________
     const QColor& Helper::backgroundTopColor( const QColor& color )
     {
-        const quint64 key( color.rgba() );
+        const quint64 key( colorKey(color) );
         QColor* out( _backgroundTopColorCache.object( key ) );
         if( !out )
         {
@@ -363,7 +363,7 @@ namespace Oxygen
     //_________________________________________________________________________
     const QColor& Helper::backgroundBottomColor( const QColor& color )
     {
-        const quint64 key( color.rgba() );
+        const quint64 key( colorKey(color) );
         QColor* out( _backgroundBottomColorCache.object( key ) );
         if( !out )
         {
@@ -387,7 +387,7 @@ namespace Oxygen
     //____________________________________________________________________
     const QColor& Helper::calcLightColor( const QColor& color )
     {
-        const quint64 key( color.rgba() );
+        const quint64 key( colorKey(color) );
         QColor* out( _lightColorCache.object( key ) );
         if( !out )
         {
@@ -402,7 +402,7 @@ namespace Oxygen
     //____________________________________________________________________
     const QColor& Helper::calcDarkColor( const QColor& color )
     {
-        const quint64 key( color.rgba() );
+        const quint64 key( colorKey(color) );
         QColor* out( _darkColorCache.object( key ) );
         if( !out )
         {
@@ -419,7 +419,7 @@ namespace Oxygen
     const QColor& Helper::calcShadowColor( const QColor& color )
     {
 
-        const quint64 key( color.rgba() );
+        const quint64 key( colorKey(color) );
         QColor* out( _shadowColorCache.object( key ) );
         if( !out )
         {
@@ -445,7 +445,7 @@ namespace Oxygen
     const QColor& Helper::backgroundColor( const QColor& color, qreal ratio )
     {
 
-        const quint64 key( ( quint64( color.rgba() ) << 32 ) | int( ratio*512 ) );
+        const quint64 key( ( colorKey(color) << 32 ) | int( ratio*512 ) );
         QColor *out( _backgroundColorCache.object( key ) );
         if( !out )
         {
@@ -474,7 +474,7 @@ namespace Oxygen
     //____________________________________________________________________
     QPixmap Helper::verticalGradient( const QColor& color, int height, int offset )
     {
-        const quint64 key( ( quint64( color.rgba() ) << 32 ) | height | 0x8000 );
+        const quint64 key( ( colorKey(color) << 32 ) | height | 0x8000 );
         QPixmap* pixmap( _backgroundCache.object( key ) );
 
         if ( !pixmap )
@@ -502,7 +502,7 @@ namespace Oxygen
     //____________________________________________________________________
     QPixmap Helper::radialGradient( const QColor& color, int width, int height )
     {
-        const quint64 key( ( quint64( color.rgba() ) << 32 ) | width | 0xb000 );
+        const quint64 key( ( colorKey(color) << 32 ) | width | 0xb000 );
         QPixmap* pixmap( _backgroundCache.object( key ) );
 
         if ( !pixmap )
@@ -532,7 +532,7 @@ namespace Oxygen
     //____________________________________________________________________________________
     const QColor& Helper::decoColor( const QColor& background, const QColor& color )
     {
-        const quint64 key( ( quint64( background.rgba() ) << 32 ) | color.rgba() );
+        const quint64 key( ( colorKey(background) << 32 ) | colorKey(color) );
         QColor* out( _decoColorCache.object( key ) );
         if( !out )
         {
@@ -733,7 +733,7 @@ namespace Oxygen
     {
         Oxygen::Cache<TileSet>::Value* cache( _slabCache.get( color ) );
 
-        const quint64 key( ( quint64( glow.rgba() ) << 32 ) | ( quint64( 256.0 * shade ) << 24 ) | size );
+        const quint64 key( ( colorKey(glow) << 32 ) | ( quint64( 256.0 * shade ) << 24 ) | size );
         TileSet *tileSet = cache->object( key );
 
         const qreal hScale( 1 );
@@ -769,7 +769,7 @@ namespace Oxygen
     //________________________________________________________________________________________________________
     TileSet *Helper::slabSunken( const QColor& color, int size )
     {
-        const quint64 key( quint64( color.rgba() ) << 32 | size );
+        const quint64 key( colorKey(color) << 32 | size );
         TileSet *tileSet = _slabSunkenCache.object( key );
 
         if ( !tileSet )

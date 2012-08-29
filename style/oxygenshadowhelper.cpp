@@ -402,4 +402,14 @@ namespace Oxygen
 
     }
 
+    //_______________________________________________________
+    void ShadowHelper::uninstallX11Shadows( WId id ) const
+    {
+
+        #ifdef Q_WS_X11
+        XDeleteProperty(QX11Info::display(), id, _atom);
+        #endif
+
+    }
+
 }

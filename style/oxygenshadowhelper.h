@@ -124,6 +124,9 @@ namespace Oxygen
         //! uninstall shadow X11 property on given widget
         void uninstallX11Shadows( QWidget* ) const;
 
+        //! uninstall shadow X11 property on given window
+        void uninstallX11Shadows( WId ) const;
+
         private:
 
         //! helper
