@@ -154,6 +154,35 @@ namespace Oxygen
     }
 
     //______________________________________________________________
+    bool ArgbHelper::eventFilter( QObject* object, QEvent* event )
+    {
+
+        switch( event->type() )
+        {
+
+            case QEvent::WinIdChange:
+            {
+                // cast to widget (safe)
+                QWidget* widget( static_cast<QWidget*>( object ) );
+                if( widget->testAttribute(Qt::WA_WState_Created) && widget->internalWinId() )
+                {
+                    // set Argb X property if possible, and remove from event filter
+                    _helper.setHasArgb( widget->winId(), true );
+                    widget->removeEventFilter( this );
+                }
+                break;
+            }
+
+            default: break;
+
+        }
+
+        // fallback
+        return QObject::eventFilter( object, event );
+
+    }
+
+    //______________________________________________________________
     void ArgbHelper::setupTransparency( QWidget* widget )
     {
 
@@ -198,9 +227,18 @@ namespace Oxygen
         _transparentWidgets.insert( widget );
         connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( unregisterTransparentWidget( QObject* ) ) );
 
-        // set Argb xproperty
         if( widget->testAttribute(Qt::WA_WState_Created) && widget->internalWinId() )
-        { _helper.setHasArgb( widget->winId(), true ); }
+        {
+
+            // set Argb xproperty, if already possible
+            _helper.setHasArgb( widget->winId(), true );
+
+        } else {
+
+            // install event filter to set window property on WinIdChange event
+            widget->installEventFilter( this );
+
+        }
 
         return;
     }
