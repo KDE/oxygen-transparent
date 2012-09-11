@@ -174,8 +174,19 @@ namespace Oxygen
             {
 
                 const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
-                if( child->mask().isEmpty() ) region -= child->rect().translated( offset ).adjusted( 1, 1, -1, -1 );
-                else region -= child->mask().translated( offset );
+                if( child->mask().isEmpty() )
+                {
+                    const QRect rect( child->rect().translated( offset ).adjusted( 1, 1, -1, -1 ) );
+                    region -= rect;
+
+//                     QTextStream( stdout )
+//                         << "BlurHelper::trimBlurRegion -"
+//                         << " widget: " << widget << " (" << widget->metaObject()->className() << ")"
+//                         << " child: " << child << " (" << widget->metaObject()->className() << ")"
+//                         << " rect: (" << rect.x() << "," << rect.y() << "," << rect.width() << "," << rect.height() << ")"
+//                         << endl;
+
+                }  else region -= child->mask().translated( offset );
 
             } else { trimBlurRegion( parent, child, region ); }
 
@@ -241,6 +252,41 @@ namespace Oxygen
         XDeleteProperty( QX11Info::display(), widget->winId(), _opaqueAtom );
         #endif
 
+    }
+
+    //___________________________________________________________
+    bool BlurHelper::isOpaque( const QWidget* widget ) const
+    {
+
+        return
+            (!widget->isWindow()) &&
+            ( (widget->autoFillBackground() && widget->palette().color( widget->backgroundRole() ).alpha() == 0xff ) ||
+            widget->testAttribute(Qt::WA_OpaquePaintEvent) );
+
+    }
+
+    //___________________________________________________________
+    bool BlurHelper::isTransparent( const QWidget* widget ) const
+    {
+
+        return
+            widget->isWindow() &&
+            widget->testAttribute( Qt::WA_TranslucentBackground ) &&
+
+            // widgets using qgraphicsview
+            !( widget->graphicsProxyWidget() ||
+            widget->inherits( "Plasma::Dialog" ) ) &&
+
+            // flags and special widgets
+            ( widget->testAttribute( Qt::WA_StyledBackground ) ||
+            qobject_cast<const QMenu*>( widget ) ||
+            qobject_cast<const QDockWidget*>( widget ) ||
+            qobject_cast<const QToolBar*>( widget ) ||
+
+            // konsole (thought that should be handled
+            // internally by the application)
+            widget->inherits( "Konsole::MainWindow" ) ) &&
+            _helper.hasAlphaChannel( widget );
     }
 
 }
