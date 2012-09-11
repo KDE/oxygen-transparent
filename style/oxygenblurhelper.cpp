@@ -225,14 +225,16 @@ namespace Oxygen
                 QX11Info::display(), widget->winId(), _blurAtom, XA_CARDINAL, 32, PropModeReplace,
                 reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
 
-            data.clear();
-            foreach( const QRect& rect, opaqueRegion.rects() )
-            { data << rect.x() << rect.y() << rect.width() << rect.height(); }
+            if( ! widget->inherits( "Konsole::MainWindow" ) )
+            {
+                data.clear();
+                foreach( const QRect& rect, opaqueRegion.rects() )
+                { data << rect.x() << rect.y() << rect.width() << rect.height(); }
 
-            XChangeProperty(
-                QX11Info::display(), widget->winId(), _opaqueAtom, XA_CARDINAL, 32, PropModeReplace,
-                reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
-
+                XChangeProperty(
+                    QX11Info::display(), widget->winId(), _opaqueAtom, XA_CARDINAL, 32, PropModeReplace,
+                    reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
+            }
         }
 
         // force update
@@ -281,11 +283,7 @@ namespace Oxygen
             ( widget->testAttribute( Qt::WA_StyledBackground ) ||
             qobject_cast<const QMenu*>( widget ) ||
             qobject_cast<const QDockWidget*>( widget ) ||
-            qobject_cast<const QToolBar*>( widget ) ||
-
-            // konsole (thought that should be handled
-            // internally by the application)
-            widget->inherits( "Konsole::MainWindow" ) ) &&
+            qobject_cast<const QToolBar*>( widget ) ) &&
             _helper.hasAlphaChannel( widget );
     }
 
