@@ -56,8 +56,8 @@ namespace Oxygen
         #ifdef Q_WS_X11
 
         // create atom
-        _atom_blur = XInternAtom( QX11Info::display(), "_KDE_NET_WM_BLUR_BEHIND_REGION", False);
-        _atom_opaque = XInternAtom( QX11Info::display(), "_NET_WM_OPAQUE_REGION", False);
+        _blurAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_BLUR_BEHIND_REGION", False);
+        _opaqueAtom = XInternAtom( QX11Info::display(), "_NET_WM_OPAQUE_REGION", False);
 
         #endif
 
@@ -198,28 +198,28 @@ namespace Oxygen
         if( !(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId() ))
         { return; }
 
-        const QRegion region( blurRegion( widget ) );
-        const QRegion inverseRegion = QRegion(0, 0, widget->width(), widget->height()) - region;
-        if( region.isEmpty() ) {
+        const QRegion blurRegion( this->blurRegion( widget ) );
+        const QRegion opaqueRegion = QRegion(0, 0, widget->width(), widget->height()) - blurRegion;
+        if( blurRegion.isEmpty() ) {
 
             clear( widget );
 
         } else {
 
             QVector<unsigned long> data;
-            foreach( const QRect& rect, region.rects() )
+            foreach( const QRect& rect, blurRegion.rects() )
             { data << rect.x() << rect.y() << rect.width() << rect.height(); }
 
             XChangeProperty(
-                QX11Info::display(), widget->winId(), _atom_blur, XA_CARDINAL, 32, PropModeReplace,
+                QX11Info::display(), widget->winId(), _blurAtom, XA_CARDINAL, 32, PropModeReplace,
                 reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
 
             data.clear();
-            foreach( const QRect& rect, inverseRegion.rects() )
+            foreach( const QRect& rect, opaqueRegion.rects() )
             { data << rect.x() << rect.y() << rect.width() << rect.height(); }
 
             XChangeProperty(
-                QX11Info::display(), widget->winId(), _atom_opaque, XA_CARDINAL, 32, PropModeReplace,
+                QX11Info::display(), widget->winId(), _opaqueAtom, XA_CARDINAL, 32, PropModeReplace,
                 reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
 
         }
@@ -237,8 +237,8 @@ namespace Oxygen
     void BlurHelper::clear( QWidget* widget ) const
     {
         #ifdef Q_WS_X11
-        XDeleteProperty( QX11Info::display(), widget->winId(), _atom_blur );
-        XDeleteProperty( QX11Info::display(), widget->winId(), _atom_opaque );
+        XDeleteProperty( QX11Info::display(), widget->winId(), _blurAtom );
+        XDeleteProperty( QX11Info::display(), widget->winId(), _opaqueAtom );
         #endif
 
     }

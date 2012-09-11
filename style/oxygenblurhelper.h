@@ -166,8 +166,8 @@ namespace Oxygen
 
         #ifdef Q_WS_X11
         //! blur atom
-        Atom _atom_blur;
-        Atom _atom_opaque;
+        Atom _blurAtom;
+        Atom _opaqueAtom;
         #endif
 
     };
