@@ -179,14 +179,7 @@ namespace Oxygen
                     const QRect rect( child->rect().translated( offset ).adjusted( 1, 1, -1, -1 ) );
                     region -= rect;
 
-//                     QTextStream( stdout )
-//                         << "BlurHelper::trimBlurRegion -"
-//                         << " widget: " << widget << " (" << widget->metaObject()->className() << ")"
-//                         << " child: " << child << " (" << widget->metaObject()->className() << ")"
-//                         << " rect: (" << rect.x() << "," << rect.y() << "," << rect.width() << "," << rect.height() << ")"
-//                         << endl;
-
-                }  else region -= child->mask().translated( offset );
+s                }  else region -= child->mask().translated( offset );
 
             } else { trimBlurRegion( parent, child, region ); }
 

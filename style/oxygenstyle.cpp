@@ -765,7 +765,7 @@ namespace Oxygen
             case PM_ToolBarItemSpacing: return 1;
 
             // MDI windows titlebars
-            case PM_TitleBarHeight: return 20;
+            case PM_TitleBarHeight: return 4 + pixelMetric( PM_SmallIconSize, option, widget );
 
             // spacing between widget and scrollbars
             case PM_ScrollView_ScrollBarSpacing:
@@ -2876,7 +2876,7 @@ namespace Oxygen
             _tabCloseIcon = KIcon( "dialog-close" );
             if( _tabCloseIcon.isNull() ) return false; // still not found? cancel
         }
-        const int size( pixelMetric(QStyle::PM_SmallIconSize) );
+        const int size( pixelMetric(PM_SmallIconSize) );
         QIcon::Mode mode;
         if( option->state & State_Enabled )
         {
@@ -3554,6 +3554,8 @@ namespace Oxygen
         const bool hasAlpha( helper().hasAlphaChannel( widget ) );
         if(  hasAlpha && StyleConfigData::toolTipTransparent() )
         {
+
+            blurHelper().registerWidget( widget->window() );
             topColor.setAlpha( 220 );
             bottomColor.setAlpha( 220 );
         }
@@ -4585,8 +4587,8 @@ namespace Oxygen
                 toolButtonOpt.font.setBold( true );
 
                 toolButtonOpt.iconSize = QSize(
-                    pixelMetric( QStyle::PM_SmallIconSize,0,0 ),
-                    pixelMetric( QStyle::PM_SmallIconSize,0,0 ) );
+                    pixelMetric( PM_SmallIconSize, 0, 0 ),
+                    pixelMetric( PM_SmallIconSize,0,0 ) );
 
                 // for now menu size is not calculated properly
                 // ( meaning it doesn't account for titled separators width
@@ -7127,7 +7129,7 @@ namespace Oxygen
         const bool enabled( toolBoxOption->state & State_Enabled );
         const bool selected( toolBoxOption->state & State_Selected );
         QPixmap pm(
-            toolBoxOption->icon.pixmap( pixelMetric( QStyle::PM_SmallIconSize, toolBoxOption, widget ),
+            toolBoxOption->icon.pixmap( pixelMetric( PM_SmallIconSize, toolBoxOption, widget ),
             enabled ? QIcon::Normal : QIcon::Disabled ) );
 
         const QRect cr( toolBoxTabContentsRect( toolBoxOption, widget ) );
@@ -8011,6 +8013,7 @@ namespace Oxygen
     void Style::oxygenConfigurationChanged( void )
     {
 
+
         // reset helper configuration
         helper().reloadConfig();
 
@@ -8241,8 +8244,8 @@ namespace Oxygen
             case SP_TitleBarNormalButton:
             {
                 QPixmap pixmap(
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ),
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ) );
+                    pixelMetric( PM_SmallIconSize, 0, 0 ),
+                    pixelMetric( PM_SmallIconSize, 0, 0 ) );
 
                 pixmap.fill( Qt::transparent );
 
@@ -8256,8 +8259,8 @@ namespace Oxygen
             case SP_TitleBarShadeButton:
             {
                 QPixmap pixmap(
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ),
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ) );
+                    pixelMetric( PM_SmallIconSize, 0, 0 ),
+                    pixelMetric( PM_SmallIconSize, 0, 0 ) );
 
                 pixmap.fill( Qt::transparent );
                 QPainter painter( &pixmap );
@@ -8269,8 +8272,8 @@ namespace Oxygen
             case SP_TitleBarUnshadeButton:
             {
                 QPixmap pixmap(
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ),
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ) );
+                    pixelMetric( PM_SmallIconSize, 0, 0 ),
+                    pixelMetric( PM_SmallIconSize, 0, 0 ) );
 
                 pixmap.fill( Qt::transparent );
                 QPainter painter( &pixmap );
@@ -8283,8 +8286,8 @@ namespace Oxygen
             case SP_DockWidgetCloseButton:
             {
                 QPixmap pixmap(
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ),
-                    pixelMetric( QStyle::PM_SmallIconSize, 0, 0 ) );
+                    pixelMetric( PM_SmallIconSize, 0, 0 ),
+                    pixelMetric( PM_SmallIconSize, 0, 0 ) );
 
                 pixmap.fill( Qt::transparent );
                 QPainter painter( &pixmap );
@@ -8297,7 +8300,7 @@ namespace Oxygen
             case SP_ToolBarHorizontalExtensionButton:
             {
 
-                QPixmap pixmap( pixelMetric( QStyle::PM_SmallIconSize,0,0 ), pixelMetric( QStyle::PM_SmallIconSize,0,0 ) );
+                QPixmap pixmap( pixelMetric( PM_SmallIconSize,0,0 ), pixelMetric( PM_SmallIconSize,0,0 ) );
                 pixmap.fill( Qt::transparent );
                 QPainter painter( &pixmap );
                 painter.setRenderHints( QPainter::Antialiasing );
@@ -8324,7 +8327,7 @@ namespace Oxygen
 
             case SP_ToolBarVerticalExtensionButton:
             {
-                QPixmap pixmap( pixelMetric( QStyle::PM_SmallIconSize,0,0 ), pixelMetric( QStyle::PM_SmallIconSize,0,0 ) );
+                QPixmap pixmap( pixelMetric( PM_SmallIconSize,0,0 ), pixelMetric( PM_SmallIconSize,0,0 ) );
                 pixmap.fill( Qt::transparent );
                 QPainter painter( &pixmap );
                 painter.setRenderHints( QPainter::Antialiasing );
@@ -8962,7 +8965,9 @@ namespace Oxygen
     {
 
         painter->save();
+
         painter->translate( r.topLeft() );
+        painter->scale( qreal( r.width() )/16, qreal( r.height() )/16 );
 
         switch( subControl )
         {

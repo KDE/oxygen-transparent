@@ -368,7 +368,7 @@ namespace Oxygen
         BlurHelper& blurHelper( void ) const
         { return *_blurHelper; }
 
-        //! mdi window shadows
+        //! mnemonics
         Mnemonics& mnemonics( void ) const
         { return *_mnemonics; }
 
