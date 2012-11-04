@@ -1679,7 +1679,7 @@ namespace Oxygen
             QRect activeItemBoundingRect;
 
             for( int index = 0; index < _itemData.count(); index++ )
-            { if( tabId( index ) == currentTabId() ) activeItemBoundingRect = _itemData[currentTabId()]._boundingRect; }
+            { if( tabId( index ) == currentTabId() ) activeItemBoundingRect = _itemData[index]._boundingRect; }
 
             const QRegion& titleMask( mask - helper().roundedMask(activeItemBoundingRect.adjusted(1,0,-1,1), 1, 1, 1, 0) );
 
