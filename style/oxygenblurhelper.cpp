@@ -179,7 +179,7 @@ namespace Oxygen
                     const QRect rect( child->rect().translated( offset ).adjusted( 1, 1, -1, -1 ) );
                     region -= rect;
 
-s                }  else region -= child->mask().translated( offset );
+                }  else region -= child->mask().translated( offset );
 
             } else { trimBlurRegion( parent, child, region ); }
 
