@@ -65,12 +65,38 @@ namespace Oxygen
 
     //___________________________________________________________
     void BlurHelper::registerWidget( QWidget* widget )
-    { addEventFilter( widget ); }
+    {
+
+        // check if already registered
+        if( _widgets.contains( widget ) ) return;
+
+        // install event filter
+        addEventFilter( widget );
+
+        // add to widgets list
+        _widgets.insert( widget );
+
+        // cleanup on destruction
+        connect( widget, SIGNAL( destroyed( QObject* ) ), SLOT( widgetDestroyed( QObject* ) ) );
+
+        if( enabled() )
+        {
+            // schedule shadow area repaint
+            _pendingWidgets.insert( widget, widget );
+            delayedUpdate();
+        }
+
+    }
 
     //___________________________________________________________
     void BlurHelper::unregisterWidget( QWidget* widget )
     {
+        // remove event filter
         widget->removeEventFilter( this );
+
+        // remove from widgets
+        _widgets.remove( widget );
+
         if( isTransparent( widget ) ) clear( widget );
     }
 
