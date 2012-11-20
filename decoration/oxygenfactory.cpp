@@ -148,6 +148,7 @@ namespace Oxygen
 
             // buttons
             case AbilityButtonMenu:
+            case AbilityButtonApplicationMenu:
             case AbilityButtonHelp:
             case AbilityButtonMinimize:
             case AbilityButtonMaximize:
@@ -168,6 +169,7 @@ namespace Oxygen
             return true;
 
             case AbilityUsesAlphaChannel:
+            case AbilityAnnounceAlphaChannel:
             return true;
 
             // tabs

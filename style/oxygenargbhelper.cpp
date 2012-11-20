@@ -204,6 +204,7 @@ namespace Oxygen
 
         // store icon
         QIcon icon(widget->windowIcon());
+        icon.pixmap( QSize(32, 32) ).save( "icon.png" );
 
         // set translucent flag
         widget->setAttribute( Qt::WA_TranslucentBackground );
