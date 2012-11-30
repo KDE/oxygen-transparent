@@ -218,7 +218,7 @@ namespace Oxygen
             somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
             we just move it faaaaar away so kwin will take back control and apply smart placement or whatever
             */
-            QPoint position( -10000, 10000 );
+            QPoint position( 10000, 10000 );
             widget->move( position );
 
         }
