@@ -93,17 +93,25 @@ namespace Oxygen
 
         // create a config object
         KSharedConfig::Ptr config( KSharedConfig::openConfig( "oxygenrc" ) );
-        if( _defaultConfiguration->opacityFromStyle() )
-        {
-            // read 'common' opacity
-            KConfigGroup group( config->group("Common") );
-            _defaultConfiguration->setBackgroundOpacity( group.readEntry( "BackgroundOpacity", 255 ) );
-        }
 
         // clear exceptions and read
         ExceptionList exceptions;
         exceptions.readConfig( config );
         _exceptions = exceptions.get();
+
+        // read opacity from style, if required
+        if( _defaultConfiguration->opacityFromStyle() )
+        {
+
+            KConfigGroup group( config->group("Common") );
+            const int styleOpacity( group.readEntry( "BackgroundOpacity", 255 ) );
+
+            _defaultConfiguration->setBackgroundOpacity( styleOpacity );
+
+            foreach( const ConfigurationPtr& configuration, _exceptions )
+            { configuration->setBackgroundOpacity( styleOpacity ); }
+
+        }
 
         // read shadowCache configuration
         _shadowCache.readConfig();
