@@ -125,6 +125,10 @@
        <default>true</default>
     </entry>
 
+    <entry name="TransparencyEnabled" type = "Bool">
+       <default>true</default>
+    </entry>
+
     <entry name="BackgroundOpacity" type = "Int">
        <default>255</default>
     </entry>

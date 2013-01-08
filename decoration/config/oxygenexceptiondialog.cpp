@@ -65,6 +65,7 @@ namespace Oxygen
         for( CheckBoxMap::iterator iter = _checkBoxes.begin(); iter != _checkBoxes.end(); ++iter )
         { connect( iter.value(), SIGNAL(clicked()), SLOT(updateChanged()) ); }
 
+        connect( ui.transparencyDisabled, SIGNAL(clicked()), SLOT(updateChanged()) );
         connect( ui.hideTitleBar, SIGNAL(clicked()), SLOT(updateChanged()) );
     }
 
@@ -85,6 +86,10 @@ namespace Oxygen
         ui.titleOutlineComboBox->setCurrentIndex( _exception->drawTitleOutline() );
         ui.hideTitleBar->setChecked( _exception->hideTitleBar() );
 
+        // transparency
+        ui.transparencyDisabled->setChecked( !_exception->transparencyEnabled() );
+        ui.transparencyDisabled->setEnabled( !_exception->opacityFromStyle() );
+
         // mask
         for( CheckBoxMap::iterator iter = _checkBoxes.begin(); iter != _checkBoxes.end(); ++iter )
         { iter.value()->setChecked( _exception->mask() & iter.key() ); }
@@ -104,6 +109,9 @@ namespace Oxygen
         _exception->setSeparatorMode( ui.separatorComboBox->currentIndex() );
         _exception->setDrawTitleOutline( ui.titleOutlineComboBox->currentIndex() );
         _exception->setHideTitleBar( ui.hideTitleBar->isChecked() );
+
+        // transparency
+        _exception->setTransparencyEnabled( !ui.transparencyDisabled->isChecked() );
 
         // mask
         unsigned int mask = None;
@@ -128,6 +136,7 @@ namespace Oxygen
         else if( _exception->separatorMode() != ui.separatorComboBox->currentIndex() ) modified = true;
         else if( _exception->drawTitleOutline() != ui.titleOutlineComboBox->currentIndex() ) modified = true;
         else if( _exception->hideTitleBar() != ui.hideTitleBar->isChecked() ) modified = true;
+        else if( _exception->transparencyEnabled() == ui.transparencyDisabled->isChecked() ) modified = true;
         else
         {
             // check mask

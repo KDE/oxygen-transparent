@@ -64,7 +64,10 @@ namespace Oxygen
             if( exception.mask() & DrawSeparator ) configuration->setSeparatorMode( exception.separatorMode() );
             if( exception.mask() & TitleOutline ) configuration->setDrawTitleOutline( exception.drawTitleOutline() );
             if( exception.mask() & SizeGripMode ) configuration->setDrawSizeGrip( exception.drawSizeGrip() );
+
+            // propagate unmasked features
             configuration->setHideTitleBar( exception.hideTitleBar() );
+            configuration->setTransparencyEnabled( exception.transparencyEnabled() );
 
             // append to exceptions
             _exceptions.append( configuration );

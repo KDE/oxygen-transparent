@@ -178,8 +178,8 @@ namespace Oxygen
         // reset tab geometry
         _itemData.setDirty( true );
 
-//         // transparency
-//         _transparencyEnabled = _configuration->transparencyEnabled() && (windowId() == 0 || ( !_configuration->opacityFromStyle() ) || helper().hasArgb( windowId() ) );
+        // transparency
+        _transparencyEnabled = _configuration->transparencyEnabled() && (windowId() == 0 || ( !_configuration->opacityFromStyle() ) || helper().hasArgb( windowId() ) );
 
         // handle size grip
         if( _configuration->drawSizeGrip() && _configuration->frameBorder() == Configuration::BorderNone )
