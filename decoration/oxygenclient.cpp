@@ -128,7 +128,7 @@ namespace Oxygen
 
         }
 
-        setAlphaEnabled(!isMaximized());
+        setAlphaEnabled(true);
 
         _initialized = true;
 
@@ -1365,7 +1365,6 @@ namespace Oxygen
     void Client::maximizeChange( void  )
     {
         if( hasSizeGrip() ) sizeGrip().setVisible( !( isShade() || isMaximized() ) );
-        setAlphaEnabled(!isMaximized());
         KCommonDecorationUnstable::maximizeChange();
     }
 
