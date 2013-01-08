@@ -4,7 +4,8 @@ find_package (KDE4 REQUIRED)
 include (KDE4Defaults)
 include (MacroLibrary)
 
-find_package(KDE4Workspace 4.9.80 REQUIRED)
+# find_package(KDE4Workspace 4.9.80 REQUIRED)
+find_package(KDE4Workspace 4.8.0 REQUIRED)
 
 add_definitions (-DQT3_SUPPORT -DQT3_SUPPORT_WARNINGS)
 add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
