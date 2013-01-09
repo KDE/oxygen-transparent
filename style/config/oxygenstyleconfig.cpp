@@ -111,7 +111,7 @@ namespace Oxygen
     //__________________________________________________________________
     void StyleConfig::save( void )
     {
-        StyleConfigData::setBackgroundOpacity( (_backgroundOpacity->value()*255)/100 );
+        StyleConfigData::setBackgroundOpacity( _backgroundOpacity->value() );
         StyleConfigData::setToolBarDrawItemSeparator( _toolBarDrawItemSeparator->isChecked() );
         StyleConfigData::setCheckBoxStyle( ( _checkDrawX->isChecked() ? StyleConfigData::CS_X : StyleConfigData::CS_CHECK ) );
         StyleConfigData::setSplitterProxyEnabled( _splitterProxyEnabled->isChecked() );
@@ -262,7 +262,7 @@ namespace Oxygen
 
         // check if any value was modified
         if ( _toolBarDrawItemSeparator->isChecked() != StyleConfigData::toolBarDrawItemSeparator() ) modified = true;
-        else if( _backgroundOpacity->value() != StyleConfigData::backgroundOpacity()*100/255 ) modified = true;
+        else if( _backgroundOpacity->value() != StyleConfigData::backgroundOpacity() ) modified = true;
         else if( _mnemonicsMode->currentIndex() != StyleConfigData::mnemonicsMode() ) modified = true;
         else if( _viewDrawTriangularExpander->isChecked() != StyleConfigData::viewDrawTriangularExpander() ) modified = true;
         else if( _viewDrawFocusIndicator->isChecked() != StyleConfigData::viewDrawFocusIndicator() ) modified = true;
@@ -312,7 +312,7 @@ namespace Oxygen
     void StyleConfig::load( void )
     {
 
-        _backgroundOpacity->setValue( StyleConfigData::backgroundOpacity()*100/255 );
+        _backgroundOpacity->setValue( StyleConfigData::backgroundOpacity() );
         _toolBarDrawItemSeparator->setChecked( StyleConfigData::toolBarDrawItemSeparator() );
         _mnemonicsMode->setCurrentIndex( StyleConfigData::mnemonicsMode() );
         _splitterProxyEnabled->setChecked( StyleConfigData::splitterProxyEnabled() );

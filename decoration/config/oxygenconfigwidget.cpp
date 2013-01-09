@@ -119,7 +119,7 @@ namespace Oxygen
 
         // transparency
         ui.opacityFromStyle->setChecked( _configuration->opacityFromStyle() );
-        ui.backgroundOpacity->setValue( _configuration->backgroundOpacity()*100/255 );
+        ui.backgroundOpacity->setValue( _configuration->backgroundOpacity() );
 
         setChanged( false );
 
@@ -146,7 +146,7 @@ namespace Oxygen
 
         // transparency
         _configuration->setOpacityFromStyle( ui.opacityFromStyle->isChecked() );
-        _configuration->setBackgroundOpacity( (ui.backgroundOpacity->value()*255)/100 );
+        _configuration->setBackgroundOpacity( ui.backgroundOpacity->value() );
 
         setChanged( false );
 
@@ -250,7 +250,7 @@ namespace Oxygen
 
         // transparency
         else if( ui.opacityFromStyle->isChecked() != _configuration->opacityFromStyle() ) modified = true;
-        else if( ui.backgroundOpacity->value() != _configuration->backgroundOpacity()*100/255 ) modified = true;
+        else if( ui.backgroundOpacity->value() != _configuration->backgroundOpacity() ) modified = true;
 
         // exceptions
         else if( ui.exceptions->isChanged() ) modified = true;
