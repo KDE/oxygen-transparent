@@ -1,6 +1,7 @@
 ########### add version number into compilation defines
 add_definitions ( -DAPP_VERSION=\\\"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}\\\")
 add_subdirectory( config )
+add_subdirectory( data )
 
 ########### next target ###############
 set(kwin_oxygen_transparent_SRCS
