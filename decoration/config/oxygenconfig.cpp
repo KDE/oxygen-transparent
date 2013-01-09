@@ -118,7 +118,7 @@ namespace Oxygen
         else if( ui->ui.sizeGripMode->currentIndex() != ui->ui.sizeGripMode->findText( configuration.sizeGripModeName( true ) ) ) modified = true;
 
         else if( ui->ui.opacityFromStyle->isChecked() != configuration.opacityFromStyle() ) modified = true;
-        else if( ui->ui.backgroundOpacity->value() != configuration.backgroundOpacity()*100/255 ) modified = true;
+        else if( ui->ui.backgroundOpacity->value() != configuration.backgroundOpacity() ) modified = true;
         else if( ui->ui.separatorMode->currentIndex() != configuration.separatorMode() ) modified = true;
         else if( ui->ui.titleOutline->isChecked() !=  configuration.drawTitleOutline() ) modified = true;
         else if( ui->ui.narrowButtonSpacing->isChecked() !=  configuration.useNarrowButtonSpacing() ) modified = true;
@@ -163,7 +163,7 @@ namespace Oxygen
         configuration.setUseOxygenShadows( ui->shadowConfigurations[0]->isChecked() );
         configuration.setUseNarrowButtonSpacing( ui->ui.narrowButtonSpacing->isChecked() );
         configuration.setOpacityFromStyle( ui->ui.opacityFromStyle->isChecked() );
-        configuration.setBackgroundOpacity( (ui->ui.backgroundOpacity->value()*255)/100 );
+        configuration.setBackgroundOpacity( ui->ui.backgroundOpacity->value() );
 
         if( ui->expertMode() )
         {
@@ -246,7 +246,7 @@ namespace Oxygen
         ui->ui.frameBorder->setCurrentIndex( ui->ui.frameBorder->findText( configuration.frameBorderName( true ) ) );
         ui->ui.sizeGripMode->setCurrentIndex( ui->ui.sizeGripMode->findText( configuration.sizeGripModeName( true ) ) );
 
-        ui->ui.backgroundOpacity->setValue( configuration.backgroundOpacity()*100/255 );
+        ui->ui.backgroundOpacity->setValue( configuration.backgroundOpacity() );
         ui->ui.opacityFromStyle->setChecked( configuration.opacityFromStyle() );
         ui->ui.separatorMode->setCurrentIndex( configuration.separatorMode() );
         ui->ui.titleOutline->setChecked( configuration.drawTitleOutline() );
