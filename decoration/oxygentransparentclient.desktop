@@ -3,6 +3,7 @@
 Name=Oxygen Transparent
 Name[bs]=Oxygen Transparent
 Name[ca]=Oxygen transparent
+Name[ca@valencia]=Oxygen transparent
 Name[cs]=Průhledný Oxygen
 Name[de]=Oxygen Transparent
 Name[es]=Oxygen transparente
@@ -27,6 +28,7 @@ Name[zh_TW]=Oxygen 透明
 Comment=Transparent styling of the next generation desktop
 Comment[bs]=Transparentni stil radne površine nove generacije
 Comment[ca]=Disseny transparent de l'escriptori de pròxima generació
+Comment[ca@valencia]=Disseny transparent de l'escriptori de pròxima generació
 Comment[cs]=Průhledný styl pro desktop nové generace
 Comment[de]=Transparente Version des KDE-Designs der nächsten Generation
 Comment[es]=Estilo transparente del escritorio de la próxima generación
