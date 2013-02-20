@@ -226,6 +226,8 @@ namespace Oxygen
         _generalExpertWidget->setVisible( _expertMode );
         _viewsExpertWidget->setVisible( _expertMode );
 
+        updateMinimumSize();
+
     }
 
     //__________________________________________________________________
@@ -234,6 +236,7 @@ namespace Oxygen
 
         switch( event->type() )
         {
+
             case QEvent::ShowToParent:
             object->event( event );
             updateLayout();
@@ -245,13 +248,35 @@ namespace Oxygen
     }
 
     //__________________________________________________________________
+    bool StyleConfig::event( QEvent* event )
+    {
+        const bool result( QWidget::event( event ) );
+        switch( event->type() )
+        {
+            case QEvent::Show:
+            case QEvent::ShowToParent:
+            updateMinimumSize();
+            break;
+
+            default: break;
+        }
+
+        return result;
+
+    }
+
+    //__________________________________________________________________
+    void StyleConfig::updateMinimumSize( void )
+    { setMinimumSize( minimumSizeHint() ); }
+
+    //__________________________________________________________________
     void StyleConfig::updateLayout( void )
     {
-
-        if( !_animationConfigWidget ) return;
-        int delta = _animationConfigWidget->minimumSizeHint().height() - _animationConfigWidget->size().height();
-        window()->setMinimumSize( QSize( window()->minimumSizeHint().width(), window()->size().height() + delta ) );
-
+        if( _animationConfigWidget )
+        {
+            const int delta = _animationConfigWidget->minimumSizeHint().height() - _animationConfigWidget->size().height();
+            window()->setMinimumSize( QSize( window()->minimumSizeHint().width(), window()->size().height() + delta ) );
+        }
     }
 
     //__________________________________________________________________
