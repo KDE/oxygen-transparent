@@ -38,6 +38,8 @@ namespace Oxygen
         KDialog( parent )
     {
 
+        setWindowTitle( i18n( "Exceptions - Oxygen Settings" ) );
+
         // define buttons
         setButtons( Ok|Cancel );
         QWidget* local( new QWidget( this ) );
