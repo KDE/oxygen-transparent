@@ -30,6 +30,7 @@
 #include "oxygenblurhelper.h"
 #include "oxygenblurhelper.moc"
 
+#include "oxygenpropertynames.h"
 #include "oxygenstyleconfigdata.h"
 
 #include <QtCore/QEvent>
@@ -289,6 +290,9 @@ namespace Oxygen
     //___________________________________________________________
     bool BlurHelper::isTransparent( const QWidget* widget ) const
     {
+
+        QVariant propertyValue( widget->property( PropertyNames::noBlurBehind ) );
+        if( propertyValue.isValid() && propertyValue.toBool() ) return false;
 
         return
             widget->isWindow() &&
