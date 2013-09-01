@@ -37,9 +37,9 @@
 #include "oxygentitleanimationdata.h"
 
 #include <kcommondecoration.h>
-#include <QtCore/QBasicTimer>
-#include <QtCore/QTextStream>
-#include <QtCore/QTimerEvent>
+#include <QBasicTimer>
+#include <QTextStream>
+#include <QTimerEvent>
 
 #include <X11/Xdefs.h>
 
@@ -77,7 +77,7 @@ namespace Oxygen
 
         //! true if window is maximized
         virtual bool isMaximized( void ) const
-        { return maximizeMode()==MaximizeFull && !options()->moveResizeMaximizedWindows();  }
+        { return maximizeMode()==MaximizeFull && !configuration()->drawBorderOnMaximizedWindows();  }
 
         //! true if animations are used
         bool animationsEnabled( void ) const
