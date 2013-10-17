@@ -33,6 +33,12 @@
 #include <QtGui/QDialog>
 #include <QtGui/QIcon>
 
+#ifdef Q_WS_X11
+#include <QtGui/QX11Info>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#endif
+
 namespace Oxygen
 {
 
@@ -43,7 +49,16 @@ namespace Oxygen
         _applicationType( AppUnknown ),
         _enabled( false ),
         _opacity( 0xff )
-    {}
+    {
+
+        #ifdef Q_WS_X11
+
+        // create atom
+        _xEmbedAtom = XInternAtom( QX11Info::display(), "_XEMBED_INFO", False);
+
+        #endif
+
+    }
 
     //______________________________________________________________
     void ArgbHelper::registerApplication( QApplication* app )
@@ -124,6 +139,7 @@ namespace Oxygen
                     widget->inherits( "QSplashScreen") ) break;
 
                 if( widget->windowFlags().testFlag( Qt::FramelessWindowHint ) ) break;
+                if( isXEmbed( widget ) ) break;
 
                 // setup transparency and return
                 setupTransparency( widget );
@@ -241,6 +257,32 @@ namespace Oxygen
         }
 
         return;
+    }
+
+    //______________________________________________________________
+    bool ArgbHelper::isXEmbed( QWidget* widget ) const
+    {
+
+        #ifdef Q_WS_X11
+
+        // QTextStream( stdout ) << "ArgbHelper::isXEmbed" << endl;
+
+        Atom type = None;
+        int format = 0;
+        unsigned char *data = 0x0;
+        unsigned long count = 0;
+        unsigned long after = 0;
+        const int length = 32768;
+
+        // get window property
+        return XGetWindowProperty(
+            QX11Info::display(), widget->winId(), _xEmbedAtom,
+            0L, length, false, XA_ATOM, &type, &format, &count, &after, &data) == Success && data;
+
+        #else
+        return false;
+        #endif
+
     }
 
 }

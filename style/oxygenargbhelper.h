@@ -38,6 +38,10 @@
 #include <QtGui/QApplication>
 #include <QtGui/QWidget>
 
+#ifdef Q_WS_X11
+#include <X11/Xdefs.h>
+#endif
+
 namespace Oxygen
 {
     class ArgbHelper: public QObject
@@ -126,6 +130,9 @@ namespace Oxygen
         // transparency
         void setupTransparency( QWidget* );
 
+        // true if window is of type X11 embed
+        bool isXEmbed( QWidget* ) const;
+
         private:
 
         //! helper
@@ -146,6 +153,14 @@ namespace Oxygen
         //! set of transparent widgets (as defined in ::polish)
         typedef QSet<const QObject*> ObjectSet;
         ObjectSet _transparentWidgets;
+
+
+        #ifdef Q_WS_X11
+
+        //! XEmbed atom
+        Atom _xEmbedAtom;
+
+        #endif
 
     };
 
