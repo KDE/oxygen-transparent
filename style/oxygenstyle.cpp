@@ -401,6 +401,10 @@ namespace Oxygen
             widget->setAttribute( Qt::WA_TranslucentBackground );
             addEventFilter( widget );
 
+        } else if( widget->inherits( "QGLWidget" ) ) {
+
+            widget->setAttribute( Qt::WA_TranslucentBackground );
+
         } else if( qobject_cast<QTabBar*>( widget ) ) {
 
             addEventFilter( widget );
