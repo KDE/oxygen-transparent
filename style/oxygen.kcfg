@@ -18,7 +18,7 @@
       grey list
     -->
     <entry name="OpacityInternalBlackList" type = "StringList"> 
-        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker,kscreenlocker_greet,kdenlive,nspluginviewer,smplayer,dragon,kaffeine,loopy,kwin,bangarang,kpartsplugin,djview</default>
+        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker,kscreenlocker_greet,kdenlive,nspluginviewer,smplayer,dragon,kaffeine,loopy,kwin,bangarang,djview</default>
     </entry>
 
     <!-- 
@@ -26,7 +26,7 @@
       however they are unchecked, unless they also appear in the blacklist
     -->
     <entry name="OpacityGreyList" type = "StringList"> 
-        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker</default>
+        <default>krunner,amarok,vlc,vlc-wrapper,kscreenlocker,kpartsplugin</default>
     </entry>
 
     <!-- opacity black list -->
