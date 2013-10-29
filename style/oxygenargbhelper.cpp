@@ -221,23 +221,26 @@ namespace Oxygen
         // store icon
         QIcon icon(widget->windowIcon());
 
+        const bool wasVisible( widget->isVisible() );
+        const bool moved( widget->testAttribute( Qt::WA_Moved ) );
+
+        // hide widget
+        if( wasVisible ) widget->hide();
+
         // set translucent flag
         widget->setAttribute( Qt::WA_TranslucentBackground );
 
+        /*
+        reset WA_Moved flag, which is incorrectly set to true when
+        window is replaced by its transparent counterpart
+        */
+        if( !moved ) widget->setAttribute(Qt::WA_Moved, false);
+
+        // show widget if was originally visible
+        if( wasVisible ) widget->show();
+
         // re-install icon
         widget->setWindowIcon(icon);
-        if( !widget->isVisible() )
-        {
-
-            /*
-            WORKAROUND (imported from bespin, thanks Thomas!):
-            somehow the window gets repositioned to <1,<1 and thus always appears in the upper left corner
-            we just move it faaaaar away so kwin will take back control and apply smart placement or whatever
-            */
-            QPoint position( -10000, 10000 );
-            widget->move( position );
-
-        }
 
         // add to set of transparent widgets and connect destruction signal
         _transparentWidgets.insert( widget );
