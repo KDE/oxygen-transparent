@@ -28,11 +28,10 @@
 #include "oxygenactiveshadowconfiguration.h"
 #include "oxygeninactiveshadowconfiguration.h"
 
-#include <cassert>
 #include <cmath>
 #include <KColorUtils>
-#include <QtGui/QPainter>
-#include <QtCore/QTextStream>
+#include <QPainter>
+#include <QTextStream>
 
 namespace Oxygen
 {
@@ -132,7 +131,7 @@ namespace Oxygen
     {
 
         int index( opacity*_maxIndex );
-        assert( index <= _maxIndex );
+        Q_ASSERT( index <= _maxIndex );
 
         // construct key
         key.index = index;

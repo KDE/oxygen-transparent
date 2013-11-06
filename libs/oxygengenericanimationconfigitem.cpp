@@ -29,7 +29,7 @@
 
 #include "ui_oxygengenericanimationconfigbox.h"
 
-#include <KGlobal>
+#include <KLocalizedString>
 
 namespace Oxygen
 {
@@ -39,7 +39,6 @@ namespace Oxygen
         QFrame( parent ),
         ui( new Ui_GenericAnimationConfigBox() )
     {
-        KGlobal::locale()->insertCatalog("liboxygenstyleconfig");
         ui->setupUi( this );
     }
 
@@ -54,7 +53,7 @@ namespace Oxygen
     //_______________________________________________
     void GenericAnimationConfigItem::initializeConfigurationWidget( QWidget* parent )
     {
-        assert( !_configurationWidget );
+        Q_ASSERT( !_configurationWidget );
         _configurationWidget = new GenericAnimationConfigBox( parent );
         setConfigurationWidget( _configurationWidget.data() );
 

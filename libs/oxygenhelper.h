@@ -6,7 +6,7 @@
  * Copyright 2008 Long Huynh Huu <long.upcase@googlemail.com>
  * Copyright 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
  * Copyright 2007 Casper Boemann <cbr@boemann.dk>
- * Copyright 2007 Fredrik Höglund <fredrik@kde.org>
+ * Copyright 2007 Fredrik H?glund <fredrik@kde.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,17 +26,16 @@
 #include "oxygentileset.h"
 
 #include <KSharedConfig>
-#include <KComponentData>
 #include <KColorScheme>
 
-#include <QtGui/QColor>
-#include <QtGui/QPixmap>
-#include <QtGui/QWidget>
-#include <QtGui/QLinearGradient>
-#include <QtCore/QCache>
+#include <QColor>
+#include <QPixmap>
+#include <QWidget>
+#include <QLinearGradient>
+#include <QCache>
 
-#ifdef Q_WS_X11
-#include <X11/Xdefs.h>
+#if HAVE_X11
+#include <xcb/xcb.h>
 #endif
 
 namespace Oxygen
@@ -154,7 +153,7 @@ namespace Oxygen
         public:
 
         //! constructor
-        explicit Helper( const QByteArray& componentName );
+        explicit Helper( void );
 
         //! destructor
         virtual ~Helper()
@@ -346,6 +345,17 @@ namespace Oxygen
 
         //@}
 
+        #if HAVE_X11
+
+        //! xcb connection
+        xcb_connection_t* xcbConnection( void ) const
+        { return _xcbConnection; }
+
+        //! create xcb atom
+        xcb_atom_t createAtom( const QString& ) const;
+
+        #endif
+
         protected:
 
         //! return color key for a given color, properly accounting for invalid colors
@@ -401,7 +411,6 @@ namespace Oxygen
         KStatefulBrush _viewNegativeTextBrush;
         //@}
 
-        KComponentData _componentData;
         KSharedConfigPtr _config;
         qreal _bgcontrast;
 
@@ -431,22 +440,25 @@ namespace Oxygen
         //! background pixmap offsets
         QPoint _backgroundPixmapOffset;
 
-        #ifdef Q_WS_X11
+        #ifdef HAVE_X11
 
         //! set value for given hint
-        void setHasHint( WId, Atom, bool ) const;
+        void setHasHint( xcb_window_t, xcb_atom_t, bool ) const;
 
         //! value for given hint
-        bool hasHint( WId, Atom ) const;
+        bool hasHint( xcb_window_t, xcb_atom_t ) const;
+
+        //! xcb connection
+        xcb_connection_t* _xcbConnection;
 
         //! argb hint atom
-        Atom _argbAtom;
+        xcb_atom_t _argbAtom;
 
         //! background gradient hint atom
-        Atom _backgroundGradientAtom;
+        xcb_atom_t _backgroundGradientAtom;
 
         //! background gradient hint atom
-        Atom _backgroundPixmapAtom;
+        xcb_atom_t _backgroundPixmapAtom;
 
         #endif
     };

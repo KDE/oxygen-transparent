@@ -3,7 +3,7 @@
  * Copyright 2008 Long Huynh Huu <long.upcase@googlemail.com>
  * Copyright 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
  * Copyright 2007 Casper Boemann <cbr@boemann.dk>
- * Copyright 2007 Fredrik Höglund <fredrik@kde.org>
+ * Copyright 2007 Fredrik H?glund <fredrik@kde.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -24,19 +24,14 @@
 
 #include <KColorUtils>
 #include <KColorScheme>
-#include <KDebug>
-#include <KGlobalSettings>
 
-#include <QtGui/QWidget>
-#include <QtGui/QPainter>
-
+#include <QWidget>
+#include <QPainter>
+#include <QTextStream>
 #include <math.h>
 
-#ifdef Q_WS_X11
-#include <QtGui/QX11Info>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <fixx11h.h>
+#if HAVE_X11
+#include <QX11Info>
 #endif
 
 namespace Oxygen
@@ -51,11 +46,10 @@ namespace Oxygen
     // Since the ctor order causes a SEGV if we try to pass in a KConfig here from
     // a KComponentData constructed in the OxygenStyleHelper ctor, we'll just keep
     // one here, even though the window decoration doesn't really need it.
-    Helper::Helper( const QByteArray& componentName ):
-        _componentData( componentName, 0, KComponentData::SkipMainComponentRegistration )
+    Helper::Helper( void )
     {
-        _config = _componentData.config();
-        _contrast = KGlobalSettings::contrastF( _config );
+        _config = KSharedConfig::openConfig( QStringLiteral( "oxygenrc" ) );
+        _contrast = KColorScheme::contrastF( _config );
 
         // background contrast is calculated so that it is 0.9
         // when KGlobalSettings contrast value of 0.7
@@ -85,12 +79,12 @@ namespace Oxygen
     {
 
         _config->reparseConfiguration();
-        _contrast = KGlobalSettings::contrastF( _config );
+        _contrast = KColorScheme::contrastF( _config );
         _bgcontrast = qMin( 1.0, 0.9*_contrast/0.7 );
 
-        _viewFocusBrush = KStatefulBrush( KColorScheme::View, KColorScheme::FocusColor, config() );
-        _viewHoverBrush = KStatefulBrush( KColorScheme::View, KColorScheme::HoverColor, config() );
-        _viewNegativeTextBrush = KStatefulBrush( KColorScheme::View, KColorScheme::NegativeText, config() );
+        _viewFocusBrush = KStatefulBrush( KColorScheme::View, KColorScheme::FocusColor, _config );
+        _viewHoverBrush = KStatefulBrush( KColorScheme::View, KColorScheme::HoverColor, _config );
+        _viewNegativeTextBrush = KStatefulBrush( KColorScheme::View, KColorScheme::NegativeText, _config );
 
     }
 
@@ -926,7 +920,7 @@ namespace Oxygen
     void Helper::setHasBackgroundGradient( WId id, bool value ) const
     {
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
         setHasHint( id, _backgroundGradientAtom, value );
         #else
         Q_UNUSED( id );
@@ -939,7 +933,7 @@ namespace Oxygen
     bool Helper::hasBackgroundGradient( WId id ) const
     {
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
         return hasHint( id, _backgroundGradientAtom );
         #else
         Q_UNUSED( id );
@@ -951,7 +945,7 @@ namespace Oxygen
     void Helper::setHasBackgroundPixmap( WId id, bool value ) const
     {
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
         setHasHint( id, _backgroundPixmapAtom, value );
         #else
         Q_UNUSED( id );
@@ -964,13 +958,28 @@ namespace Oxygen
     bool Helper::hasBackgroundPixmap( WId id ) const
     {
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
         return hasHint( id, _backgroundPixmapAtom );
         #else
         Q_UNUSED( id );
         return false;
         #endif
     }
+
+
+    #if HAVE_X11
+
+    //____________________________________________________________________
+    xcb_atom_t Helper::createAtom( const QString& name ) const
+    {
+
+        xcb_intern_atom_cookie_t cookie( xcb_intern_atom( _xcbConnection, false, name.size(), qPrintable( name ) ) );
+        xcb_intern_atom_reply_t* reply( xcb_intern_atom_reply( _xcbConnection, cookie, 0) );
+        return reply ? reply->atom:0;
+
+    }
+
+    #endif
 
     //______________________________________________________________________________________
     void Helper::drawSlab( QPainter& p, const QColor& color, qreal shade )
@@ -1083,42 +1092,32 @@ namespace Oxygen
 
     }
 
-    #ifdef Q_WS_X11
+    #if HAVE_X11
 
     //____________________________________________________________________
-    void Helper::setHasHint( WId id, Atom atom, bool value ) const
+    void Helper::setHasHint( xcb_window_t id, xcb_atom_t atom, bool value ) const
     {
 
+        // check window id
         if( !id ) return;
 
-        unsigned long uLongValue( value );
-        XChangeProperty(
-            QX11Info::display(), id, atom, XA_CARDINAL, 32, PropModeReplace,
-            reinterpret_cast<const unsigned char *>(&uLongValue), 1 );
-
+        uint32_t uLongValue( value );
+        xcb_change_property( _xcbConnection, XCB_PROP_MODE_REPLACE, id, atom, XCB_ATOM_CARDINAL, 32, 1, &uLongValue );
+        xcb_flush( _xcbConnection );
         return;
+
     }
 
     //____________________________________________________________________
-    bool Helper::hasHint( WId id, Atom atom ) const
+    bool Helper::hasHint( xcb_window_t id, xcb_atom_t atom ) const
     {
+
+        // check window id
         if( !id ) return false;
 
-        Atom type( None );
-        int format(0);
-        unsigned char *data(0);
-
-        unsigned long n(0), left(0);
-        XGetWindowProperty(
-            QX11Info::display(), id, atom,
-            0, 1L, false,
-            XA_CARDINAL, &type,
-            &format, &n, &left,
-            &data);
-
-        // finish if no data is found
-        if( data == None || n != 1 ) return false;
-        else return *data;
+        xcb_get_property_cookie_t cookie( xcb_get_property( _xcbConnection, 0, id, atom, XCB_ATOM_CARDINAL, 0, 1) );
+        xcb_get_property_reply_t* reply( xcb_get_property_reply( _xcbConnection, cookie, 0 ) );
+        return reply && *reinterpret_cast<int32_t*>(xcb_get_property_value(reply));
 
     }
 

@@ -28,10 +28,9 @@
 #include "oxygenanimationconfigitem.moc"
 #include "ui_oxygenanimationconfigitem.h"
 
-#include <QtCore/QTextStream>
-#include <KGlobal>
-#include <KIcon>
-#include <KLocale>
+#include <QTextStream>
+#include <QIcon>
+#include <KLocalizedString>
 #include <KMessageBox>
 
 namespace Oxygen
@@ -43,12 +42,11 @@ namespace Oxygen
         ui( new Ui_AnimationConfigItem() )
     {
 
-        KGlobal::locale()->insertCatalog("liboxygenstyleconfig");
         ui->setupUi( this );
         layout()->setMargin(0);
 
-        ui->configurationButton->setIcon( KIcon("configure") );
-        ui->descriptionButton->setIcon(KIcon("dialog-information"));
+        ui->configurationButton->setIcon( QIcon::fromTheme( QStringLiteral("configure") ) );
+        ui->descriptionButton->setIcon( QIcon::fromTheme( QStringLiteral( "dialog-information") ) );
 
         connect( ui->enableCheckBox, SIGNAL(toggled(bool)), SIGNAL(changed()) );
         connect( ui->descriptionButton, SIGNAL(clicked()), SLOT(about()) );
