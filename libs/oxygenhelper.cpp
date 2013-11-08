@@ -57,15 +57,13 @@ namespace Oxygen
 
         _backgroundCache.setMaxCost( 64 );
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
 
-        // create argb atom
-        _argbAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_HAS_ARGB", False);
-
-        // create background gradient atom
-        _backgroundGradientAtom = XInternAtom( QX11Info::display(), "_KDE_OXYGEN_BACKGROUND_GRADIENT", False);
-        _backgroundPixmapAtom = XInternAtom( QX11Info::display(), "_KDE_OXYGEN_BACKGROUND_PIXMAP", False);
-
+        // initialize xcb connection
+        _xcbConnection = QX11Info::connection();
+        _argbAtom = createAtom( QStringLiteral( "_KDE_NET_WM_HAS_ARGB" ) );
+        _backgroundGradientAtom = createAtom( QStringLiteral( "_KDE_OXYGEN_BACKGROUND_GRADIENT" ) );
+        _backgroundPixmapAtom = createAtom( QStringLiteral( "_KDE_OXYGEN_BACKGROUND_PIXMAP" ) );
         #endif
 
     }
