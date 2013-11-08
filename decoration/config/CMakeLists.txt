@@ -10,25 +10,27 @@ set(kwin_oxygen_config_PART_SRCS
     ../oxygenexceptionlist.cpp
   )
 
-kde4_add_ui_files(kwin_oxygen_config_PART_SRCS
+kconfig_add_kcfg_files(kwin_oxygen_config_PART_SRCS ../oxygenconfiguration.kcfgc )
+
+set( kwin_oxygen_config_PART_FORMS
    ui/oxygenconfigurationui.ui
    ui/oxygendetectwidget.ui
    ui/oxygenexceptiondialog.ui
    ui/oxygenexceptionlistwidget.ui
 )
 
-kde4_add_kcfg_files(kwin_oxygen_config_PART_SRCS ../oxygenconfiguration.kcfgc )
+qt5_wrap_ui(kwin_oxygen_config_PART_FORMS_HEADERS ${kwin_oxygen_config_PART_FORMS})
+add_library(kwin_oxygen_transparent_config
+    ${kwin_oxygen_config_PART_SRCS}
+    ${kwin_oxygen_config_PART_FORMS_HEADERS})
 
-kde4_add_plugin(kwin_oxygen_transparent_config ${kwin_oxygen_config_PART_SRCS})
+target_link_libraries(kwin_oxygen_transparent_config Qt5::Core Qt5::Gui Qt5::Widgets Qt5::DBus)
+target_link_libraries(kwin_oxygen_transparent_config KF5::KConfigCore KF5::KConfigGui KF5::KCompletion KF5::KGuiAddons KF5::KWindowSystem KF5::KI18n)
+target_link_libraries(kwin_oxygen_transparent_config kdecorations oxygenstyle  oxygenstyleconfig)
 
-target_link_libraries(
-    kwin_oxygen_transparent_config
-    ${KDE4_KDEUI_LIBS}
-    ${QT_QTGUI_LIBRARY}
-    ${X11_X11_LIB}
-    ${KDE4WORKSPACE_KDECORATIONS_LIBS}
-    oxygentransparentstyle
-    oxygentransparentstyleconfig
-  )
+if(X11_FOUND)
+  target_link_libraries(kwin_oxygen_transparent_config ${XCB_LIBRARIES})
+  target_link_libraries(kwin_oxygen_transparent_config Qt5::X11Extras)
+endif()
 
-install(TARGETS kwin_oxygen_transparent_config  DESTINATION ${PLUGIN_INSTALL_DIR} )
+install(TARGETS kwin_oxygen_transparent_config DESTINATION ${QT_PLUGIN_INSTALL_DIR}/kf5)

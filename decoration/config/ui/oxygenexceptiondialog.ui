@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OxygenExceptionWidget</class>
- <widget class="QWidget" name="OxygenExceptionWidget">
+ <class>OxygenExceptionDialog</class>
+ <widget class="QDialog" name="OxygenExceptionDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
-    <height>352</height>
+    <width>514</width>
+    <height>347</height>
    </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -272,6 +275,16 @@
      </layout>
     </widget>
    </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -286,24 +299,40 @@
    <header>klineedit.h</header>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>exceptionType</tabstop>
-  <tabstop>exceptionEditor</tabstop>
-  <tabstop>detectDialogButton</tabstop>
-  <tabstop>frameBorderCheckBox</tabstop>
-  <tabstop>frameBorderComboBox</tabstop>
-  <tabstop>blendColorCheckBox</tabstop>
-  <tabstop>blendColorComboBox</tabstop>
-  <tabstop>sizeGripCheckBox</tabstop>
-  <tabstop>sizeGripComboBox</tabstop>
-  <tabstop>titleOutlineCheckBox</tabstop>
-  <tabstop>titleOutlineComboBox</tabstop>
-  <tabstop>separatorCheckBox</tabstop>
-  <tabstop>separatorComboBox</tabstop>
-  <tabstop>hideTitleBar</tabstop>
- </tabstops>
  <resources/>
  <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>OxygenExceptionDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>252</x>
+     <y>342</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>OxygenExceptionDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>320</x>
+     <y>342</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
   <connection>
    <sender>frameBorderCheckBox</sender>
    <signal>toggled(bool)</signal>
@@ -311,12 +340,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>179</x>
-     <y>186</y>
+     <x>125</x>
+     <y>162</y>
     </hint>
     <hint type="destinationlabel">
-     <x>297</x>
-     <y>194</y>
+     <x>316</x>
+     <y>163</y>
     </hint>
    </hints>
   </connection>
@@ -327,12 +356,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>99</x>
-     <y>217</y>
+     <x>136</x>
+     <y>188</y>
     </hint>
     <hint type="destinationlabel">
-     <x>315</x>
-     <y>217</y>
+     <x>333</x>
+     <y>189</y>
     </hint>
    </hints>
   </connection>
@@ -343,12 +372,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>147</x>
-     <y>236</y>
+     <x>202</x>
+     <y>212</y>
     </hint>
     <hint type="destinationlabel">
-     <x>307</x>
-     <y>240</y>
+     <x>319</x>
+     <y>214</y>
     </hint>
    </hints>
   </connection>
@@ -359,12 +388,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>78</x>
-     <y>266</y>
+     <x>198</x>
+     <y>237</y>
     </hint>
     <hint type="destinationlabel">
-     <x>302</x>
-     <y>267</y>
+     <x>317</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -375,12 +404,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>91</x>
-     <y>289</y>
+     <x>118</x>
+     <y>264</y>
     </hint>
     <hint type="destinationlabel">
-     <x>297</x>
-     <y>290</y>
+     <x>298</x>
+     <y>266</y>
     </hint>
    </hints>
   </connection>

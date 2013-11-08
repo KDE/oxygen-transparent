@@ -34,8 +34,7 @@
 #include <QPolygon>
 #include <QTimer>
 
-#include <QX11Info>
-#include <X11/Xlib.h>
+#include <xcb/xcb.h>
 
 namespace Oxygen
 {
@@ -82,38 +81,42 @@ namespace Oxygen
 
     //_____________________________________________
     void SizeGrip::activeChange( void )
-    { XMapRaised( QX11Info::display(), winId() ); }
+    {
+        static const uint32_t value = XCB_STACK_MODE_ABOVE;
+        xcb_configure_window( _client->helper().xcbConnection(), winId(), XCB_CONFIG_WINDOW_STACK_MODE, &value );
+        xcb_map_window( _client->helper().xcbConnection(), winId() );
+    }
 
     //_____________________________________________
     void SizeGrip::embed( void )
     {
+        xcb_window_t window_id = _client->windowId();
+        if( _client->isPreview() ) {
 
-        WId window_id = client().windowId();
-        if( client().isPreview() ) {
-
-            setParent( client().widget() );
+            setParent( _client->widget() );
 
         } else if( window_id ) {
 
-            WId current = window_id;
+            xcb_window_t current = window_id;
+            xcb_connection_t* connection = _client->helper().xcbConnection();
             while( true )
             {
-                WId root, parent = 0;
-                WId *children = 0L;
-                uint child_count = 0;
-                XQueryTree(QX11Info::display(), current, &root, &parent, &children, &child_count);
-                if( parent && parent != root && parent != current ) current = parent;
+                xcb_query_tree_cookie_t cookie = xcb_query_tree_unchecked( connection, current );
+                QScopedPointer<xcb_query_tree_reply_t, QScopedPointerPodDeleter> tree(xcb_query_tree_reply( connection, cookie, nullptr ) );
+                if (tree.isNull()) break;
+
+                if (tree->parent && tree->parent != tree->root && tree->parent != current) current = tree->parent;
                 else break;
             }
 
             // reparent
-            XReparentWindow( QX11Info::display(), winId(), current, 0, 0 );
+            xcb_reparent_window( connection, winId(), current, 0, 0 );
+
         } else {
 
             hide();
 
         }
-
     }
 
     //_____________________________________________
@@ -130,9 +133,9 @@ namespace Oxygen
     {
 
         // get relevant colors
-        QColor base( client().backgroundColor( this, palette(), client().isActive() ) );
-        QColor light( client().helper().calcDarkColor( base ) );
-        QColor dark( client().helper().calcDarkColor( base.darker(150) ) );
+        QColor base( _client->backgroundColor( this, palette(), _client->isActive() ) );
+        QColor light( _client->helper().calcDarkColor( base ) );
+        QColor dark( _client->helper().calcDarkColor( base.darker(150) ) );
 
         // create and configure painter
         QPainter painter(this);
@@ -187,10 +190,10 @@ namespace Oxygen
             {
 
                 // check client window id
-                if( !client().windowId() ) break;
-                client().widget()->setFocus();
-                if( client().decoration() )
-                { client().decoration()->performWindowOperation( KDecorationDefines::ResizeOp ); }
+                if( !_client->windowId() ) break;
+                _client->widget()->setFocus();
+                if( _client->decoration() )
+                { _client->decoration()->performWindowOperation( KDecorationDefines::ResizeOp ); }
 
             }
             break;
@@ -208,24 +211,24 @@ namespace Oxygen
     {
 
         QPoint position(
-            client().width() - GRIP_SIZE - OFFSET,
-            client().height() - GRIP_SIZE - OFFSET );
+            _client->width() - GRIP_SIZE - OFFSET,
+            _client->height() - GRIP_SIZE - OFFSET );
 
-        if( client().isPreview() )
+        if( _client->isPreview() )
         {
 
             position -= QPoint(
-                client().layoutMetric( Client::LM_BorderRight )+
-                client().layoutMetric( Client::LM_OuterPaddingRight ),
-                client().layoutMetric( Client::LM_OuterPaddingBottom )+
-                client().layoutMetric( Client::LM_BorderBottom )
+                _client->layoutMetric( Client::LM_BorderRight )+
+                _client->layoutMetric( Client::LM_OuterPaddingRight ),
+                _client->layoutMetric( Client::LM_OuterPaddingBottom )+
+                _client->layoutMetric( Client::LM_BorderBottom )
                 );
 
         } else {
 
             position -= QPoint(
-                client().layoutMetric( Client::LM_BorderRight ),
-                client().layoutMetric( Client::LM_BorderBottom ) );
+                _client->layoutMetric( Client::LM_BorderRight ),
+                _client->layoutMetric( Client::LM_BorderBottom ) );
         }
 
         move( position );

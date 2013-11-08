@@ -39,11 +39,8 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 
-#include <KAboutData>
-#include <KAboutApplicationDialog>
 #include <KConfigGroup>
-#include <KGlobal>
-#include <KLocale>
+#include <KLocalizedString>
 
 //_______________________________________________________________________
 extern "C"
@@ -60,16 +57,16 @@ namespace Oxygen
         QObject( parent )
     {
 
-        KGlobal::locale()->insertCatalog("oxygen_transparent");
-
         // configuration
-        _configuration = KSharedConfig::openConfig( "oxygenrc" );
+        _configuration = KSharedConfig::openConfig( QStringLiteral( "oxygenrc" ) );
 
+        // create new configuration widget and add to layout, if any
         _configWidget = new ConfigWidget( parent );
+        if( parent && parent->layout() ) parent->layout()->addWidget( _configWidget );
+        else _configWidget->show();
 
         load();
         connect( _configWidget, SIGNAL(changed(bool)), SLOT(updateChanged()) );
-        _configWidget->show();
 
     }
 
@@ -145,7 +142,7 @@ namespace Oxygen
         // sync configuration
         _configuration->sync();
 
-        QDBusMessage message( QDBusMessage::createSignal("/OxygenWindeco",  "org.kde.Oxygen.Style", "reparseConfiguration") );
+        QDBusMessage message( QDBusMessage::createSignal( QStringLiteral( "/OxygenWindeco" ),  QStringLiteral( "org.kde.Oxygen.Style" ), QStringLiteral( "reparseConfiguration") ) );
         QDBusConnection::sessionBus().send(message);
 
     }

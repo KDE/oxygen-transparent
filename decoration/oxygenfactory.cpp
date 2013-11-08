@@ -31,8 +31,6 @@
 
 #include <KSharedConfig>
 #include <KConfigGroup>
-#include <KDebug>
-#include <KGlobal>
 #include <KWindowInfo>
 #include <kdeversion.h>
 
@@ -42,13 +40,24 @@ namespace Oxygen
 {
 
     //___________________________________________________
-    Factory::Factory():
+    Factory::Factory(QObject *parent):
+        KDecorationFactory(parent),
         _initialized( false ),
-        _helper( "oxygenDeco" ),
+        _helper(),
         _shadowCache( _helper )
     {
         readConfig();
         setInitialized( true );
+        connect(options(), &KDecorationOptions::colorsChanged, [this]() {
+            _shadowCache.invalidateCaches();
+        });
+        connect(options(), &KDecorationOptions::configChanged, [this]() {
+            // read in the configuration
+            setInitialized( false );
+            readConfig();
+            setInitialized( true );
+            emit recreateDecorations();
+        });
     }
 
     //___________________________________________________
@@ -58,21 +67,6 @@ namespace Oxygen
     //___________________________________________________
     KDecoration* Factory::createDecoration(KDecorationBridge* bridge )
     { return (new Client( bridge, this ))->decoration(); }
-
-    //___________________________________________________
-    bool Factory::reset(unsigned long changed)
-    {
-
-        if( changed & SettingColors )
-        { _shadowCache.invalidateCaches(); }
-
-        // read in the configuration
-        setInitialized( false );
-        readConfig();
-        setInitialized( true );
-        return true;
-
-    }
 
     //___________________________________________________
     void Factory::readConfig()
@@ -88,11 +82,11 @@ namespace Oxygen
 
         // initialize default configuration and read
         if( !_defaultConfiguration ) _defaultConfiguration = ConfigurationPtr(new Configuration());
-        _defaultConfiguration->setCurrentGroup( "Windeco" );
+        _defaultConfiguration->setCurrentGroup( QStringLiteral("Windeco") );
         _defaultConfiguration->readConfig();
 
         // create a config object
-        KSharedConfig::Ptr config( KSharedConfig::openConfig( "oxygenrc" ) );
+        KSharedConfig::Ptr config( KSharedConfig::openConfig( QStringLiteral("oxygenrc") ) );
 
         // clear exceptions and read
         ExceptionList exceptions;
@@ -133,7 +127,6 @@ namespace Oxygen
 
             // announce
             case AbilityAnnounceButtons:
-            case AbilityAnnounceColors:
 
             // buttons
             case AbilityButtonMenu:
@@ -208,9 +201,9 @@ namespace Oxygen
                     {
                         // retrieve class name
                         KWindowInfo info( client.windowId(), 0, NET::WM2WindowClass );
-                        QString window_className( info.windowClassName() );
-                        QString window_class( info.windowClassClass() );
-                        className = window_className + ' ' + window_class;
+                        QString window_className( QString::fromUtf8(info.windowClassName()) );
+                        QString window_class( QString::fromUtf8(info.windowClassClass()) );
+                        className = window_className + QStringLiteral(" ") + window_class;
                     }
 
                     value = className;

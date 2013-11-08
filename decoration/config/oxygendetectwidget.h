@@ -33,18 +33,19 @@
 #include "oxygenconfiguration.h"
 #include "ui_oxygendetectwidget.h"
 
-#include <KDialog>
-#include <QEvent>
 #include <QByteArray>
 #include <QCheckBox>
+#include <QDialog>
+#include <QEvent>
 #include <QLabel>
 
 #include <kwindowsystem.h>
+#include <xcb/xcb.h>
 
 namespace Oxygen
 {
 
-    class DetectDialog : public KDialog
+    class DetectDialog : public QDialog, Ui::OxygenDetectWidget
     {
 
         Q_OBJECT
@@ -67,8 +68,8 @@ namespace Oxygen
         //! exception type
         Configuration::EnumExceptionType exceptionType() const
         {
-            if( ui.windowClassCheckBox->isChecked() ) return Configuration::ExceptionWindowClassName;
-            else if( ui.windowTitleCheckBox->isChecked() ) return Configuration::ExceptionWindowTitle;
+            if( windowClassCheckBox->isChecked() ) return Configuration::ExceptionWindowClassName;
+            else if( windowTitleCheckBox->isChecked() ) return Configuration::ExceptionWindowTitle;
             else return Configuration::ExceptionWindowClassName;
         }
 
@@ -94,17 +95,14 @@ namespace Oxygen
         //! execute
         void executeDialog( void );
 
-        //! window machine
-        QString machine;
-
-        //! main widget
-        Ui_DetectWidget ui;
-
         //! invisible dialog used to grab mouse
-        KDialog* _grabber;
+        QDialog* _grabber;
 
         //! current window information
         KWindowInfo _info;
+
+        //! wm state atom
+        xcb_atom_t _wmStateAtom;
 
     };
 

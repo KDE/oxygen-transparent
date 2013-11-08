@@ -162,7 +162,7 @@ namespace Oxygen
     {
 
         // load decoration from plugin
-        KLibrary* library = new KLibrary(  QStringLiteral( "libkstyle_oxygen_transparent_config" ) );
+        KLibrary* library = new KLibrary( QStringLiteral( "libkstyle_oxygen_transparent_config" ) );
 
         if (library->load())
         {

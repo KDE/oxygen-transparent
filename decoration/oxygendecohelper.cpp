@@ -22,7 +22,6 @@
 
 #include <QPainter>
 #include <KColorUtils>
-#include <KDebug>
 
 #include <cmath>
 
@@ -30,10 +29,8 @@ namespace Oxygen
 {
 
     //______________________________________________________________________________
-    DecoHelper::DecoHelper(const QByteArray &componentName):
-        Helper(componentName),
-        _debugArea( KDebug::registerArea( "Oxygen (decoration)" ) )
-
+    DecoHelper::DecoHelper():
+        Helper()
     {}
 
     //______________________________________________________________________________

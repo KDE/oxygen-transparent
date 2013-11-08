@@ -82,4 +82,4 @@ endif()
 
 add_subdirectory(libs)
 add_subdirectory(style)
-# add_subdirectory(decoration)
+add_subdirectory(decoration)

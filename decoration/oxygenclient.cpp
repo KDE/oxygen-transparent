@@ -36,25 +36,22 @@
 
 #include <KLocalizedString>
 #include <KColorUtils>
-#include <KDebug>
 #include <KStyle>
 
 #include <QApplication>
+#include <QDrag>
 #include <QLabel>
 #include <QPainter>
 #include <QBitmap>
-#include <QX11Info>
 #include <QObjectList>
-
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
+#include <QMimeData>
 
 namespace Oxygen
 {
 
     //___________________________________________
     Client::Client(KDecorationBridge *b, Factory *f):
-        KCommonDecorationUnstable(b, f),
+        KCommonDecoration(b, f),
         _factory( f ),
         _sizeGrip( 0 ),
         _glowAnimation( new Animation( 200, this ) ),
@@ -67,7 +64,10 @@ namespace Oxygen
         _itemData( this ),
         _sourceItem( -1 ),
         _shadowAtom( 0 )
-    {}
+    {
+        connect(options(), &KDecorationOptions::compositingChanged, this, &Client::updateCompositing);
+        connect(options(), &KDecorationOptions::configChanged, this, &Client::updateConfig);
+    }
 
     //___________________________________________
     Client::~Client()
@@ -133,22 +133,24 @@ namespace Oxygen
         _initialized = true;
 
         // first reset is needed to store Oxygen configuration
-        reset(0);
+        updateConfig();
 
     }
 
     //___________________________________________
-    void Client::reset( unsigned long changed )
+    void Client::updateCompositing()
     {
-        KCommonDecorationUnstable::reset( changed );
-
         // update window mask when compositing is changed
         if( !_initialized ) return;
-        if( changed & SettingCompositing )
-        {
-            updateWindowShape();
-            widget()->update();
-        }
+        updateWindowShape();
+        widget()->update();
+        updateConfig();
+    }
+
+    //___________________________________________
+    void Client::updateConfig()
+    {
+        if( !_initialized ) return;
 
         _configuration = _factory->configuration( *this );
 
@@ -558,7 +560,7 @@ namespace Oxygen
                 // make sure button exists
                 if( !item._closeButton )
                 {
-                    item._closeButton = ClientGroupItemData::ButtonPointer( new Button( *this, "Close this tab", ButtonItemClose ) );
+                    item._closeButton = ClientGroupItemData::ButtonPointer( new Button( *this, QStringLiteral("Close this tab"), ButtonItemClose ) );
                     item._closeButton.data()->show();
                     item._closeButton.data()->installEventFilter( this );
                 }
@@ -1340,7 +1342,7 @@ namespace Oxygen
     void Client::activeChange( void )
     {
 
-        KCommonDecorationUnstable::activeChange();
+        KCommonDecoration::activeChange();
         _itemData.setDirty( true );
 
         // reset animation
@@ -1365,21 +1367,21 @@ namespace Oxygen
     void Client::maximizeChange( void  )
     {
         if( hasSizeGrip() ) sizeGrip().setVisible( !( isShade() || isMaximized() ) );
-        KCommonDecorationUnstable::maximizeChange();
+        KCommonDecoration::maximizeChange();
     }
 
     //_________________________________________________________
     void Client::shadeChange( void  )
     {
         if( hasSizeGrip() ) sizeGrip().setVisible( !( isShade() || isMaximized() ) );
-        KCommonDecorationUnstable::shadeChange();
+        KCommonDecoration::shadeChange();
     }
 
     //_________________________________________________________
     void Client::captionChange( void  )
     {
 
-        KCommonDecorationUnstable::captionChange();
+        KCommonDecoration::captionChange();
         _itemData.setDirty( true );
         if( titleAnimationsEnabled() )
         { _titleAnimationData->setDirty( true ); }
@@ -1431,7 +1433,7 @@ namespace Oxygen
 
     //_________________________________________________________
     QString Client::defaultButtonsRight() const
-    { return "HIAX"; }
+    { return QStringLiteral("HIAX"); }
 
     //________________________________________________________________
     void Client::updateWindowShape()
@@ -1500,7 +1502,7 @@ namespace Oxygen
             default: break;
 
         }
-        return state || KCommonDecorationUnstable::eventFilter( object, event );
+        return state || KCommonDecoration::eventFilter( object, event );
 
     }
 
@@ -1520,7 +1522,7 @@ namespace Oxygen
         { _pixmap = QPixmap( event->size() ); }
 
         // base class implementation
-        KCommonDecorationUnstable::resizeEvent( event );
+        KCommonDecoration::resizeEvent( event );
     }
 
     //_________________________________________________________
@@ -1863,7 +1865,7 @@ namespace Oxygen
 
             QDrag *drag = new QDrag( widget() );
             QMimeData *groupData = new QMimeData();
-            groupData->setData( tabDragMimeType(), QString().setNum( tabId(clickedIndex) ).toAscii() );
+            groupData->setData( tabDragMimeType(), QByteArray().setNum( (qint64) tabId(clickedIndex) ) );
             drag->setMimeData( groupData );
             _sourceItem = tabIndexAt( _dragPoint );
 
@@ -1888,7 +1890,7 @@ namespace Oxygen
             const int shadowSize( shadowCache().shadowSize() );
             const bool drawShadow(
                 compositingActive() &&
-                KStyle::customStyleHint( "SH_ArgbDndWindow", widget() ) &&
+                KStyle::customStyleHint( QStringLiteral("SH_ArgbDndWindow"), widget() ) &&
                 shadowSize > 0 );
 
             if( drawShadow )
@@ -2021,7 +2023,7 @@ namespace Oxygen
 
         if( widget() != event->source() ) setForceActive( true );
 
-        const long source = QString( groupData->data( tabDragMimeType() ) ).toLong();
+        const long source = QString::fromUtf8( groupData->data( tabDragMimeType() ) ).toLong();
         const int clickedIndex( tabIndexAt( point, true ) );
         if( clickedIndex < 0 ) tab_A_behind_B( source, tabId(_itemData.count()-1) );
         else tab_A_before_B( source, tabId(clickedIndex) );
@@ -2039,7 +2041,7 @@ namespace Oxygen
     {
 
         if( event->timerId() != _dragStartTimer.timerId() )
-        { return KCommonDecorationUnstable::timerEvent( event ); }
+        { return KCommonDecoration::timerEvent( event ); }
 
         _dragStartTimer.stop();
 
@@ -2175,9 +2177,9 @@ namespace Oxygen
 
         // create atom
         if( !_shadowAtom )
-        { _shadowAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_SHADOW", False); }
+        { _shadowAtom = helper().createAtom( QStringLiteral( "_KDE_NET_WM_SHADOW" ) ); }
 
-        XDeleteProperty(QX11Info::display(), windowId(), _shadowAtom);
+        xcb_delete_property( helper().xcbConnection(), (xcb_window_t) windowId(), _shadowAtom);
     }
 
 }

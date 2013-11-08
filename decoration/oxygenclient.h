@@ -41,13 +41,13 @@
 #include <QTextStream>
 #include <QTimerEvent>
 
-#include <X11/Xdefs.h>
+#include <xcb/xcb.h>
 
 namespace Oxygen
 {
 
     class SizeGrip;
-    class Client : public KCommonDecorationUnstable
+    class Client : public KCommonDecoration
     {
 
         Q_OBJECT
@@ -126,9 +126,6 @@ namespace Oxygen
 
         //! initialization
         virtual void init();
-
-        // reset
-        virtual void reset( unsigned long changed );
 
         //! return associated configuration
         Factory::ConfigurationPtr configuration( void ) const
@@ -439,6 +436,10 @@ namespace Oxygen
         //! bound one rect to another
         void boundRectTo( QRect&, const QRect& ) const;
 
+        private Q_SLOTS:
+        void updateCompositing();
+        void updateConfig();
+
         private:
 
         //! factory
@@ -491,7 +492,7 @@ namespace Oxygen
         QBasicTimer _dragStartTimer;
 
         //! shadow atom
-        Atom _shadowAtom;
+        xcb_atom_t _shadowAtom;
 
     };
 
