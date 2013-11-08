@@ -30,13 +30,11 @@
 #include "oxygenargbhelper.h"
 #include "oxygenargbhelper.moc"
 
-#include <QtGui/QDialog>
-#include <QtGui/QIcon>
+#include <QDialog>
+#include <QIcon>
 
-#ifdef Q_WS_X11
-#include <QtGui/QX11Info>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
+#ifdef HAVE_X11
+#include <QX11Info>
 #endif
 
 namespace Oxygen
@@ -51,10 +49,10 @@ namespace Oxygen
         _opacity( 0xff )
     {
 
-        #ifdef Q_WS_X11
+        #ifdef HAVE_X11
 
         // create atom
-        _xEmbedAtom = XInternAtom( QX11Info::display(), "_XEMBED_INFO", False);
+        _xEmbedAtom = _helper.createAtom( QStringLiteral( "_XEMBED_INFO" ) );
 
         #endif
 
@@ -65,13 +63,14 @@ namespace Oxygen
     {
 
         // get application full path
-        if( app->argc() < 1 ) return;
+        const QStringList arguments( app->arguments() );
+        if( arguments.isEmpty() ) return;
 
-        QString appName( app->argv()[0] );
-        int position( appName.lastIndexOf( '/' ) );
+        QString appName( arguments.at(0) );
+        int position( appName.lastIndexOf( QLatin1Char( '/' ) ) );
         if( position >= 0 ) appName.remove( 0, position+1 );
 
-        if( appName == "plasma" || appName.startsWith( "plasma-" ) )
+        if( appName == QStringLiteral( "plasma" ) || appName.startsWith( QStringLiteral("plasma-" ) ) )
         {
 
             /*
@@ -266,24 +265,22 @@ namespace Oxygen
     bool ArgbHelper::isXEmbed( QWidget* widget ) const
     {
 
-        #ifdef Q_WS_X11
+        #ifdef HAVE_X11
 
-        // QTextStream( stdout ) << "ArgbHelper::isXEmbed" << endl;
+        // get connection
+        xcb_connection_t* connection( QX11Info::connection() );
+        xcb_get_property_cookie_t cookie( xcb_get_property( connection, 0, widget->winId(), _xEmbedAtom, _xEmbedAtom, 0, 1) );
+        xcb_get_property_reply_t* reply( xcb_get_property_reply( connection, cookie, 0 ) );
 
-        Atom type = None;
-        int format = 0;
-        unsigned char *data = 0x0;
-        unsigned long count = 0;
-        unsigned long after = 0;
-        const int length = 32768;
-
-        // get window property
-        return XGetWindowProperty(
-            QX11Info::display(), widget->winId(), _xEmbedAtom,
-            0L, length, false, XA_ATOM, &type, &format, &count, &after, &data) == Success && data;
+        if( !reply ) return false;
+        const bool res( xcb_get_property_value_length(reply) > 0 );
+        free(reply);
+        return res;
 
         #else
+
         return false;
+
         #endif
 
     }

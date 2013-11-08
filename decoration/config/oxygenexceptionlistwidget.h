@@ -53,12 +53,12 @@ namespace Oxygen
         virtual bool isChanged( void ) const
         { return _changed; }
 
-        signals:
+        Q_SIGNALS:
 
         //! emitted when changed
         void changed( bool );
 
-        public slots:
+        public Q_SLOTS:
 
         //! toggle opacity from style, from 'default' configiration
         /*! this is needed to properly enable/disable the opacity toggle button in exception dialog */
@@ -75,7 +75,7 @@ namespace Oxygen
         ExceptionModel& model()
         { return _model; }
 
-        protected slots:
+        protected Q_SLOTS:
 
         //! update button states
         virtual void updateButtons( void );

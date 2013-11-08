@@ -28,14 +28,14 @@
 #include "oxygenblacklistmodel.h"
 #include "ui_oxygenblacklistdialog.h"
 
-#include <KDialog>
-#include <QtCore/QStringList>
+#include <QDialog>
+#include <QStringList>
 
 namespace Oxygen
 {
 
     //! oxygen black-listed applications list
-    class BlackListDialog: public KDialog
+    class BlackListDialog: public QDialog
     {
 
         Q_OBJECT
@@ -63,7 +63,7 @@ namespace Oxygen
 
         void resizeColumns( void ) const;
 
-        protected slots:
+        protected Q_SLOTS:
 
         //! toggle
         virtual void toggle( const QModelIndex& );
@@ -83,7 +83,7 @@ namespace Oxygen
         private:
 
         //! ui
-        Ui_OxygenBlackListWidget ui;
+        Ui::Dialog ui;
 
         //! model
         BlackListModel _model;

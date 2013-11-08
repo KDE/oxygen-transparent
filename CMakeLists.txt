@@ -70,12 +70,7 @@ find_package(X11 MODULE)
 if(X11_FOUND)
 
     find_package(Qt5X11Extras REQUIRED NO_MODULE)
-    include_directories( ${X11_X11_INCLUDE_PATH} )
-
     find_package(XCB REQUIRED COMPONENTS XCB)
-    #find_package(XCB REQUIRED)
-    #find_package(X11_XCB)
-
     add_definitions( -DHAVE_X11=${X11_FOUND} )
 
 endif()
@@ -87,4 +82,4 @@ endif()
 
 add_subdirectory(libs)
 add_subdirectory(style)
-add_subdirectory(decoration)
+# add_subdirectory(decoration)

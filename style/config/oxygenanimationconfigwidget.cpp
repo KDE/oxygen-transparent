@@ -31,10 +31,10 @@
 #include "oxygengenericanimationconfigitem.h"
 #include "oxygenstyleconfigdata.h"
 
-#include <QtGui/QButtonGroup>
-#include <QtGui/QHoverEvent>
-#include <QtCore/QTextStream>
-#include <KLocale>
+#include <QButtonGroup>
+#include <QHoverEvent>
+#include <QTextStream>
+#include <KLocalizedString>
 
 namespace Oxygen
 {

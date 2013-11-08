@@ -28,8 +28,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QMouseEvent>
+#include <QPaintEvent>
+#include <QMouseEvent>
 
 namespace Oxygen
 {
@@ -51,12 +51,12 @@ namespace Oxygen
         //! event filter
         virtual bool eventFilter( QObject*, QEvent* );
 
-        public slots:
+        public Q_SLOTS:
 
         //! update background color
         void activeChange( void );
 
-        protected slots:
+        protected Q_SLOTS:
 
         //! embed into parent widget
         void embed( void );

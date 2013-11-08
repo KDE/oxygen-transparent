@@ -26,11 +26,9 @@
 #include "oxygenanimationmodes.h"
 
 #include <KWindowSystem>
-#include <KDebug>
 
-#ifdef Q_WS_X11
-#include <QtGui/QX11Info>
-#include <X11/Xdefs.h>
+#if HAVE_X11
+#include <xcb/xcb.h>
 #endif
 
 //! helper class
@@ -53,14 +51,10 @@ namespace Oxygen
         public:
 
         //! constructor
-        explicit StyleHelper( const QByteArray &componentName );
+        explicit StyleHelper( void );
 
         //! destructor
         virtual ~StyleHelper() {}
-
-        //! dynamically allocated debug area
-        int debugArea( void ) const
-        { return _debugArea; }
 
         //! clear cache
         virtual void invalidateCaches();
@@ -217,9 +211,6 @@ namespace Oxygen
 
         private:
 
-        //! dynamically allocated debug area
-        int _debugArea;
-
         Cache<QPixmap> _dialSlabCache;
         Cache<QPixmap> _roundSlabCache;
         Cache<QPixmap> _sliderSlabCache;
@@ -243,10 +234,10 @@ namespace Oxygen
         TileSetCache _selectionCache;
         TileSetCache _progressBarCache;
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
 
-        //! background gradient hint atom
-        Atom _compositingManagerAtom;
+        //! atom used for compositing manager
+        xcb_atom_t _compositingManagerAtom;
 
         #endif
 
@@ -268,22 +259,7 @@ namespace Oxygen
 
     //____________________________________________________________________
     bool StyleHelper::hasAlphaChannel( const QWidget* widget ) const
-    {
-
-        #ifdef Q_WS_X11
-        if( compositingActive() )
-        {
-
-            if( widget ) return widget->x11Info().depth() == 32;
-            else return QX11Info().appDepth() == 32;
-
-        } else return false;
-
-        #else
-        return compositingActive();
-        #endif
-
-    }
+    { return compositingActive() && widget && widget->testAttribute( Qt::WA_TranslucentBackground ); }
 
 }
 #endif

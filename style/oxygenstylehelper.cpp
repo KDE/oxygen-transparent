@@ -23,34 +23,27 @@
 #include <KColorUtils>
 #include <KColorScheme>
 
-#include <QtGui/QPainter>
-#include <QtGui/QLinearGradient>
+#include <QLinearGradient>
+#include <QPainter>
+#include <QTextStream>
 
 #include <math.h>
 
-#ifdef Q_WS_X11
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
+#if HAVE_X11
+#include <QX11Info>
 #endif
 
 namespace Oxygen
 {
 
     //______________________________________________________________________________
-    StyleHelper::StyleHelper( const QByteArray &componentName ):
-        Helper( componentName ),
-        _debugArea( KDebug::registerArea( "Oxygen ( style )" ) )
+    StyleHelper::StyleHelper( void )
     {
 
-        #ifdef Q_WS_X11
-        // get display
-        Display *display = QX11Info::display();
-
+        #if HAVE_X11
         // create compositing screen
-        QByteArray buffer;
-        QTextStream( &buffer ) << "_NET_WM_CM_S" << DefaultScreen( display );
-        _compositingManagerAtom = XInternAtom( display, buffer.constData(), False);
-
+        QString atomName = QString::fromLatin1( "_NET_WM_CM_S%1" ).arg( QX11Info::appScreen() );
+        _compositingManagerAtom = createAtom( atomName );
         #endif
 
     }
@@ -648,9 +641,11 @@ namespace Oxygen
     //________________________________________________________________________________________________________
     bool StyleHelper::compositingActive( void ) const
     {
-        #ifdef Q_WS_X11
+        #if HAVE_X11
         // direct call to X
-        return XGetSelectionOwner( QX11Info::display(), _compositingManagerAtom ) != None;
+        xcb_get_selection_owner_cookie_t cookie( xcb_get_selection_owner( xcbConnection(), _compositingManagerAtom ) );
+        xcb_get_selection_owner_reply_t* reply( xcb_get_selection_owner_reply( xcbConnection(), cookie, 0 ) );
+        return reply && reply->owner;
         #else
         // use KWindowSystem
         return KWindowSystem::compositingActive();

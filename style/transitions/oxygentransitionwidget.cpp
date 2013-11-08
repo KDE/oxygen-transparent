@@ -27,12 +27,10 @@
 #include "oxygentransitionwidget.h"
 #include "oxygentransitionwidget.moc"
 
-#include <cassert>
-#include <QtGui/QPainter>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QStyleOption>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTextStream>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QStyleOption>
+#include <QTextStream>
 
 namespace Oxygen
 {
@@ -85,7 +83,7 @@ namespace Oxygen
 
             rect = rect.translated( widget->mapTo( widget->window(), widget->rect().topLeft() ) );
             widget = widget->window();
-            out = QPixmap::grabWidget( widget, rect );
+            out = widget->grab( rect );
 
         } else {
 
@@ -235,9 +233,8 @@ namespace Oxygen
             option.rect.translate( widget->mapTo( parent, rect.topLeft() ) );
             p.translate(-option.rect.topLeft());
             parent->style()->drawPrimitive ( QStyle::PE_Widget, &option, &p, parent );
+            p.translate(option.rect.topLeft());
         }
-
-        p.end();
 
         // draw all widgets in parent list
         // backward
@@ -245,11 +242,11 @@ namespace Oxygen
         for( int i = widgets.size() - 1; i>=0; i-- )
         {
             QWidget* w = widgets.at(i);
-            QPainter::setRedirected( w, &pixmap, widget->mapTo(w, rect.topLeft() ) );
-            event = QPaintEvent(QRect( QPoint(), rect.size()));
-            QCoreApplication::sendEvent(w, &event);
-            QPainter::restoreRedirected(w);
+            w->render( &p, -widget->mapTo( w, rect.topLeft() ), rect, 0 );
         }
+        
+        // end
+        p.end();
 
     }
 

@@ -31,10 +31,10 @@
 
 #include <KComboBox>
 
-#include <QtCore/QWeakPointer>
-#include <QtGui/QFrame>
-#include <QtGui/QLabel>
-#include <QtGui/QSpinBox>
+#include <QPointer>
+#include <QFrame>
+#include <QLabel>
+#include <QSpinBox>
 
 class Ui_FollowMouseAnimationConfigBox;
 
@@ -65,7 +65,7 @@ namespace Oxygen
         //! follow mouse duration spinbox
         QSpinBox* followMouseDurationSpinBox( void ) const;
 
-        protected slots:
+        protected Q_SLOTS:
 
         //! type changed
         void typeChanged( int );
@@ -95,7 +95,7 @@ namespace Oxygen
         //! configuration widget
         virtual QWidget* configurationWidget( void ) const
         {
-            assert( _configurationWidget );
+            Q_CHECK_PTR( _configurationWidget );
             return _configurationWidget.data();
         }
 
@@ -121,7 +121,7 @@ namespace Oxygen
             }
         }
 
-        public slots:
+        public Q_SLOTS:
 
         //! type
         virtual void setType( int value )
@@ -147,7 +147,7 @@ namespace Oxygen
         private:
 
         //! configuration widget
-        QWeakPointer<FollowMouseAnimationConfigBox> _configurationWidget;
+        QPointer<FollowMouseAnimationConfigBox> _configurationWidget;
 
     };
 

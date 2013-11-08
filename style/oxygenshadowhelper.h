@@ -29,12 +29,12 @@
 
 #include "oxygentileset.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QPointer>
-#include <QtCore/QMap>
+#include <QObject>
+#include <QPointer>
+#include <QMap>
 
-#ifdef Q_WS_X11
-#include <X11/Xdefs.h>
+#if HAVE_X11
+#include <xcb/xcb.h>
 #endif
 
 namespace Oxygen
@@ -78,7 +78,7 @@ namespace Oxygen
         //! event filter
         virtual bool eventFilter( QObject*, QEvent* );
 
-        protected slots:
+        protected Q_SLOTS:
 
         //! unregister widget
         void objectDeleted( QObject* );
@@ -109,10 +109,10 @@ namespace Oxygen
         { return *_shadowCache; }
 
         // create pixmap handles from tileset
-        const QVector<Qt::HANDLE>& createPixmapHandles( bool isDockWidget );
+        const QVector<uint32_t>& createPixmapHandles( bool isDockWidget );
 
         // create pixmap handle from pixmap
-        Qt::HANDLE createPixmap( const QPixmap& ) const;
+        uint32_t createPixmap( const QPixmap& );
 
         //! install shadow X11 property on given widget
         /*!
@@ -123,9 +123,6 @@ namespace Oxygen
 
         //! uninstall shadow X11 property on given widget
         void uninstallX11Shadows( QWidget* ) const;
-
-        //! uninstall shadow X11 property on given window
-        void uninstallX11Shadows( WId ) const;
 
         private:
 
@@ -149,16 +146,21 @@ namespace Oxygen
 
         //!@name pixmaps
         //@{
-        QVector<Qt::HANDLE> _pixmaps;
-        QVector<Qt::HANDLE> _dockPixmaps;
+        QVector<uint32_t> _pixmaps;
+        QVector<uint32_t> _dockPixmaps;
         //@}
 
         //! shadow size
         int _size;
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
+
+        //! graphical context
+        xcb_gcontext_t _gc;
+
         //! shadow atom
-        Atom _atom;
+        xcb_atom_t _atom;
+
         #endif
 
     };

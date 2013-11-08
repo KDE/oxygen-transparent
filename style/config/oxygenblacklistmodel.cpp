@@ -24,57 +24,58 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "oxygenblacklistmodel.h"
-#include <KLocale>
+
+#include <KLocalizedString>
 #include <KLineEdit>
 
 namespace Oxygen
 {
-    
+
     //_______________________________________________
     const QString BlackListModel::columnTitles_[ BlackListModel::nColumns ] =
-    { 
-        "",
-        i18n("Application Name") 
+    {
+        QString(),
+        i18n("Application Name")
     };
-    
+
     //__________________________________________________________________
     QVariant BlackListModel::data( const QModelIndex& index, int role ) const
     {
-        
+
         // check index, role and column
         if( !index.isValid() ) return QVariant();
-        
+
         // retrieve associated file info
         const BlackListPair& pair( get(index) );
-        
+
         // return text associated to file and column
-        if( index.column() == NAME ) 
+        if( index.column() == NAME )
         {
-            
+
             if( role == Qt::DisplayRole ) return pair.first;
 
         } else if( index.column() == ENABLED ) {
-        
+
             if( role == Qt::CheckStateRole ) return pair.second ? Qt::Checked : Qt::Unchecked;
-        
+
         }
-        
+
         return QVariant();
     }
-    
+
     //__________________________________________________________________
     bool BlackListModel::setData(const QModelIndex &index, const QVariant& value, int role )
     {
 
         if( !(index.isValid() && index.column() == NAME && role == Qt::EditRole ) ) return false;
-        BlackListPair &pair( get(index) );        
+        BlackListPair &pair( get(index) );
         pair.first = value.toString();
         add( pair );
-        
+
         return true;
-        
+
     }
-    
+
     //__________________________________________________________________
     Qt::ItemFlags BlackListModel::flags(const QModelIndex &index) const
     {
@@ -82,15 +83,15 @@ namespace Oxygen
         else if( index.column() == ENABLED ) return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
         else return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     }
-    
+
     //____________________________________________________________
     void BlackListModel::privateSort( int column, Qt::SortOrder order )
     { std::sort( _get().begin(), _get().end(), SortFTor( (ColumnType) column, order ) ); }
-    
+
     //________________________________________________________
     bool BlackListModel::SortFTor::operator () ( BlackListPair first, BlackListPair second ) const
     {
-        
+
         if( _order == Qt::AscendingOrder ) std::swap( first, second );
         switch( _type )
         {
@@ -98,9 +99,9 @@ namespace Oxygen
             case ENABLED: return first.second < second.second;
             default: return true;
         }
-        
-    }  
-    
+
+    }
+
     //______________________________________________________________
     QWidget* Delegate::createEditor( QWidget* parent, const QStyleOptionViewItem&, const QModelIndex& ) const
     {
@@ -108,7 +109,7 @@ namespace Oxygen
         editor->setFrame( false );
         return editor;
     }
-    
+
     //______________________________________________________________
     void Delegate::setEditorData(QWidget *widget, const QModelIndex &index) const
     {
@@ -116,7 +117,7 @@ namespace Oxygen
         KLineEdit *editor = static_cast<KLineEdit*>(widget);
         editor->setText( text );
     }
-    
+
     //______________________________________________________________
     void Delegate::setModelData(QWidget *widget, QAbstractItemModel *model, const QModelIndex &index) const
     {
@@ -124,5 +125,5 @@ namespace Oxygen
         QString value( editor->text() );
         model->setData( index, value, Qt::EditRole);
     }
-        
+
 }

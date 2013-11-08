@@ -26,35 +26,32 @@
 #include "oxygenblacklistdialog.h"
 #include "oxygenblacklistdialog.moc"
 
-#include <KIconLoader>
+#include <KLocalizedString>
 #include <KMessageBox>
-#include <QtCore/QTextStream>
+
+#include <QIcon>
+#include <QTextStream>
 
 namespace Oxygen
 {
 
     //___________________________________________
     BlackListDialog::BlackListDialog( QWidget* parent ):
-        KDialog( parent )
+        QDialog( parent )
     {
 
         setWindowTitle( i18n( "Exceptions - Oxygen Settings" ) );
 
-        // define buttons
-        setButtons( Ok|Cancel );
-        QWidget* local( new QWidget( this ) );
-
         // setup ui
-        ui.setupUi( local );
+        ui.setupUi( this );
         ui.listView->setModel( &_model );
         ui.listView->sortByColumn( BlackListModel::NAME );
         ui.listView->setItemDelegate( new Delegate( this ) );
 
         // set icons
-        KIconLoader* icon_loader = KIconLoader::global();
-        ui.addButton->setIcon( KIcon( "list-add", icon_loader ) );
-        ui.removeButton->setIcon( KIcon( "list-remove", icon_loader ) );
-        ui.editButton->setIcon( KIcon( "edit-rename", icon_loader ) );
+        ui.addButton->setIcon( QIcon::fromTheme( QStringLiteral( "list-add" ) ) );
+        ui.removeButton->setIcon( QIcon::fromTheme( QStringLiteral( "list-remove" ) ) );
+        ui.editButton->setIcon( QIcon::fromTheme( QStringLiteral( "edit-rename" ) ) );
 
         // connections
         connect( ui.listView, SIGNAL( clicked( const QModelIndex& ) ), SLOT( toggle( const QModelIndex& ) ) );
@@ -64,8 +61,6 @@ namespace Oxygen
         connect( ui.editButton, SIGNAL( clicked() ), SLOT( edit() ) );
 
         updateButtons();
-
-        setMainWidget( local );
 
     }
 
@@ -174,7 +169,7 @@ namespace Oxygen
     void BlackListDialog::add( void )
     {
 
-        BlackListPair pair( "", true );
+        BlackListPair pair( QString(), true );
         _model.add( pair );
         QModelIndex index( _model.index( pair ) );
         if( !index.isValid() ) return;

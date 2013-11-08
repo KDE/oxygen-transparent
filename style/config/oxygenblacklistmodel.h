@@ -27,8 +27,8 @@
 
 #include "oxygenlistmodel.h"
 
-#include <QtCore/QString>
-#include <QtGui/QStyledItemDelegate>
+#include <QString>
+#include <QStyledItemDelegate>
 
 namespace Oxygen
 {

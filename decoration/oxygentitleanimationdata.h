@@ -34,7 +34,7 @@
 #include <QWeakPointer>
 #include <QBasicTimer>
 #include <QTimerEvent>
-#include <QtGui/QPixmap>
+#include <QPixmap>
 
 
 namespace Oxygen
@@ -154,7 +154,7 @@ namespace Oxygen
         bool isDirty( void ) const
         { return _dirty; }
 
-        signals:
+        Q_SIGNALS:
 
         void pixmapsChanged( void );
 

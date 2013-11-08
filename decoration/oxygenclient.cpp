@@ -41,9 +41,9 @@
 
 #include <QApplication>
 #include <QLabel>
-#include <QtGui/QPainter>
-#include <QtGui/QBitmap>
-#include <QtGui/QX11Info>
+#include <QPainter>
+#include <QBitmap>
+#include <QX11Info>
 #include <QObjectList>
 
 #include <X11/Xlib.h>

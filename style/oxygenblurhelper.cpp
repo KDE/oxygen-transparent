@@ -33,16 +33,10 @@
 #include "oxygenpropertynames.h"
 #include "oxygenstyleconfigdata.h"
 
-#include <QtCore/QEvent>
-#include <QtCore/QVector>
-#include <QtGui/QProgressBar>
-#include <QtGui/QPushButton>
-
-#ifdef Q_WS_X11
-#include <QtGui/QX11Info>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#endif
+#include <QEvent>
+#include <QVector>
+#include <QProgressBar>
+#include <QPushButton>
 
 namespace Oxygen
 {
@@ -54,11 +48,11 @@ namespace Oxygen
         _enabled( false )
     {
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
 
         // create atom
-        _blurAtom = XInternAtom( QX11Info::display(), "_KDE_NET_WM_BLUR_BEHIND_REGION", False);
-        _opaqueAtom = XInternAtom( QX11Info::display(), "_NET_WM_OPAQUE_REGION", False);
+        _blurAtom = _helper.createAtom( QStringLiteral( "_KDE_NET_WM_BLUR_BEHIND_REGION" ) );
+        _opaqueAtom = _helper.createAtom( QStringLiteral( "_NET_WM_OPAQUE_REGION" ) );
 
         #endif
 
@@ -220,7 +214,7 @@ namespace Oxygen
     void BlurHelper::update( QWidget* widget ) const
     {
 
-        #ifdef Q_WS_X11
+        #if HAVE_X11
 
         /*
         directly from bespin code. Supposibly prevent playing with some 'pseudo-widgets'
@@ -237,13 +231,11 @@ namespace Oxygen
 
         } else {
 
-            QVector<unsigned long> data;
+            QVector<uint32_t> data;
             foreach( const QRect& rect, blurRegion.rects() )
             { data << rect.x() << rect.y() << rect.width() << rect.height(); }
 
-            XChangeProperty(
-                QX11Info::display(), widget->winId(), _blurAtom, XA_CARDINAL, 32, PropModeReplace,
-                reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
+            xcb_change_property( _helper.xcbConnection(), XCB_PROP_MODE_REPLACE, widget->winId(), _blurAtom, XCB_ATOM_CARDINAL, 32, data.size(), data.constData() );
 
             if( ! widget->inherits( "Konsole::MainWindow" ) )
             {
@@ -251,15 +243,20 @@ namespace Oxygen
                 foreach( const QRect& rect, opaqueRegion.rects() )
                 { data << rect.x() << rect.y() << rect.width() << rect.height(); }
 
-                XChangeProperty(
-                    QX11Info::display(), widget->winId(), _opaqueAtom, XA_CARDINAL, 32, PropModeReplace,
-                    reinterpret_cast<const unsigned char *>(data.constData()), data.size() );
+                xcb_change_property( _helper.xcbConnection(), XCB_PROP_MODE_REPLACE, widget->winId(), _opaqueAtom, XCB_ATOM_CARDINAL, 32, data.size(), data.constData() );
             }
+
+            xcb_flush( _helper.xcbConnection() );
+
         }
 
         // force update
         if( widget->isVisible() )
         { widget->update(); }
+
+        #else
+
+        Q_UNUSED( widget )
 
         #endif
 
@@ -269,9 +266,11 @@ namespace Oxygen
     //___________________________________________________________
     void BlurHelper::clear( QWidget* widget ) const
     {
-        #ifdef Q_WS_X11
-        XDeleteProperty( QX11Info::display(), widget->winId(), _blurAtom );
-        XDeleteProperty( QX11Info::display(), widget->winId(), _opaqueAtom );
+        #if HAVE_X11
+        xcb_delete_property( _helper.xcbConnection(), widget->winId(), _blurAtom );
+        xcb_delete_property( _helper.xcbConnection(), widget->winId(), _opaqueAtom );
+        #else
+        Q_UNUSED( widget )
         #endif
 
     }

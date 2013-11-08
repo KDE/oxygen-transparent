@@ -1,9 +1,19 @@
-
 project(kstyle-oxygen-transparent)
 
-add_subdirectory( config )
+################# X11 #################
+add_definitions( -DHAVE_X11=${X11_FOUND} )
 
-include_directories (animations debug transitions ../libs/)
+if(X11_FOUND)
+    # FIXME: remove when upstream CMakeLists is fixed
+    find_package(XCB REQUIRED)
+endif()
+
+################# includes #################
+include_directories(
+    animations
+    debug
+    transitions
+)
 
 ########### next target ###############
 
@@ -64,18 +74,24 @@ set(oxygen_transparent_PART_SRCS
     oxygenwindowmanager.cpp
 )
 
-kde4_add_kcfg_files(oxygen_transparent_PART_SRCS oxygenstyleconfigdata.kcfgc)
+kconfig_add_kcfg_files(oxygen_transparent_PART_SRCS oxygenstyleconfigdata.kcfgc)
 
-kde4_add_plugin(oxygen_transparent ${oxygen_transparent_PART_SRCS})
+add_library(oxygen_transparent MODULE ${oxygen_transparent_PART_SRCS})
 
-target_link_libraries(oxygen_transparent  ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} oxygentransparentstyle)
+target_link_libraries(oxygen_transparent Qt5::Core Qt5::Gui Qt5::Widgets Qt5::DBus)
+target_link_libraries(oxygen_transparent KF5::KConfigCore KF5::KConfigGui KF5::KConfigWidgets KF5::KGuiAddons KF5::KIconThemes KF5::KWindowSystem)
+target_link_libraries(oxygen_transparent oxygentransparentstyle)
 
-if ( X11_FOUND )
-   target_link_libraries(oxygen_transparent ${X11_LIBRARIES})
-endif( X11_FOUND )
+if(X11_FOUND)
+  target_link_libraries(oxygen_transparent ${XCB_XCB_LIBRARIES} )
+  target_link_libraries(oxygen_transparent Qt5::X11Extras)
+endif(X11_FOUND)
 
-install(TARGETS oxygen_transparent  DESTINATION ${PLUGIN_INSTALL_DIR}/plugins/styles/ )
+install(TARGETS oxygen_transparent DESTINATION ${QT_PLUGIN_INSTALL_DIR}/styles/ )
 
 ########### install files ###############
 
 install( FILES oxygen_transparent.themerc  DESTINATION  ${DATA_INSTALL_DIR}/kstyle/themes )
+
+########### subdirectories ###############
+add_subdirectory( config )

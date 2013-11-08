@@ -31,23 +31,21 @@
 #include "oxygenpropertynames.h"
 #include "oxygenstyleconfigdata.h"
 
-#include <QtGui/QAbstractItemView>
-#include <QtGui/QComboBox>
-#include <QtGui/QDial>
-#include <QtGui/QHeaderView>
-#include <QtGui/QLineEdit>
-#include <QtGui/QMainWindow>
-#include <QtGui/QMdiSubWindow>
-#include <QtGui/QScrollBar>
-#include <QtGui/QSpinBox>
-#include <QtGui/QSplitterHandle>
-#include <QtGui/QTextEdit>
-#include <QtGui/QToolBar>
-#include <QtGui/QToolBox>
-#include <QtGui/QToolButton>
-#include <QtGui/QGroupBox>
-
-#include <KDebug>
+#include <QAbstractItemView>
+#include <QComboBox>
+#include <QDial>
+#include <QHeaderView>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QMdiSubWindow>
+#include <QScrollBar>
+#include <QSpinBox>
+#include <QSplitterHandle>
+#include <QTextEdit>
+#include <QToolBar>
+#include <QToolBox>
+#include <QToolButton>
+#include <QGroupBox>
 
 namespace Oxygen
 {
@@ -250,7 +248,7 @@ namespace Oxygen
         if( propertyValue.isValid() && propertyValue.toBool() ) return;
 
         // these are needed to not register animations for kwin widgets
-        if( widget->objectName() == "decoration widget" ) return;
+        if( widget->objectName() == QStringLiteral( "decoration widget" ) ) return;
         if( widget->inherits( "KCommonDecorationButton" ) ) return;
         if( widget->inherits( "QShapedPixmapWidget" ) ) return;
 

@@ -33,17 +33,15 @@ DEALINGS IN THE SOFTWARE.
 #include "oxygenanimationconfigwidget.h"
 #include "oxygenstyleconfigdata.h"
 
-#include <QtCore/QPointer>
-#include <QtCore/QTextStream>
-#include <QtDBus/QDBusMessage>
-#include <QtDBus/QDBusConnection>
+#include <QPointer>
+#include <QTextStream>
+#include <QDBusMessage>
+#include <QDBusConnection>
 
-#include <KGlobal>
-#include <KLocale>
+#include <KLocalizedString>
 #include <KSharedConfig>
 #include <KConfigGroup>
 #include <kdemacros.h>
-#include <KDialog>
 
 #define SCROLLBAR_DEFAULT_WIDTH 15
 #define SCROLLBAR_MINIMUM_WIDTH 10
@@ -52,10 +50,7 @@ DEALINGS IN THE SOFTWARE.
 extern "C"
 {
     KDE_EXPORT QWidget* allocate_kstyle_config(QWidget* parent)
-    {
-        KGlobal::locale()->insertCatalog("oxygen_transparent");
-        return new Oxygen::StyleConfig(parent);
-    }
+    { return new Oxygen::StyleConfig(parent); }
 }
 
 namespace Oxygen
@@ -67,8 +62,6 @@ namespace Oxygen
         _expertMode( false ),
         _animationConfigWidget(0)
     {
-        KGlobal::locale()->insertCatalog("oxygen_transparent");
-
         setupUi(this);
 
         // connections
@@ -76,7 +69,7 @@ namespace Oxygen
         connect( _expertModeButton, SIGNAL(pressed()), SLOT(toggleExpertModeInternal()) );
         connect( _exceptionsButton, SIGNAL(clicked()), SLOT(editExceptions()) );
 
-        _expertModeButton->setIcon( KIcon("configure") );
+        _expertModeButton->setIcon( QIcon::fromTheme( QStringLiteral( "configure" ) ) );
 
         // toggle expert mode
         toggleExpertModeInternal( false );
@@ -158,7 +151,7 @@ namespace Oxygen
         StyleConfigData::self()->writeConfig();
 
         // emit dbus signal
-        QDBusMessage message( QDBusMessage::createSignal("/OxygenStyle",  "org.kde.Oxygen.Style", "reparseConfiguration") );
+        QDBusMessage message( QDBusMessage::createSignal( QStringLiteral( "/OxygenStyle" ),  QStringLiteral( "org.kde.Oxygen.Style" ), QStringLiteral( "reparseConfiguration" ) ) );
         QDBusConnection::sessionBus().send(message);
 
     }
@@ -224,6 +217,7 @@ namespace Oxygen
         _animationsEnabled->setVisible( !_expertMode );
         _cacheEnabled->setVisible( _expertMode );
         _generalExpertWidget->setVisible( _expertMode );
+        _useWMMoveResize->setVisible( _expertMode );
         _viewsExpertWidget->setVisible( _expertMode );
 
         updateMinimumSize();

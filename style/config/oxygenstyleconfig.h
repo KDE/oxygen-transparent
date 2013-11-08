@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "ui_oxygenstyleconfig.h"
 
-#include <QtCore/QStringList>
+#include <QStringList>
 
 namespace Oxygen
 {

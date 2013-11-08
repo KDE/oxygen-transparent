@@ -32,14 +32,14 @@
 
 #include "oxygenstylehelper.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QSet>
-#include <QtCore/QStringList>
-#include <QtGui/QApplication>
-#include <QtGui/QWidget>
+#include <QObject>
+#include <QSet>
+#include <QStringList>
+#include <QApplication>
+#include <QWidget>
 
-#ifdef Q_WS_X11
-#include <X11/Xdefs.h>
+#ifdef HAVE_X11
+#include <xcb/xcb.h>
 #endif
 
 namespace Oxygen
@@ -119,7 +119,7 @@ namespace Oxygen
         //! event filter
         virtual bool eventFilter( QObject*, QEvent*  );
 
-        protected slots:
+        protected Q_SLOTS:
 
         //! unregister transparent widget
         void unregisterTransparentWidget( QObject* object )
@@ -155,10 +155,10 @@ namespace Oxygen
         ObjectSet _transparentWidgets;
 
 
-        #ifdef Q_WS_X11
+        #ifdef HAVE_X11
 
         //! XEmbed atom
-        Atom _xEmbedAtom;
+        xcb_atom_t _xEmbedAtom;
 
         #endif
 

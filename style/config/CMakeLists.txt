@@ -1,7 +1,6 @@
-include_directories( ${KDE4_KDEUI_INCLUDES} )
+# include_directories( ${KDE4_KDEUI_INCLUDES} )
 
 ########### next target ###############
-
 set(kstyle_oxygen_config_PART_SRCS
     oxygenanimationconfigwidget.cpp
     oxygenblacklistmodel.cpp
@@ -10,35 +9,41 @@ set(kstyle_oxygen_config_PART_SRCS
     oxygenstyleconfig.cpp
 )
 
-kde4_add_kcfg_files(kstyle_oxygen_config_PART_SRCS ../oxygenstyleconfigdata.kcfgc)
+kconfig_add_kcfg_files(kstyle_oxygen_config_PART_SRCS ../oxygenstyleconfigdata.kcfgc)
 
-kde4_add_ui_files(kstyle_oxygen_config_PART_SRCS
+set( kstyle_oxygen_config_PART_FORMS
     ui/oxygenblacklistdialog.ui
     ui/oxygenfollowmouseanimationconfigbox.ui
     ui/oxygenstyleconfig.ui
 )
 
-kde4_add_plugin(kstyle_oxygen_transparent_config ${kstyle_oxygen_config_PART_SRCS})
+qt5_wrap_ui(kstyle_oxygen_config_PART_FORMS_HEADERS ${kstyle_oxygen_config_PART_FORMS})
 
-target_link_libraries(
-    kstyle_oxygen_transparent_config
-    ${KDE4_KDEUI_LIBS}
-    oxygentransparentstyle
-    oxygentransparentstyleconfig )
+add_library(kstyle_oxygen_transparent_config
+    ${kstyle_oxygen_config_PART_SRCS}
+    ${kstyle_oxygen_config_PART_FORMS_HEADERS}
+)
 
-install(TARGETS kstyle_oxygen_transparent_config  DESTINATION ${PLUGIN_INSTALL_DIR} )
+target_link_libraries(kstyle_oxygen_transparent_config Qt5::Core Qt5::Gui Qt5::Widgets Qt5::DBus)
+target_link_libraries(kstyle_oxygen_transparent_config KF5::KConfigCore KF5::KConfigGui KF5::KCompletion KF5::KGuiAddons KF5::KI18n )
+target_link_libraries(kstyle_oxygen_transparent_config oxygentransparentstyle oxygentransparentstyleconfig)
+
+install(TARGETS kstyle_oxygen_transparent_config DESTINATION ${QT_PLUGIN_INSTALL_DIR}/kf5 )
 
 ########### next target ###############
 set( oxygen_settings_SOURCES
     oxygenconfigdialog.cpp
     main.cpp)
 
-kde4_add_executable( oxygen-transparent-settings ${oxygen_settings_SOURCES} )
+set(oxygen_settings_FORMS ui/oxygenconfigdialog.ui)
+qt5_wrap_ui(oxygen_settings_FORMS_HEADERS ${oxygen_settings_FORMS})
 
-target_link_libraries( oxygen-transparent-settings
-    ${KDE4_KDEUI_LIBS}
-    ${QT_QTCORE_LIBRARY}
-    ${QT_QTGUI_LIBRARY})
+add_executable(oxygen-transparent-settings
+    ${oxygen_settings_SOURCES}
+    ${oxygen_settings_FORMS_HEADERS}
+)
 
-########### install files ###############
+target_link_libraries(oxygen-transparent-settings Qt5::Core Qt5::Gui Qt5::Widgets)
+target_link_libraries(oxygen-transparent-settings KF5::KConfigCore KF5::KConfigGui KF5::KService KF5::KGuiAddons KF5::KWidgetsAddons KF5::KI18n )
+
 install (TARGETS oxygen-transparent-settings ${INSTALL_TARGETS_DEFAULT_ARGS} )

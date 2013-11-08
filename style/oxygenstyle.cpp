@@ -23,7 +23,7 @@
 // ( c ) 2002,2003 Maksim Orlovich <mo002j@mail.rochester.edu>
 // based on the KDE3 HighColor Style
 // Copyright ( C ) 2001-2002 Karol Szwed <gallium@kde.org>
-// ( C ) 2001-2002 Fredrik HÃ¶glund <fredrik@kde.org>
+// ( C ) 2001-2002 Fredrik Höglund <fredrik@kde.org>
 // Drawing routines adapted from the KDE2 HCStyle,
 // Copyright ( C ) 2000 Daniel M. Duley <mosfet@kde.org>
 // ( C ) 2000 Dirk Mueller <mueller@kde.org>
@@ -62,80 +62,111 @@
 #include "oxygenwidgetexplorer.h"
 #include "oxygenwindowmanager.h"
 
-#include <QtCore/QDebug>
-#include <QtGui/QAbstractButton>
-#include <QtGui/QAbstractItemView>
-#include <QtGui/QApplication>
-#include <QtGui/QCheckBox>
-#include <QtGui/QComboBox>
-#include <QtGui/QDial>
-#include <QtGui/QDialogButtonBox>
-#include <QtGui/QDockWidget>
-#include <QtGui/QDoubleSpinBox>
-#include <QtGui/QFormLayout>
-#include <QtGui/QFrame>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGroupBox>
-#include <QtGui/QLayout>
-#include <QtGui/QLineEdit>
-#include <QtGui/QMainWindow>
-#include <QtGui/QMdiSubWindow>
-#include <QtGui/QPushButton>
-#include <QtGui/QRadioButton>
-#include <QtGui/QScrollBar>
-#include <QtGui/QSpinBox>
-#include <QtGui/QSplitterHandle>
-#include <QtGui/QStylePlugin>
-#include <QtGui/QStyleOption>
-#include <QtGui/QTextEdit>
-#include <QtGui/QToolBar>
-#include <QtGui/QToolBox>
-#include <QtGui/QToolButton>
+#include <QDebug>
+#include <QAbstractButton>
+#include <QAbstractItemView>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDBusConnection>
+#include <QDial>
+#include <QDialogButtonBox>
+#include <QDockWidget>
+#include <QDoubleSpinBox>
+#include <QFormLayout>
+#include <QFrame>
+#include <QGraphicsView>
+#include <QGroupBox>
+#include <QLayout>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QMdiSubWindow>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QScrollBar>
+#include <QSpinBox>
+#include <QSplitterHandle>
+#include <QStylePlugin>
+#include <QStyleOption>
+#include <QTextEdit>
+#include <QToolBar>
+#include <QToolBox>
+#include <QToolButton>
 
-#include <QtDBus/QDBusConnection>
+#include <QDBusConnection>
 
 #include <KColorUtils>
-#include <KGlobal>
-#include <KGlobalSettings>
 #include <KIconLoader>
-#include <KIcon>
 #include <kdeversion.h>
 
 #include <cmath>
 
-/* These are to link libkio even if 'smart' linker is used */
-#include <kio/authinfo.h>
-extern "C" KIO::AuthInfo* _oxygen_init_kio() { return new KIO::AuthInfo(); }
-
-
-//_____________________________________________
-// style plugin
-namespace Oxygen
+namespace OxygenPrivate
 {
-    //! style plugin
-    class StylePlugin : public QStylePlugin
+
+    /*!
+    tabBar data class needed for
+    the rendering of tabbars when
+    one tab is being drawn
+    */
+    class TabBarData: public QObject
     {
+
         public:
 
-        //! returns list of valid keys
-        QStringList keys() const
-        { return QStringList( QLatin1String( "Oxygen Transparent" ) ); }
+        //! constructor
+        explicit TabBarData( Oxygen::Style* parent ):
+            QObject( parent ),
+            _style( parent ),
+            _dirty( false )
+        {}
 
-        //! create style
-        QStyle *create( const QString &key )
-        {
+        //! destructor
+        virtual ~TabBarData( void )
+        {}
 
-            if( key.toLower() == QLatin1String( "oxygen transparent" ) ) return new Style;
-            else return NULL;
-        }
+        //! assign target tabBar
+        void lock( const QWidget* widget )
+        { _tabBar = widget; }
+
+        //! true if tabbar is locked
+        bool locks( const QWidget* widget ) const
+        { return _tabBar && _tabBar.data() == widget; }
+
+        //! set dirty
+        void setDirty( const bool& value = true )
+        { _dirty = value; }
+
+        //! release
+        void release( void )
+        { _tabBar.clear(); }
+
+        //! draw tabBarBase
+        virtual void drawTabBarBaseControl( const QStyleOptionTab*, QPainter*, const QWidget* );
+
+        private:
+
+        //! pointer to parent style object
+        QPointer<const Oxygen::Style> _style;
+
+        //! pointer to target tabBar
+        QPointer<const QWidget> _tabBar;
+
+        //! if true, will paint on next TabBarTabShapeControlCall
+        bool _dirty;
+
     };
 
 }
 
-Q_EXPORT_PLUGIN2( oxygen-qt, Oxygen::StylePlugin )
-
 namespace Oxygen
 {
+    //_________________________________________________
+    QStyle* Oxygen::StylePlugin::create( const QString &key )
+    {
+        if( key.toLower() == QStringLiteral( "oxygen transparent" ) ) return new Style();
+        else return 0;
+    }
 
     // hardcoded index offsets for custom widgets
     // copied from e.g. kstyle.cxx
@@ -164,7 +195,7 @@ namespace Oxygen
         _subLineButtons( SingleButton ),
         _singleButtonHeight( 14 ),
         _doubleButtonHeight( 28 ),
-        _helper( new StyleHelper( "oxygen" ) ),
+        _helper( new StyleHelper() ),
         _shadowHelper( new ShadowHelper( this, *_helper ) ),
         _animations( new Animations( this ) ),
         _transitions( new Transitions( this ) ),
@@ -176,21 +207,24 @@ namespace Oxygen
         _argbHelper( new ArgbHelper( this, helper() ) ),
         _blurHelper( new BlurHelper( this, helper() ) ),
         _widgetExplorer( new WidgetExplorer( this ) ),
-        _tabBarData( new TabBarData( this ) ),
+        _tabBarData( new OxygenPrivate::TabBarData( this ) ),
         _splitterFactory( new SplitterFactory( this ) ),
         _frameFocusPrimitive( 0 ),
         _tabBarTabShapeControl( 0 ),
         _hintCounter( X_KdeBase+1 ),
         _controlCounter( X_KdeBase ),
         _subElementCounter( X_KdeBase ),
-        SH_ArgbDndWindow( newStyleHint( "SH_ArgbDndWindow" ) ),
-        CE_CapacityBar( newControlElement( "CE_CapacityBar" ) )
+        SH_ArgbDndWindow( newStyleHint( QStringLiteral( "SH_ArgbDndWindow" ) ) ),
+        CE_CapacityBar( newControlElement( QStringLiteral( "CE_CapacityBar" ) ) )
 
     {
 
         // use DBus connection to update on oxygen configuration change
         QDBusConnection dbus = QDBusConnection::sessionBus();
-        dbus.connect( QString(), "/OxygenStyle", "org.kde.Oxygen.Style", "reparseConfiguration", this, SLOT(oxygenConfigurationChanged()) );
+        dbus.connect( QString(),
+            QStringLiteral( "/OxygenStyle" ),
+            QStringLiteral( "org.kde.Oxygen.Style" ),
+            QStringLiteral( "reparseConfiguration" ), this, SLOT(oxygenConfigurationChanged()) );
 
         // call the slot directly; this initial call will set up things that also
         // need to be reset when the system palette changes
@@ -227,32 +261,13 @@ namespace Oxygen
 
         // scroll areas
         if( QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>( widget ) )
-        {
-
-            polishScrollArea( scrollArea );
-
-        } else if( widget->inherits( "Q3ListView" ) ) {
-
-            addEventFilter( widget );
-            widget->setAttribute( Qt::WA_Hover );
-
-        }
+        { polishScrollArea( scrollArea ); }
 
         // several widgets set autofill background to false, which effectively breaks the background
         // gradient rendering. Instead of patching all concerned applications,
         // we change the background here
         if( widget->inherits( "MessageList::Core::Widget" ) )
         { widget->setAutoFillBackground( false ); }
-
-        // KTextEdit frames
-        // static cast is safe here, since isKTextEdit already checks that widget inherits from QFrame
-        if( isKTextEditFrame( widget ) && static_cast<QFrame*>( widget )->frameStyle() == ( QFrame::StyledPanel | QFrame::Sunken ) )
-        {
-
-            widget->setAttribute( Qt::WA_Hover );
-            animations().lineEditEngine().registerWidget( widget, AnimationHover|AnimationFocus );
-
-        }
 
         // adjust layout for K3B themed headers
         // FIXME: to be removed when fixed upstream
@@ -299,7 +314,10 @@ namespace Oxygen
 
         // enforce translucency for drag and drop window
         if( widget->testAttribute( Qt::WA_X11NetWmWindowTypeDND ) && helper().compositingActive() )
-        { widget->setAttribute( Qt::WA_TranslucentBackground ); }
+        {
+            widget->setAttribute( Qt::WA_TranslucentBackground );
+            widget->clearMask();
+        }
 
         if(
             qobject_cast<QAbstractItemView*>( widget )
@@ -395,7 +413,7 @@ namespace Oxygen
             // with ( usually sunken ) neighbor frames
             widget->setContentsMargins( 1, 1, 1, 1 );
 
-        } else if( widget->inherits( "Q3ToolBar" ) || qobject_cast<QToolBar*>( widget ) ) {
+        } else if( qobject_cast<QToolBar*>( widget ) ) {
 
             widget->setBackgroundRole( QPalette::NoRole );
             widget->setAttribute( Qt::WA_TranslucentBackground );
@@ -497,16 +515,6 @@ namespace Oxygen
         argbHelper().unregisterWidget( widget );
         blurHelper().unregisterWidget( widget );
 
-        if( isKTextEditFrame( widget ) )
-        { widget->setAttribute( Qt::WA_Hover, false  ); }
-
-        if( widget && widget->inherits( "Q3ListView" ) ) {
-
-            widget->removeEventFilter( this );
-            widget->setAttribute( Qt::WA_Hover, false );
-
-        }
-
         // event filters
         switch ( widget->windowFlags() & Qt::WindowType_Mask )
         {
@@ -556,7 +564,6 @@ namespace Oxygen
         }
 
         if( qobject_cast<QMenuBar*>( widget )
-            || ( widget && widget->inherits( "Q3ToolBar" ) )
             || qobject_cast<QToolBar*>( widget )
             || ( widget && qobject_cast<QToolBar *>( widget->parent() ) )
             || qobject_cast<QToolBox*>( widget ) )
@@ -641,8 +648,26 @@ namespace Oxygen
 
                 }
                 else if( qstyleoption_cast<const QStyleOptionGroupBox *>( option ) ) return GroupBox_FrameWidth;
-                else return 1;
-
+                else if( option && option->styleObject && option->styleObject->inherits( "QQuickStyleItem" ) )
+                {
+                    const QString &elementType = option->styleObject->property( "elementType" ).toString();
+                    if ( elementType == QLatin1String( "edit" ) || elementType == QLatin1String( "spinbox" ) )
+                    {
+                        return LineEdit_FrameWidth;
+                    }
+                    else if ( elementType == QLatin1String( "combobox" ) )
+                    {
+                        return ComboBox_FrameWidth;
+                    }
+                    else if ( elementType == QLatin1String( "groupbox" ) )
+                    {
+                        return GroupBox_FrameWidth;
+                    }
+                }
+                else
+                {
+                    return 1;
+                }
             }
 
             case PM_LayoutLeftMargin:
@@ -704,8 +729,6 @@ namespace Oxygen
             case PM_IndicatorHeight: return CheckBox_Size;
             case PM_ExclusiveIndicatorWidth: return CheckBox_Size;
             case PM_ExclusiveIndicatorHeight: return CheckBox_Size;
-            case PM_CheckListControllerSize: return CheckBox_Size;
-            case PM_CheckListButtonSize: return CheckBox_Size;
 
             // splitters and dock widgets
             case PM_SplitterWidth: return Splitter_Width;
@@ -769,7 +792,7 @@ namespace Oxygen
             case PM_ToolBarItemSpacing: return 1;
 
             // MDI windows titlebars
-            case PM_TitleBarHeight: return 4 + pixelMetric( PM_SmallIconSize, option, widget );
+            case PM_TitleBarHeight: return 20;
 
             // spacing between widget and scrollbars
             case PM_ScrollView_ScrollBarSpacing:
@@ -811,14 +834,13 @@ namespace Oxygen
         {
 
             case SH_DialogButtonBox_ButtonsHaveIcons:
-            return KGlobalSettings::showIconsOnPushButtons();
+            return true;
 
             case SH_GroupBox_TextLabelColor:
             if( option ) return option->palette.color( QPalette::WindowText ).rgba();
-            else return qApp->palette().color( QPalette::WindowText ).rgba();
+            else return QPalette().color( QPalette::WindowText ).rgba();
 
             case SH_ItemView_ActivateItemOnSingleClick:
-            return helper().config()->group( "KDE" ).readEntry( "SingleClick", KDE_DEFAULT_SINGLECLICK );
             return false;
 
             case SH_RubberBand_Mask:
@@ -1069,8 +1091,6 @@ namespace Oxygen
             case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
 
             case PE_IndicatorMenuCheckMark: fcn = &Style::drawIndicatorMenuCheckMarkPrimitive; break;
-            case PE_Q3CheckListIndicator: fcn = &Style::drawQ3CheckListIndicatorPrimitive; break;
-            case PE_Q3CheckListExclusiveIndicator: fcn = &Style::drawQ3CheckListExclusiveIndicatorPrimitive; break;
             case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;
             case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
             case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
@@ -1173,7 +1193,6 @@ namespace Oxygen
             case CC_ComboBox: fcn = &Style::drawComboBoxComplexControl; break;
             case CC_Dial: fcn = &Style::drawDialComplexControl; break;
             case CC_GroupBox: fcn = &Style::drawGroupBoxComplexControl; break;
-            case CC_Q3ListView: fcn = &Style::drawQ3ListViewComplexControl; break;
             case CC_Slider: fcn = &Style::drawSliderComplexControl; break;
             case CC_SpinBox: fcn = &Style::drawSpinBoxComplexControl; break;
             case CC_TitleBar: fcn = &Style::drawTitleBarComplexControl; break;
@@ -1242,7 +1261,6 @@ namespace Oxygen
         if( QMdiSubWindow* subWindow = qobject_cast<QMdiSubWindow*>( object ) ) { return eventFilterMdiSubWindow( subWindow, event ); }
         if( QScrollBar* scrollBar = qobject_cast<QScrollBar*>( object ) ) { return eventFilterScrollBar( scrollBar, event ); }
 
-        if( widget->inherits( "Q3ListView" ) ) { return eventFilterQ3ListView( widget, event ); }
         if( widget->inherits( "QComboBoxPrivateContainer" ) ) { return eventFilterComboBoxContainer( widget, event ); }
 
         return QCommonStyle::eventFilter( object, event );
@@ -1413,20 +1431,6 @@ namespace Oxygen
 
     }
 
-    //__________________________________________________________________________________
-    bool Style::eventFilterQ3ListView( QWidget* widget, QEvent* event )
-    {
-        // this apparently fixes a Qt bug with Q3ListView, consisting in
-        // the fact that Focus events do not trigger repaint of these
-        switch( event->type() )
-        {
-            case QEvent::FocusIn: widget->update(); return false;
-            case QEvent::FocusOut: widget->update(); return false;
-            default: return false;
-        }
-
-    }
-
     //_________________________________________________________
     bool Style::eventFilterScrollBar( QWidget* widget, QEvent* event )
     {
@@ -1444,13 +1448,13 @@ namespace Oxygen
     //_____________________________________________________________________
     bool Style::eventFilterTabBar( QWidget* widget, QEvent* event )
     {
-        if( event->type() == QEvent::Paint && tabBarData().locks( widget ) )
+        if( event->type() == QEvent::Paint && _tabBarData->locks( widget ) )
         {
             /*
             this makes sure that tabBar base is drawn ( and drawn only once )
             every time a replaint is triggered by dragging a tab around
             */
-            tabBarData().setDirty();
+            _tabBarData->setDirty();
         }
 
         return false;
@@ -1870,7 +1874,7 @@ namespace Oxygen
 
                 QFontMetrics fontMetrics = QFontMetrics( font );
                 const int h( fontMetrics.height() );
-                const int tw( fontMetrics.size( Qt::TextShowMnemonic, gbOpt->text + QLatin1String( "  " ) ).width() );
+                const int tw( fontMetrics.size( Qt::TextShowMnemonic, gbOpt->text + QStringLiteral( "  " ) ).width() );
                 r.setHeight( h );
 
                 // translate down by 6 pixels in non flat mode,
@@ -2451,8 +2455,6 @@ namespace Oxygen
         // focus
         bool focusHighlight( false );
         if( enabled && ( flags&State_HasFocus ) ) focusHighlight = true;
-        else if( isKTextEditFrame( widget ) && widget->parentWidget()->hasFocus() )
-        { focusHighlight = true; }
 
         // assume focus takes precedence over hover
         animations().lineEditEngine().updateState( widget, AnimationFocus, focusHighlight );
@@ -2880,10 +2882,14 @@ namespace Oxygen
     //___________________________________________________________________________________
     bool Style::drawIndicatorTabClose( const QStyleOption* option, QPainter* painter, const QWidget* ) const
     {
-        if( _tabCloseIcon.isNull() ) { // load the icon on-demand: in the constructor, KDE is not yet ready to find it!
-            _tabCloseIcon = KIcon( "dialog-close" );
-            if( _tabCloseIcon.isNull() ) return false; // still not found? cancel
+
+        if( _tabCloseIcon.isNull() )
+        {
+            // load the icon on-demand: in the constructor, KDE is not yet ready to find it!
+            _tabCloseIcon = QIcon::fromTheme( QStringLiteral( "dialog-close" ) );
+            if( _tabCloseIcon.isNull() ) return false;
         }
+
         const int size( pixelMetric(PM_SmallIconSize) );
         QIcon::Mode mode;
         if( option->state & State_Enabled )
@@ -3277,7 +3283,7 @@ namespace Oxygen
 
         //! fine tuning of slitRect geometry
         if( widget && widget->inherits( "QToolBarExtension" ) ) slitRect.adjust( 1, 1, -1, -1 );
-        else if( widget && widget->objectName() == "qt_menubar_ext_button" ) slitRect.adjust( -1, -1, 0, 0 );
+        else if( widget && widget->objectName() == QStringLiteral( "qt_menubar_ext_button" ) ) slitRect.adjust( -1, -1, 0, 0 );
 
         // normal ( auto-raised ) toolbuttons
         if( flags & ( State_Sunken|State_On ) )
@@ -3627,36 +3633,6 @@ namespace Oxygen
         renderCheckBox( painter, r, palette, opts, state );
         return true;
 
-    }
-
-    //___________________________________________________________________________________
-    bool Style::drawQ3CheckListIndicatorPrimitive( const QStyleOption *option, QPainter *painter, const QWidget *widget ) const
-    {
-        const QStyleOptionQ3ListView* listViewOpt( qstyleoption_cast<const QStyleOptionQ3ListView*>( option ) );
-        if( !listViewOpt || listViewOpt->items.isEmpty() ) return true;
-
-        QStyleOptionButton buttonOption;
-        buttonOption.QStyleOption::operator=( *option );
-
-        QSize size( CheckBox_Size, CheckBox_Size );
-        buttonOption.rect = centerRect( option->rect, size ).translated( 0, 4 );
-        drawIndicatorCheckBoxPrimitive( &buttonOption, painter, widget );
-        return true;
-    }
-
-    //___________________________________________________________________________________
-    bool Style::drawQ3CheckListExclusiveIndicatorPrimitive( const QStyleOption *option, QPainter *painter, const QWidget *widget ) const
-    {
-        const QStyleOptionQ3ListView* listViewOpt( qstyleoption_cast<const QStyleOptionQ3ListView*>( option ) );
-        if( !listViewOpt || listViewOpt->items.isEmpty() ) return true;
-
-        QStyleOptionButton buttonOption;
-        buttonOption.QStyleOption::operator=( *option );
-
-        QSize size( CheckBox_Size, CheckBox_Size );
-        buttonOption.rect = centerRect( option->rect, size ).translated( 0, 4 );
-        drawIndicatorRadioButtonPrimitive( &buttonOption, painter, widget );
-        return true;
     }
 
     //___________________________________________________________________________________
@@ -4327,10 +4303,10 @@ namespace Oxygen
 
         // this is quite suboptimal
         // and does not really work
-        if( tmpTitle.contains( "&" ) )
+        if( tmpTitle.contains( QLatin1Char( '&' ) ) )
         {
-            int pos = tmpTitle.indexOf( "&" );
-            if( !( tmpTitle.size()-1 > pos && tmpTitle.at( pos+1 ) == QChar( '&' ) ) ) tmpTitle.remove( pos, 1 );
+            int pos = tmpTitle.indexOf( QLatin1Char( '&' ) );
+            if( !( tmpTitle.size()-1 > pos && tmpTitle.at( pos+1 ) == QLatin1Char( '&' ) ) ) tmpTitle.remove( pos, 1 );
 
         }
 
@@ -5732,7 +5708,7 @@ namespace Oxygen
 
         // hover and animation flags
         /* all are disabled when tabBar is locked ( drag in progress ) */
-        const bool tabBarLocked( tabBarData().locks( tabBar ) );
+        const bool tabBarLocked( _tabBarData->locks( tabBar ) );
         const bool mouseOver( enabled && !tabBarLocked && ( flags & State_MouseOver ) );
 
         // animation state
@@ -5740,9 +5716,9 @@ namespace Oxygen
         const bool animated( enabled && !selected && !tabBarLocked && animations().tabBarEngine().isAnimated( widget, r.topLeft() ) );
 
         // handle base frame painting, for tabbars in which tab is being dragged
-        tabBarData().drawTabBarBaseControl( tabOpt, painter, widget );
-        if( selected && tabBar && isDragged ) tabBarData().lock( tabBar );
-        else if( selected  && tabBarData().locks( tabBar ) ) tabBarData().release();
+        _tabBarData->drawTabBarBaseControl( tabOpt, painter, widget );
+        if( selected && tabBar && isDragged ) _tabBarData->lock( tabBar );
+        else if( selected  && _tabBarData->locks( tabBar ) ) _tabBarData->release();
 
         // tab position and flags
         const QStyleOptionTab::TabPosition& position = tabOpt->position;
@@ -6378,7 +6354,7 @@ namespace Oxygen
 
         // hover and animation flags
         /* all are disabled when tabBar is locked ( drag in progress ) */
-        const bool tabBarLocked( tabBarData().locks( tabBar ) );
+        const bool tabBarLocked( _tabBarData->locks( tabBar ) );
         const bool mouseOver( enabled && !tabBarLocked && ( flags & State_MouseOver ) );
 
         // animation state
@@ -6386,9 +6362,9 @@ namespace Oxygen
         const bool animated( enabled && !selected && !tabBarLocked && animations().tabBarEngine().isAnimated( widget, r.topLeft() ) );
 
         // handle base frame painting, for tabbars in which tab is being dragged
-        tabBarData().drawTabBarBaseControl( tabOpt, painter, widget );
-        if( selected && tabBar && isDragged ) tabBarData().lock( tabBar );
-        else if( selected  && tabBarData().locks( tabBar ) ) tabBarData().release();
+        _tabBarData->drawTabBarBaseControl( tabOpt, painter, widget );
+        if( selected && tabBar && isDragged ) _tabBarData->lock( tabBar );
+        else if( selected  && _tabBarData->locks( tabBar ) ) _tabBarData->release();
 
         // corner widgets
         const bool hasLeftCornerWidget( tabOpt->cornerWidgets & QStyleOptionTab::LeftCornerWidget );
@@ -7005,119 +6981,6 @@ namespace Oxygen
     }
 
     //___________________________________________________________________________________
-    void Style::TabBarData::drawTabBarBaseControl( const QStyleOptionTab* tabOpt, QPainter* painter, const QWidget* widget )
-    {
-
-        // check parent
-        if( !_style ) return;
-
-        // make sure widget is locked
-        if( !locks( widget ) ) return;
-
-        // make sure dirty flag is set
-        if( !_dirty ) return;
-
-        // cast to TabBar and check
-        const QTabBar* tabBar( qobject_cast<const QTabBar*>( widget ) );
-        if( !tabBar ) return;
-
-        // get reverseLayout flag
-        const bool reverseLayout( tabOpt->direction == Qt::RightToLeft );
-
-        // get documentMode flag
-        const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>( tabOpt );
-        bool documentMode = tabOptV3 ? tabOptV3->documentMode : false;
-        const QTabWidget *tabWidget = ( widget && widget->parentWidget() ) ? qobject_cast<const QTabWidget *>( widget->parentWidget() ) : NULL;
-        documentMode |= ( tabWidget ? tabWidget->documentMode() : true );
-
-        const QRect tabBarRect( _style.data()->insideMargin( tabBar->rect(), -GlowWidth ) );
-
-        // define slab
-        Style::SlabRect slab;
-
-        // switch on tab shape
-        switch( tabOpt->shape )
-        {
-            case QTabBar::RoundedNorth:
-            case QTabBar::TriangularNorth:
-            {
-                TileSet::Tiles tiles( TileSet::Top );
-                QRect frameRect;
-                frameRect.setLeft( tabBarRect.left() - 7 + 1 );
-                frameRect.setRight( tabBarRect.right() + 7 - 1 );
-                frameRect.setTop( tabBarRect.bottom() - 8 );
-                frameRect.setHeight( 4 );
-                if( !( documentMode || reverseLayout ) ) tiles |= TileSet::Left;
-                if( !documentMode && reverseLayout ) tiles |= TileSet::Right;
-                slab = SlabRect( frameRect, tiles );
-                break;
-            }
-
-            case QTabBar::RoundedSouth:
-            case QTabBar::TriangularSouth:
-            {
-                TileSet::Tiles tiles( TileSet::Bottom );
-                QRect frameRect;
-                frameRect.setLeft( tabBarRect.left() - 7 + 1 );
-                frameRect.setRight( tabBarRect.right() + 7 - 1 );
-                frameRect.setBottom( tabBarRect.top() + 8 );
-                frameRect.setTop( frameRect.bottom() - 4 );
-                if( !( documentMode || reverseLayout ) ) tiles |= TileSet::Left;
-                if( !documentMode && reverseLayout ) tiles |= TileSet::Right;
-                slab = SlabRect( frameRect, tiles );
-                break;
-            }
-
-            case QTabBar::RoundedWest:
-            case QTabBar::TriangularWest:
-            {
-                TileSet::Tiles tiles( TileSet::Left );
-                QRect frameRect;
-                frameRect.setTop( tabBarRect.top() - 7 + 1 );
-                frameRect.setBottom( tabBarRect.bottom() + 7 - 1 );
-                frameRect.setLeft( tabBarRect.right() - 8 );
-                frameRect.setWidth( 4 );
-                if( !( documentMode || reverseLayout ) ) tiles |= TileSet::Top;
-                if( !documentMode && reverseLayout ) tiles |= TileSet::Bottom;
-                slab = SlabRect( frameRect, tiles );
-                break;
-            }
-
-            case QTabBar::RoundedEast:
-            case QTabBar::TriangularEast:
-            {
-                TileSet::Tiles tiles( TileSet::Right );
-                QRect frameRect;
-                frameRect.setTop( tabBarRect.top() - 7 + 1 );
-                frameRect.setBottom( tabBarRect.bottom() + 7 - 1 );
-                frameRect.setRight( tabBarRect.left() + 8 );
-                frameRect.setLeft( frameRect.right() - 4 );
-                if( !( documentMode || reverseLayout ) ) tiles |= TileSet::Top;
-                if( !documentMode && reverseLayout ) tiles |= TileSet::Bottom;
-                slab = SlabRect( frameRect, tiles );
-                break;
-            }
-
-            default:
-            break;
-        }
-
-        const bool verticalTabs( _style.data()->isVerticalTab( tabOpt ) );
-        const QRect tabWidgetRect( tabWidget ?
-            _style.data()->insideMargin( tabWidget->rect(), -GlowWidth ).translated( -widget->geometry().topLeft() ) :
-            QRect() );
-
-        const QPalette& palette( tabOpt->palette );
-        const QColor color( palette.color( QPalette::Window ) );
-        _style.data()->adjustSlabRect( slab, tabWidgetRect, documentMode, verticalTabs );
-        _style.data()->renderSlab( painter, slab, color, NoFill );
-
-        setDirty( false );
-        return;
-
-    }
-
-    //___________________________________________________________________________________
     bool Style::drawToolBarControl( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
     {
 
@@ -7650,63 +7513,6 @@ namespace Oxygen
     }
 
     //______________________________________________________________
-    bool Style::drawQ3ListViewComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const
-    {
-
-        const QStyleOptionQ3ListView* optListView( qstyleoption_cast<const QStyleOptionQ3ListView*>( option ) );
-        if( !optListView ) return true;
-
-        // this is copied from skulpture code
-        // Copyright ( c ) 2007-2010 Christoph Feck <christoph@maxiom.de>
-        if( optListView->subControls & QStyle::SC_Q3ListView )
-        {
-            painter->fillRect(
-                optListView->rect,
-                optListView->viewportPalette.brush( optListView->viewportBGRole ) );
-        }
-
-        if( optListView->subControls & QStyle::SC_Q3ListViewBranch )
-        {
-
-            QStyleOption opt = *static_cast<const QStyleOption*>( option );
-            int y = optListView->rect.y();
-
-            for ( int i = 1; i < optListView->items.size(); ++i )
-            {
-                QStyleOptionQ3ListViewItem item = optListView->items.at( i );
-                if( y + item.totalHeight > 0 && y < optListView->rect.height() )
-                {
-                    opt.state = QStyle::State_Item;
-                    if ( i + 1 < optListView->items.size() )
-                    { opt.state |= QStyle::State_Sibling; }
-
-                    if(
-                        item.features & QStyleOptionQ3ListViewItem::Expandable
-                        || ( item.childCount > 0 && item.height > 0 ) )
-                    { opt.state |= QStyle::State_Children | ( item.state & QStyle::State_Open ); }
-
-                    opt.rect = QRect( optListView->rect.left(), y, optListView->rect.width(), item.height );
-                    drawIndicatorBranchPrimitive( &opt, painter, widget );
-
-                    if( ( opt.state & QStyle::State_Sibling ) && item.height < item.totalHeight )
-                    {
-                        opt.state = QStyle::State_Sibling;
-                        opt.rect = QRect(
-                            optListView->rect.left(), y + item.height,
-                            optListView->rect.width(), item.totalHeight - item.height );
-                        drawIndicatorBranchPrimitive( &opt, painter, widget );
-                    }
-                }
-
-                y += item.totalHeight;
-            }
-        }
-
-        return true;
-
-    }
-
-    //______________________________________________________________
     bool Style::drawSliderComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const
     {
         const QStyleOptionSlider *sliderOption( qstyleoption_cast<const QStyleOptionSlider *>( option ) );
@@ -8141,7 +7947,7 @@ namespace Oxygen
     }
 
     //____________________________________________________________________
-    QIcon Style::standardIconImplementation(
+    QIcon Style::standardIcon(
         StandardPixmap standardIcon,
         const QStyleOption *option,
         const QWidget *widget ) const
@@ -8151,73 +7957,73 @@ namespace Oxygen
         {
 
             // copied from kstyle
-            case SP_DesktopIcon: return KIcon( "user-desktop" );
-            case SP_TrashIcon: return KIcon( "user-trash" );
-            case SP_ComputerIcon: return KIcon( "computer" );
-            case SP_DriveFDIcon: return KIcon( "media-floppy" );
-            case SP_DriveHDIcon: return KIcon( "drive-harddisk" );
-            case SP_DriveCDIcon: return KIcon( "drive-optical" );
-            case SP_DriveDVDIcon: return KIcon( "drive-optical" );
-            case SP_DriveNetIcon: return KIcon( "folder-remote" );
-            case SP_DirHomeIcon: return KIcon( "user-home" );
-            case SP_DirOpenIcon: return KIcon( "document-open-folder" );
-            case SP_DirClosedIcon: return KIcon( "folder" );
-            case SP_DirIcon: return KIcon( "folder" );
+            case SP_DesktopIcon: return QIcon::fromTheme( QStringLiteral( "user-desktop" ) );
+            case SP_TrashIcon: return QIcon::fromTheme( QStringLiteral( "user-trash" ) );
+            case SP_ComputerIcon: return QIcon::fromTheme( QStringLiteral( "computer" ) );
+            case SP_DriveFDIcon: return QIcon::fromTheme( QStringLiteral( "media-floppy" ) );
+            case SP_DriveHDIcon: return QIcon::fromTheme( QStringLiteral( "drive-harddisk" ) );
+            case SP_DriveCDIcon: return QIcon::fromTheme( QStringLiteral( "drive-optical" ) );
+            case SP_DriveDVDIcon: return QIcon::fromTheme( QStringLiteral( "drive-optical" ) );
+            case SP_DriveNetIcon: return QIcon::fromTheme( QStringLiteral( "folder-remote" ) );
+            case SP_DirHomeIcon: return QIcon::fromTheme( QStringLiteral( "user-home" ) );
+            case SP_DirOpenIcon: return QIcon::fromTheme( QStringLiteral( "document-open-folder" ) );
+            case SP_DirClosedIcon: return QIcon::fromTheme( QStringLiteral( "folder" ) );
+            case SP_DirIcon: return QIcon::fromTheme( QStringLiteral( "folder" ) );
 
             //TODO: generate ( !? ) folder with link emblem
-            case SP_DirLinkIcon: return KIcon( "folder" );
+            case SP_DirLinkIcon: return QIcon::fromTheme( QStringLiteral( "folder" ) );
 
             //TODO: look for a better icon
-            case SP_FileIcon: return KIcon( "text-plain" );
+            case SP_FileIcon: return QIcon::fromTheme( QStringLiteral( "text-plain" ) );
 
             //TODO: generate ( !? ) file with link emblem
-            case SP_FileLinkIcon: return KIcon( "text-plain" );
+            case SP_FileLinkIcon: return QIcon::fromTheme( QStringLiteral( "text-plain" ) );
 
             //TODO: find correct icon
-            case SP_FileDialogStart: return KIcon( "media-playback-start" );
+            case SP_FileDialogStart: return QIcon::fromTheme( QStringLiteral( "media-playback-start" ) );
 
             //TODO: find correct icon
-            case SP_FileDialogEnd: return KIcon( "media-playback-stop" );
+            case SP_FileDialogEnd: return QIcon::fromTheme( QStringLiteral( "media-playback-stop" ) );
 
-            case SP_FileDialogToParent: return KIcon( "go-up" );
-            case SP_FileDialogNewFolder: return KIcon( "folder-new" );
-            case SP_FileDialogDetailedView: return KIcon( "view-list-details" );
-            case SP_FileDialogInfoView: return KIcon( "document-properties" );
-            case SP_FileDialogContentsView: return KIcon( "view-list-icons" );
-            case SP_FileDialogListView: return KIcon( "view-list-text" );
-            case SP_FileDialogBack: return KIcon( "go-previous" );
-            case SP_MessageBoxInformation: return KIcon( "dialog-information" );
-            case SP_MessageBoxWarning: return KIcon( "dialog-warning" );
-            case SP_MessageBoxCritical: return KIcon( "dialog-error" );
-            case SP_MessageBoxQuestion: return KIcon( "dialog-information" );
-            case SP_DialogOkButton: return KIcon( "dialog-ok" );
-            case SP_DialogCancelButton: return KIcon( "dialog-cancel" );
-            case SP_DialogHelpButton: return KIcon( "help-contents" );
-            case SP_DialogOpenButton: return KIcon( "document-open" );
-            case SP_DialogSaveButton: return KIcon( "document-save" );
-            case SP_DialogCloseButton: return KIcon( "dialog-close" );
-            case SP_DialogApplyButton: return KIcon( "dialog-ok-apply" );
-            case SP_DialogResetButton: return KIcon( "document-revert" );
-            case SP_DialogDiscardButton: return KIcon( "dialog-cancel" );
-            case SP_DialogYesButton: return KIcon( "dialog-ok-apply" );
-            case SP_DialogNoButton: return KIcon( "dialog-cancel" );
-            case SP_ArrowUp: return KIcon( "go-up" );
-            case SP_ArrowDown: return KIcon( "go-down" );
-            case SP_ArrowLeft: return KIcon( "go-previous-view" );
-            case SP_ArrowRight: return KIcon( "go-next-view" );
-            case SP_ArrowBack: return KIcon( "go-previous" );
-            case SP_ArrowForward: return KIcon( "go-next" );
-            case SP_BrowserReload: return KIcon( "view-refresh" );
-            case SP_BrowserStop: return KIcon( "process-stop" );
-            case SP_MediaPlay: return KIcon( "media-playback-start" );
-            case SP_MediaStop: return KIcon( "media-playback-stop" );
-            case SP_MediaPause: return KIcon( "media-playback-pause" );
-            case SP_MediaSkipForward: return KIcon( "media-skip-forward" );
-            case SP_MediaSkipBackward: return KIcon( "media-skip-backward" );
-            case SP_MediaSeekForward: return KIcon( "media-seek-forward" );
-            case SP_MediaSeekBackward: return KIcon( "media-seek-backward" );
-            case SP_MediaVolume: return KIcon( "audio-volume-medium" );
-            case SP_MediaVolumeMuted: return KIcon( "audio-volume-muted" );
+            case SP_FileDialogToParent: return QIcon::fromTheme( QStringLiteral( "go-up" ) );
+            case SP_FileDialogNewFolder: return QIcon::fromTheme( QStringLiteral( "folder-new" ) );
+            case SP_FileDialogDetailedView: return QIcon::fromTheme( QStringLiteral( "view-list-details" ) );
+            case SP_FileDialogInfoView: return QIcon::fromTheme( QStringLiteral( "document-properties" ) );
+            case SP_FileDialogContentsView: return QIcon::fromTheme( QStringLiteral( "view-list-icons" ) );
+            case SP_FileDialogListView: return QIcon::fromTheme( QStringLiteral( "view-list-text" ) );
+            case SP_FileDialogBack: return QIcon::fromTheme( QStringLiteral( "go-previous" ) );
+            case SP_MessageBoxInformation: return QIcon::fromTheme( QStringLiteral( "dialog-information" ) );
+            case SP_MessageBoxWarning: return QIcon::fromTheme( QStringLiteral( "dialog-warning" ) );
+            case SP_MessageBoxCritical: return QIcon::fromTheme( QStringLiteral( "dialog-error" ) );
+            case SP_MessageBoxQuestion: return QIcon::fromTheme( QStringLiteral( "dialog-information" ) );
+            case SP_DialogOkButton: return QIcon::fromTheme( QStringLiteral( "dialog-ok" ) );
+            case SP_DialogCancelButton: return QIcon::fromTheme( QStringLiteral( "dialog-cancel" ) );
+            case SP_DialogHelpButton: return QIcon::fromTheme( QStringLiteral( "help-contents" ) );
+            case SP_DialogOpenButton: return QIcon::fromTheme( QStringLiteral( "document-open" ) );
+            case SP_DialogSaveButton: return QIcon::fromTheme( QStringLiteral( "document-save" ) );
+            case SP_DialogCloseButton: return QIcon::fromTheme( QStringLiteral( "dialog-close" ) );
+            case SP_DialogApplyButton: return QIcon::fromTheme( QStringLiteral( "dialog-ok-apply" ) );
+            case SP_DialogResetButton: return QIcon::fromTheme( QStringLiteral( "document-revert" ) );
+            case SP_DialogDiscardButton: return QIcon::fromTheme( QStringLiteral( "dialog-cancel" ) );
+            case SP_DialogYesButton: return QIcon::fromTheme( QStringLiteral( "dialog-ok-apply" ) );
+            case SP_DialogNoButton: return QIcon::fromTheme( QStringLiteral( "dialog-cancel" ) );
+            case SP_ArrowUp: return QIcon::fromTheme( QStringLiteral( "go-up" ) );
+            case SP_ArrowDown: return QIcon::fromTheme( QStringLiteral( "go-down" ) );
+            case SP_ArrowLeft: return QIcon::fromTheme( QStringLiteral( "go-previous-view" ) );
+            case SP_ArrowRight: return QIcon::fromTheme( QStringLiteral( "go-next-view" ) );
+            case SP_ArrowBack: return QIcon::fromTheme( QStringLiteral( "go-previous" ) );
+            case SP_ArrowForward: return QIcon::fromTheme( QStringLiteral( "go-next" ) );
+            case SP_BrowserReload: return QIcon::fromTheme( QStringLiteral( "view-refresh" ) );
+            case SP_BrowserStop: return QIcon::fromTheme( QStringLiteral( "process-stop" ) );
+            case SP_MediaPlay: return QIcon::fromTheme( QStringLiteral( "media-playback-start" ) );
+            case SP_MediaStop: return QIcon::fromTheme( QStringLiteral( "media-playback-stop" ) );
+            case SP_MediaPause: return QIcon::fromTheme( QStringLiteral( "media-playback-pause" ) );
+            case SP_MediaSkipForward: return QIcon::fromTheme( QStringLiteral( "media-skip-forward" ) );
+            case SP_MediaSkipBackward: return QIcon::fromTheme( QStringLiteral( "media-skip-backward" ) );
+            case SP_MediaSeekForward: return QIcon::fromTheme( QStringLiteral( "media-seek-forward" ) );
+            case SP_MediaSeekBackward: return QIcon::fromTheme( QStringLiteral( "media-seek-backward" ) );
+            case SP_MediaVolume: return QIcon::fromTheme( QStringLiteral( "audio-volume-medium" ) );
+            case SP_MediaVolumeMuted: return QIcon::fromTheme( QStringLiteral( "audio-volume-muted" ) );
 
             default: break;
 
@@ -8241,8 +8047,8 @@ namespace Oxygen
         } else if( qApp ) {
 
             // might not have a QApplication
-            buttonColor = qApp->palette().window().color();
-            iconColor   = qApp->palette().windowText().color();
+            buttonColor = QPalette().window().color();
+            iconColor   = QPalette().windowText().color();
 
         } else {
 
@@ -8369,7 +8175,7 @@ namespace Oxygen
             }
 
             default:
-            return QCommonStyle::standardIconImplementation( standardIcon, option, widget );
+            return QCommonStyle::standardIcon( standardIcon, option, widget );
         }
     }
 
@@ -8377,7 +8183,6 @@ namespace Oxygen
     void Style::initializeKGlobalSettings( void )
     {
 
-        #if KDE_IS_VERSION( 4, 6, 0 )
         if( qApp && !qApp->inherits( "KApplication" ) )
         {
             /*
@@ -8385,12 +8190,11 @@ namespace Oxygen
             On the other hand, it is done internally in kApplication constructor,
             so no need to duplicate here.
             */
-            KGlobalSettings::self()->activate( KGlobalSettings::ListenForChanges );
+            // KGlobalSettings::self()->activate( KGlobalSettings::ListenForChanges );
         }
-        #endif
 
         // connect palette changes to local slot, to make sure caches are cleared
-        connect( KGlobalSettings::self(), SIGNAL(kdisplayPaletteChanged()), this, SLOT(globalPaletteChanged()) );
+        // connect( KGlobalSettings::self(), SIGNAL(kdisplayPaletteChanged()), this, SLOT(globalPaletteChanged()) );
 
         // update flag
         _kGlobalSettingsInitialized = true;
@@ -9697,6 +9501,124 @@ namespace Oxygen
         }
 
         return a;
+
+    }
+
+}
+
+namespace OxygenPrivate
+{
+
+    void TabBarData::drawTabBarBaseControl( const QStyleOptionTab* tabOpt, QPainter* painter, const QWidget* widget )
+    {
+
+
+        // check parent
+        if( !_style ) return;
+
+        // make sure widget is locked
+        if( !locks( widget ) ) return;
+
+        // make sure dirty flag is set
+        if( !_dirty ) return;
+
+        // cast to TabBar and check
+        const QTabBar* tabBar( qobject_cast<const QTabBar*>( widget ) );
+        if( !tabBar ) return;
+
+        // get reverseLayout flag
+        const bool reverseLayout( tabOpt->direction == Qt::RightToLeft );
+
+        // get documentMode flag
+        const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>( tabOpt );
+        bool documentMode = tabOptV3 ? tabOptV3->documentMode : false;
+        const QTabWidget *tabWidget = ( widget && widget->parentWidget() ) ? qobject_cast<const QTabWidget *>( widget->parentWidget() ) : NULL;
+        documentMode |= ( tabWidget ? tabWidget->documentMode() : true );
+
+        const QRect tabBarRect( _style.data()->insideMargin( tabBar->rect(), -Oxygen::GlowWidth ) );
+
+        // define slab
+        Oxygen::Style::SlabRect slab;
+
+        // switch on tab shape
+        switch( tabOpt->shape )
+        {
+            case QTabBar::RoundedNorth:
+            case QTabBar::TriangularNorth:
+            {
+                Oxygen::TileSet::Tiles tiles( Oxygen::TileSet::Top );
+                QRect frameRect;
+                frameRect.setLeft( tabBarRect.left() - 7 + 1 );
+                frameRect.setRight( tabBarRect.right() + 7 - 1 );
+                frameRect.setTop( tabBarRect.bottom() - 8 );
+                frameRect.setHeight( 4 );
+                if( !( documentMode || reverseLayout ) ) tiles |= Oxygen::TileSet::Left;
+                if( !documentMode && reverseLayout ) tiles |= Oxygen::TileSet::Right;
+                slab = Oxygen::Style::SlabRect( frameRect, tiles );
+                break;
+            }
+
+            case QTabBar::RoundedSouth:
+            case QTabBar::TriangularSouth:
+            {
+                Oxygen::TileSet::Tiles tiles( Oxygen::TileSet::Bottom );
+                QRect frameRect;
+                frameRect.setLeft( tabBarRect.left() - 7 + 1 );
+                frameRect.setRight( tabBarRect.right() + 7 - 1 );
+                frameRect.setBottom( tabBarRect.top() + 8 );
+                frameRect.setTop( frameRect.bottom() - 4 );
+                if( !( documentMode || reverseLayout ) ) tiles |= Oxygen::TileSet::Left;
+                if( !documentMode && reverseLayout ) tiles |= Oxygen::TileSet::Right;
+                slab = Oxygen::Style::SlabRect( frameRect, tiles );
+                break;
+            }
+
+            case QTabBar::RoundedWest:
+            case QTabBar::TriangularWest:
+            {
+                Oxygen::TileSet::Tiles tiles( Oxygen::TileSet::Left );
+                QRect frameRect;
+                frameRect.setTop( tabBarRect.top() - 7 + 1 );
+                frameRect.setBottom( tabBarRect.bottom() + 7 - 1 );
+                frameRect.setLeft( tabBarRect.right() - 8 );
+                frameRect.setWidth( 4 );
+                if( !( documentMode || reverseLayout ) ) tiles |= Oxygen::TileSet::Top;
+                if( !documentMode && reverseLayout ) tiles |= Oxygen::TileSet::Bottom;
+                slab = Oxygen::Style::SlabRect( frameRect, tiles );
+                break;
+            }
+
+            case QTabBar::RoundedEast:
+            case QTabBar::TriangularEast:
+            {
+                Oxygen::TileSet::Tiles tiles( Oxygen::TileSet::Right );
+                QRect frameRect;
+                frameRect.setTop( tabBarRect.top() - 7 + 1 );
+                frameRect.setBottom( tabBarRect.bottom() + 7 - 1 );
+                frameRect.setRight( tabBarRect.left() + 8 );
+                frameRect.setLeft( frameRect.right() - 4 );
+                if( !( documentMode || reverseLayout ) ) tiles |= Oxygen::TileSet::Top;
+                if( !documentMode && reverseLayout ) tiles |= Oxygen::TileSet::Bottom;
+                slab = Oxygen::Style::SlabRect( frameRect, tiles );
+                break;
+            }
+
+            default:
+            break;
+        }
+
+        const bool verticalTabs( _style.data()->isVerticalTab( tabOpt ) );
+        const QRect tabWidgetRect( tabWidget ?
+            _style.data()->insideMargin( tabWidget->rect(), -Oxygen::GlowWidth ).translated( -widget->geometry().topLeft() ) :
+            QRect() );
+
+        const QPalette& palette( tabOpt->palette );
+        const QColor color( palette.color( QPalette::Window ) );
+        _style.data()->adjustSlabRect( slab, tabWidgetRect, documentMode, verticalTabs );
+        _style.data()->renderSlab( painter, slab, color, Oxygen::Style::NoFill );
+
+        setDirty( false );
+        return;
 
     }
 
