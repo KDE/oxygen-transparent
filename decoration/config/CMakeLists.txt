@@ -26,7 +26,7 @@ add_library(kwin_oxygen_transparent_config
 
 target_link_libraries(kwin_oxygen_transparent_config Qt5::Core Qt5::Gui Qt5::Widgets Qt5::DBus)
 target_link_libraries(kwin_oxygen_transparent_config KF5::KConfigCore KF5::KConfigGui KF5::KCompletion KF5::KGuiAddons KF5::KWindowSystem KF5::KI18n)
-target_link_libraries(kwin_oxygen_transparent_config kdecorations oxygenstyle  oxygenstyleconfig)
+target_link_libraries(kwin_oxygen_transparent_config kdecorations oxygentransparentstyle  oxygentransparentstyleconfig)
 
 if(X11_FOUND)
   target_link_libraries(kwin_oxygen_transparent_config ${XCB_LIBRARIES})
