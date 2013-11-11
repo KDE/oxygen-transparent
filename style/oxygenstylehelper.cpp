@@ -25,6 +25,7 @@
 
 #include <QLinearGradient>
 #include <QPainter>
+#include <QScopedPointer>
 #include <QTextStream>
 
 #include <math.h>
@@ -42,7 +43,7 @@ namespace Oxygen
 
         #if HAVE_X11
         // create compositing screen
-        QString atomName = QString::fromLatin1( "_NET_WM_CM_S%1" ).arg( QX11Info::appScreen() );
+        const QString atomName( QStringLiteral( "_NET_WM_CM_S%1" ).arg( QX11Info::appScreen() ) );
         _compositingManagerAtom = createAtom( atomName );
         #endif
 
@@ -644,7 +645,7 @@ namespace Oxygen
         #if HAVE_X11
         // direct call to X
         xcb_get_selection_owner_cookie_t cookie( xcb_get_selection_owner( xcbConnection(), _compositingManagerAtom ) );
-        xcb_get_selection_owner_reply_t* reply( xcb_get_selection_owner_reply( xcbConnection(), cookie, 0 ) );
+        QScopedPointer<xcb_get_selection_owner_reply_t, QScopedPointerPodDeleter> reply( xcb_get_selection_owner_reply( xcbConnection(), cookie, nullptr ) );
         return reply && reply->owner;
         #else
         // use KWindowSystem

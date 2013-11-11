@@ -32,6 +32,7 @@
 
 #include <QDialog>
 #include <QIcon>
+#include <QScopedPointer>
 
 #ifdef HAVE_X11
 #include <QX11Info>
@@ -50,10 +51,8 @@ namespace Oxygen
     {
 
         #ifdef HAVE_X11
-
         // create atom
         _xEmbedAtom = _helper.createAtom( QStringLiteral( "_XEMBED_INFO" ) );
-
         #endif
 
     }
@@ -270,12 +269,8 @@ namespace Oxygen
         // get connection
         xcb_connection_t* connection( QX11Info::connection() );
         xcb_get_property_cookie_t cookie( xcb_get_property( connection, 0, widget->winId(), _xEmbedAtom, _xEmbedAtom, 0, 1) );
-        xcb_get_property_reply_t* reply( xcb_get_property_reply( connection, cookie, 0 ) );
-
-        if( !reply ) return false;
-        const bool res( xcb_get_property_value_length(reply) > 0 );
-        free(reply);
-        return res;
+        QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply( xcb_get_property_reply( connection, cookie, 0 ) );
+        return reply && xcb_get_property_value_length( reply.data() ) > 0;
 
         #else
 
