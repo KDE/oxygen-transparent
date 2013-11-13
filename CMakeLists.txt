@@ -21,41 +21,16 @@ find_package( KF5 MODULE REQUIRED COMPONENTS
     CMake
     Compiler
     InstallDirs
-    KIdleTime
-    ItemModels
-    KWidgetsAddons
-    KWindowSystem
-    KCodecs
-    KArchive
-    KCoreAddons
-    Solid
-    ThreadWeaver
     KConfig
-    KAuth
-    KJS
-    KWallet
-    KDBusAddons
-    Sonnet
-    KI18n
     KGuiAddons
-    KService
     KConfigWidgets
-    ItemViews
-    KNotifications
+    KI18n
     KIconThemes
-    KStyle
     KCompletion
-    KJobWidgets
-    KTextWidgets
-    XmlGui
-    KCrash
-    KBookmarks
-    Kross
-    KIO
+    KService
+    KWindowSystem
+    KStyle
 )
-
-# needed for kde4_add_kcfg_file
-find_package(KDELibs4 REQUIRED NO_MODULE)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

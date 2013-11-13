@@ -1,5 +1,3 @@
-# include_directories( ${KDE4_KDEUI_INCLUDES} )
-
 ########### next target ###############
 set(kstyle_oxygen_config_PART_SRCS
     oxygenanimationconfigwidget.cpp
@@ -25,7 +23,7 @@ add_library(kstyle_oxygen_transparent_config MODULE
 )
 
 target_link_libraries(kstyle_oxygen_transparent_config Qt5::Core Qt5::Gui Qt5::Widgets Qt5::DBus)
-target_link_libraries(kstyle_oxygen_transparent_config KF5::KConfigCore KF5::KConfigGui KF5::KCompletion KF5::KGuiAddons KF5::KI18n )
+target_link_libraries(kstyle_oxygen_transparent_config KF5::KCompletion)
 target_link_libraries(kstyle_oxygen_transparent_config oxygentransparentstyle oxygentransparentstyleconfig)
 
 install(TARGETS kstyle_oxygen_transparent_config DESTINATION ${QT_PLUGIN_INSTALL_DIR}/kf5 )
@@ -44,6 +42,6 @@ add_executable(oxygen-transparent-settings
 )
 
 target_link_libraries(oxygen-transparent-settings Qt5::Core Qt5::Gui Qt5::Widgets)
-target_link_libraries(oxygen-transparent-settings KF5::KConfigCore KF5::KConfigGui KF5::KService KF5::KGuiAddons KF5::KWidgetsAddons KF5::KI18n )
+target_link_libraries(oxygen-transparent-settings KF5::KI18n KF5::KWidgetsAddons KF5::KConfigCore KF5::KConfigGui KF5::KService)
 
 install (TARGETS oxygen-transparent-settings ${INSTALL_TARGETS_DEFAULT_ARGS} )
