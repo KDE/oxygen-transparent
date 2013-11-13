@@ -18,10 +18,14 @@ set(kwin_oxygen_transparent_SRCS
 
 kconfig_add_kcfg_files(kwin_oxygen_transparent_SRCS oxygenconfiguration.kcfgc )
 
-kde4_add_plugin(kwin3_oxygen_transparent ${kwin_oxygen_transparent_SRCS})
+add_library(kwin3_oxygen_transparent MODULE ${kwin_oxygen_transparent_SRCS})
 target_link_libraries(kwin3_oxygen_transparent Qt5::Widgets )
 target_link_libraries(kwin3_oxygen_transparent KF5::KConfigWidgets KF5::KGuiAddons KF5::KI18n KF5::KWindowSystem KF5::KStyle)
-target_link_libraries(kwin3_oxygen_transparent kdecorations oxygentransparentstyle)
+
+find_library( KDECORATIONS_LIB NAMES kdecorations )
+target_link_libraries(kwin3_oxygen_transparent ${KDECORATIONS_LIB})
+
+target_link_libraries(kwin3_oxygen_transparent oxygentransparentstyle )
 
 if(X11_FOUND)
   target_link_libraries(kwin3_oxygen_transparent ${XCB_XCB_LIBRARIES})
