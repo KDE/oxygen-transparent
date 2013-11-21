@@ -15,7 +15,6 @@ include_directories(
 )
 
 ########### next target ###############
-
 set(oxygen_transparent_PART_SRCS
     animations/oxygenanimations.cpp
     animations/oxygenanimationdata.cpp
