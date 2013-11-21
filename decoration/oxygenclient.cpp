@@ -1427,13 +1427,13 @@ namespace Oxygen
 
     }
 
-    //_________________________________________________________
-    QString Client::defaultButtonsLeft() const
-    { return KCommonDecoration::defaultButtonsLeft(); }
-
-    //_________________________________________________________
-    QString Client::defaultButtonsRight() const
-    { return QStringLiteral("HIAX"); }
+//     //_________________________________________________________
+//     QString Client::defaultButtonsLeft() const
+//     { return KCommonDecoration::defaultButtonsLeft(); }
+//
+//     //_________________________________________________________
+//     QString Client::defaultButtonsRight() const
+//     { return QStringLiteral("HIAX"); }
 
     //________________________________________________________________
     void Client::updateWindowShape()
