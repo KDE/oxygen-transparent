@@ -104,6 +104,7 @@ namespace Oxygen
 
             case Qt::Window:
             case Qt::Dialog:
+            case Qt::Sheet:
             {
 
                 // do not handle all kind of 'special background' widgets
