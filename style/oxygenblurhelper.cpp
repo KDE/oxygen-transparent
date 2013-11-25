@@ -201,12 +201,8 @@ namespace Oxygen
             {
 
                 const QPoint offset( child->mapTo( parent, QPoint( 0, 0 ) ) );
-                if( child->mask().isEmpty() )
-                {
-                    const QRect rect( child->rect().translated( offset ).adjusted( 1, 1, -1, -1 ) );
-                    region -= rect;
-
-                }  else region -= child->mask().translated( offset );
+                if( child->mask().isEmpty() ) region -= child->rect().translated( offset );
+                else region -= child->mask().translated( offset );
 
             } else { trimBlurRegion( parent, child, region ); }
 
