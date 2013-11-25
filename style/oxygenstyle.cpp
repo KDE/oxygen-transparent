@@ -268,6 +268,7 @@ namespace Oxygen
 
             case Qt::Window:
             case Qt::Dialog:
+            case Qt::Sheet:
 
             // set background as styled
             widget->setAttribute( Qt::WA_StyledBackground );
@@ -513,6 +514,7 @@ namespace Oxygen
 
             case Qt::Window:
             case Qt::Dialog:
+            case Qt::Sheet:
             widget->removeEventFilter( this );
             widget->setAttribute( Qt::WA_StyledBackground, false );
             break;
@@ -1362,7 +1364,7 @@ namespace Oxygen
     {
 
         if( ev->type() != QEvent::Paint ) return false;
-        if( !( (widget->windowFlags() & Qt::WindowType_Mask) & (Qt::Window|Qt::Dialog) ) ) return false;
+        if( !( (widget->windowFlags() & Qt::WindowType_Mask) & (Qt::Window|Qt::Dialog|Qt::Sheet) ) ) return false;
         if( !(
             widget->isWindow() &&
             widget->testAttribute( Qt::WA_TranslucentBackground ) &&
@@ -4190,7 +4192,7 @@ namespace Oxygen
 
         // check widget and attributes
         if( !widget || !widget->testAttribute( Qt::WA_StyledBackground ) || widget->testAttribute( Qt::WA_NoSystemBackground ) ) return false;
-        if( !( ( widget->windowFlags() & Qt::WindowType_Mask ) & ( Qt::Window|Qt::Dialog ) ) ) return false;
+        if( !( ( widget->windowFlags() & Qt::WindowType_Mask ) & ( Qt::Window|Qt::Dialog|Qt::Sheet ) ) ) return false;
         if( !widget->isWindow() ) return false;
 
         // normal "window" background
