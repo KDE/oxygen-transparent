@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+ * Copyright 2009-2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
  * Copyright 2008 Long Huynh Huu <long.upcase@googlemail.com>
  * Copyright 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
  * Copyright 2007 Casper Boemann <cbr@boemann.dk>
@@ -961,6 +961,24 @@ namespace Oxygen
         #else
         Q_UNUSED( id );
         return false;
+        #endif
+    }
+
+    void Helper::setColorScheme( WId id, const QString& path ) const
+    {
+        #if HAVE_X11
+        if( !QX11Info::isPlatformX11() )
+            return;
+        xcb_atom_t atom = createAtom( QStringLiteral("_KDE_NET_WM_COLOR_SCHEME") );
+        if( path.isEmpty() ) {
+            xcb_delete_property( _xcbConnection, id, atom );
+        } else {
+            xcb_change_property( _xcbConnection, XCB_PROP_MODE_REPLACE, id, atom, XCB_ATOM_STRING,
+                                 8, path.size(), qPrintable( path ) );
+        }
+        #else
+        Q_UNUSED( id )
+        Q_UNUSED( path )
         #endif
     }
 

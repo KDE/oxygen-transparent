@@ -3,7 +3,7 @@
 // handle shadow pixmaps passed to window manager via X property
 // -------------------
 //
-// Copyright (c) 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+// Copyright (c) 2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -214,22 +214,22 @@ namespace Oxygen
     bool ShadowHelper::acceptWidget( QWidget* widget ) const
     {
 
+        // flags
         if( widget->property( netWMSkipShadowPropertyName ).toBool() ) return false;
         if( widget->property( netWMForceShadowPropertyName ).toBool() ) return true;
 
         // menus
-        if( qobject_cast<QMenu*>( widget ) ) return true;
+        if( isMenu( widget ) ) return true;
 
         // combobox dropdown lists
         if( widget->inherits( "QComboBoxPrivateContainer" ) ) return true;
 
         // tooltips
-        if( (widget->inherits( "QTipLabel" ) || (widget->windowFlags() & Qt::WindowType_Mask) == Qt::ToolTip ) &&
-            !widget->inherits( "Plasma::ToolTip" ) )
+        if( isToolTip( widget ) && !widget->inherits( "Plasma::ToolTip" ) )
         { return true; }
 
         // detached widgets
-        if( qobject_cast<QToolBar*>( widget ) || qobject_cast<QDockWidget*>( widget ) )
+        if( isDockWidget( widget ) || isToolBar( widget ) )
         { return true; }
 
         // reject

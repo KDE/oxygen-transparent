@@ -6,7 +6,7 @@
 // Oxygen widget style for KDE 4
 // -------------------
 //
-// Copyright (C) 2009-2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+// Copyright (C) 2009-2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
 // Copyright (C) 2008 Long Huynh Huu <long.upcase@googlemail.com>
 // Copyright (C) 2007-2008 Casper Boemann <cbr@boemann.dk>
 // Copyright (C) 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
@@ -51,9 +51,10 @@
 #include "oxygenmetrics.h"
 #include "oxygentileset.h"
 
+#include "kstyle.h"
+
 #include <QMap>
 #include <QAbstractScrollArea>
-#include <QCommonStyle>
 #include <QDockWidget>
 #include <QMdiSubWindow>
 #include <QStyleOption>
@@ -127,7 +128,7 @@ namespace Oxygen
 
     //! base class for oxygen style
     /*! it is responsible to draw all the primitives to be displayed on screen, on request from Qt paint engine */
-    class Style: public QCommonStyle
+    class Style: public KStyle
     {
         Q_OBJECT
 
@@ -152,8 +153,8 @@ namespace Oxygen
         virtual void unpolish( QWidget* );
 
         //! needed to avoid warnings at compilation time
-        using  QCommonStyle::polish;
-        using  QCommonStyle::unpolish;
+        using  KStyle::polish;
+        using  KStyle::unpolish;
 
         //! pixel metrics
         virtual int pixelMetric(PixelMetric, const QStyleOption* = 0, const QWidget* = 0) const;
@@ -390,7 +391,7 @@ namespace Oxygen
 
         // tabbar tab text
         QRect tabBarTabTextRect( const QStyleOption* option, const QWidget* widget ) const
-        { return QCommonStyle::subElementRect( SE_TabBarTabText, option, widget ).adjusted( 6, 0, -6, 0 ); }
+        { return KStyle::subElementRect( SE_TabBarTabText, option, widget ).adjusted( 6, 0, -6, 0 ); }
 
         // tab widgets
         QRect tabWidgetTabContentsRect( const QStyleOption*, const QWidget* ) const;
@@ -768,38 +769,6 @@ namespace Oxygen
             }
         }
 
-        //!@name custom elemenents
-        //@{
-
-        //! generic element
-        int newStyleElement( const QString &element, const char *check, int &counter )
-        {
-
-            if( !element.contains( QLatin1String( check ) ) ) return 0;
-            int id = _styleElements.value(element, 0);
-            if( !id )
-            {
-                ++counter;
-                id = counter;
-                _styleElements.insert(element, id);
-            }
-            return id;
-        }
-
-        //! style hint
-        QStyle::StyleHint newStyleHint( const QString &element )
-        { return (StyleHint) newStyleElement( element, "SH_", _hintCounter ); }
-
-        //! control element
-        QStyle::ControlElement newControlElement( const QString &element )
-        { return (ControlElement)newStyleElement( element, "CE_", _controlCounter ); }
-
-        //! subElement
-        QStyle::SubElement newSubElement(const QString &element )
-        { return (SubElement)newStyleElement( element, "SE_", _subElementCounter ); }
-
-        //@}
-
         private:
 
         //! true if KGlobalSettings signals are initialized
@@ -873,11 +842,6 @@ namespace Oxygen
 
         //!@name custom elements
         //@{
-
-        int _hintCounter;
-        int _controlCounter;
-        int _subElementCounter;
-        QHash<QString, int> _styleElements;
 
         //! use Argb Drag and Drop Window
         QStyle::StyleHint SH_ArgbDndWindow;

@@ -5,7 +5,7 @@
 // Oxygen widget style for KDE 4
 // -------------------
 //
-// Copyright ( C ) 2009-2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+// Copyright ( C ) 2009-2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
 // Copyright ( C ) 2008 Long Huynh Huu <long.upcase@googlemail.com>
 // Copyright ( C ) 2007-2008 Casper Boemann <cbr@boemann.dk>
 // Copyright ( C ) 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
@@ -62,7 +62,6 @@
 #include "oxygenwidgetexplorer.h"
 #include "oxygenwindowmanager.h"
 
-#include <QDebug>
 #include <QAbstractButton>
 #include <QAbstractItemView>
 #include <QApplication>
@@ -79,6 +78,7 @@
 #include <QGroupBox>
 #include <QLayout>
 #include <QLineEdit>
+#include <QLoggingCategory>
 #include <QMainWindow>
 #include <QMdiSubWindow>
 #include <QPushButton>
@@ -100,6 +100,8 @@
 #include <kdeversion.h>
 
 #include <cmath>
+
+Q_LOGGING_CATEGORY(OXYGEN, "oxygen")
 
 namespace OxygenPrivate
 {
@@ -168,21 +170,26 @@ namespace Oxygen
         else return 0;
     }
 
-    // hardcoded index offsets for custom widgets
-    // copied from e.g. kstyle.cxx
-    static const QStyle::StyleHint SH_KCustomStyleElement = ( QStyle::StyleHint )0xff000001;
-    static const int X_KdeBase = 0xff000000;
-
     //_____________________________________________________________________
     bool TopLevelManager::eventFilter( QObject *object, QEvent *event )
     {
 
         // cast to QWidget
         QWidget *widget = static_cast<QWidget*>( object );
+        const char *schemePropertyName = "KDE_COLOR_SCHEME_PATH";
         if( event->type() == QEvent::Show && _helper.hasDecoration( widget ) )
         {
             _helper.setHasBackgroundGradient( widget->winId(), true );
             _helper.setHasBackgroundPixmap( widget->winId(), _helper.hasBackgroundPixmap() );
+
+            if( qApp->property( schemePropertyName ).isValid() )
+            {
+                _helper.setColorScheme( widget->winId(), qApp->property( schemePropertyName ).toString() );
+            }
+        }
+        if( event->type() == QEvent::PaletteChange && _helper.hasDecoration( widget ) )
+        {
+            _helper.setColorScheme( widget->winId(), qApp->property( schemePropertyName ).toString() );
         }
 
         return false;
@@ -211,9 +218,6 @@ namespace Oxygen
         _splitterFactory( new SplitterFactory( this ) ),
         _frameFocusPrimitive( 0 ),
         _tabBarTabShapeControl( 0 ),
-        _hintCounter( X_KdeBase+1 ),
-        _controlCounter( X_KdeBase ),
-        _subElementCounter( X_KdeBase ),
         SH_ArgbDndWindow( newStyleHint( QStringLiteral( "SH_ArgbDndWindow" ) ) ),
         CE_CapacityBar( newControlElement( QStringLiteral( "CE_CapacityBar" ) ) )
 
@@ -225,6 +229,9 @@ namespace Oxygen
             QStringLiteral( "/OxygenStyle" ),
             QStringLiteral( "org.kde.Oxygen.Style" ),
             QStringLiteral( "reparseConfiguration" ), this, SLOT(oxygenConfigurationChanged()) );
+
+        // enable debugging
+        QLoggingCategory::setFilterRules(QStringLiteral("oxygen.debug = false"));
 
         // call the slot directly; this initial call will set up things that also
         // need to be reset when the system palette changes
@@ -496,7 +503,7 @@ namespace Oxygen
         }
 
         // base class polishing
-        QCommonStyle::polish( widget );
+        KStyle::polish( widget );
 
     }
 
@@ -607,7 +614,7 @@ namespace Oxygen
 
         } else if( widget->inherits( "QComboBoxPrivateContainer" ) ) widget->removeEventFilter( this );
 
-        QCommonStyle::unpolish( widget );
+        KStyle::unpolish( widget );
 
     }
 
@@ -618,20 +625,6 @@ namespace Oxygen
         // handle special cases
         switch( metric )
         {
-
-            // rely on QCommonStyle here
-            case PM_SmallIconSize:
-            case PM_ButtonIconSize:
-            return KIconLoader::global()->currentSize( KIconLoader::Small );
-
-            case PM_ToolBarIconSize:
-            return KIconLoader::global()->currentSize( KIconLoader::Toolbar );
-
-            case PM_LargeIconSize:
-            return KIconLoader::global()->currentSize( KIconLoader::Dialog );
-
-            case PM_MessageBoxIconSize:
-            return KIconLoader::SizeHuge;
 
             case PM_DefaultFrameWidth:
             {
@@ -662,6 +655,10 @@ namespace Oxygen
                     else if ( elementType == QLatin1String( "groupbox" ) )
                     {
                         return GroupBox_FrameWidth;
+                    }
+                    else
+                    {
+                        return Frame_FrameWidth;
                     }
                 }
                 else
@@ -808,7 +805,7 @@ namespace Oxygen
         }
 
         // fallback
-        return QCommonStyle::pixelMetric( metric, option, widget );
+        return KStyle::pixelMetric( metric, option, widget );
 
     }
 
@@ -816,32 +813,15 @@ namespace Oxygen
     int Style::styleHint( StyleHint hint, const QStyleOption* option, const QWidget* widget, QStyleHintReturn* returnData ) const
     {
 
-        // handles SH_KCustomStyleElement out of switch statement,
-        // to avoid warning at compilation
-        if( hint == SH_KCustomStyleElement )
-        {
-
-            if( widget ) return _styleElements.value( widget->objectName(), 0 );
-            else return 0;
-
-        }
-
         /*
         special cases, that cannot be registered in styleHint map,
         because of conditional statements
         */
         switch( hint )
         {
-
-            case SH_DialogButtonBox_ButtonsHaveIcons:
-            return true;
-
             case SH_GroupBox_TextLabelColor:
             if( option ) return option->palette.color( QPalette::WindowText ).rgba();
             else return QPalette().color( QPalette::WindowText ).rgba();
-
-            case SH_ItemView_ActivateItemOnSingleClick:
-            return false;
 
             case SH_RubberBand_Mask:
             {
@@ -897,7 +877,6 @@ namespace Oxygen
             case SH_DialogButtonLayout: return QDialogButtonBox::KdeLayout;
             case SH_ScrollBar_MiddleClickAbsolutePosition: return true;
             case SH_ItemView_ShowDecorationSelected: return false;
-            case SH_ItemView_ArrowKeysNavigateIntoChildren: return true;
             case SH_ScrollView_FrameOnlyAroundContents: return true;
             case SH_FormLayoutFormAlignment: return Qt::AlignLeft | Qt::AlignTop;
             case SH_FormLayoutLabelAlignment: return Qt::AlignRight;
@@ -911,7 +890,7 @@ namespace Oxygen
             case SH_MessageBox_CenterButtons:
             return false;
 
-            default: return QCommonStyle::styleHint( hint, option, widget, returnData );
+            default: return KStyle::styleHint( hint, option, widget, returnData );
         }
 
     }
@@ -953,7 +932,7 @@ namespace Oxygen
             // toolboxes
             case SE_ToolBoxTabContents: return toolBoxTabContentsRect( option, widget );
 
-            default: return QCommonStyle::subElementRect( element, option, widget );
+            default: return KStyle::subElementRect( element, option, widget );
 
         }
 
@@ -970,7 +949,7 @@ namespace Oxygen
             case CC_ComboBox: return comboBoxSubControlRect( option, subControl, widget );
             case CC_ScrollBar: return scrollBarSubControlRect( option, subControl, widget );
             case CC_SpinBox: return spinBoxSubControlRect( option, subControl, widget );
-            default: return QCommonStyle::subControlRect( element, option, subControl, widget );
+            default: return KStyle::subControlRect( element, option, subControl, widget );
         }
 
     }
@@ -992,7 +971,7 @@ namespace Oxygen
             case CT_TabBarTab: return tabBarTabSizeFromContents( option, size, widget );
             case CT_TabWidget: return tabWidgetSizeFromContents( option, size, widget );
             case CT_ToolButton: return toolButtonSizeFromContents( option, size, widget );
-            default: return QCommonStyle::sizeFromContents( element, option, size, widget );
+            default: return KStyle::sizeFromContents( element, option, size, widget );
         }
 
     }
@@ -1039,7 +1018,7 @@ namespace Oxygen
                 } else return SC_ScrollBarAddLine;
             }
 
-            default: return QCommonStyle::hitTestComplexControl( control, option, point, widget );
+            default: return KStyle::hitTestComplexControl( control, option, point, widget );
         }
 
     }
@@ -1108,7 +1087,7 @@ namespace Oxygen
         // try find primitive in map, and run.
         // exit if result is true, otherwise fallback to generic case
         if( !( fcn && ( this->*fcn )( option, painter, widget ) ) )
-        { QCommonStyle::drawPrimitive( element, option, painter, widget ); }
+        { KStyle::drawPrimitive( element, option, painter, widget ); }
 
         painter->restore();
 
@@ -1117,7 +1096,6 @@ namespace Oxygen
     //______________________________________________________________
     void Style::drawControl( ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
     {
-
         painter->save();
 
         StyleControl fcn( 0 );
@@ -1174,7 +1152,7 @@ namespace Oxygen
         }
 
         if( !( fcn && ( this->*fcn )( option, painter, widget ) ) )
-        { QCommonStyle::drawControl( element, option, painter, widget ); }
+        { KStyle::drawControl( element, option, painter, widget ); }
 
         painter->restore();
 
@@ -1202,7 +1180,7 @@ namespace Oxygen
         }
 
         if( !( fcn && ( this->*fcn )( option, painter, widget ) ) )
-        { QCommonStyle::drawComplexControl( element, option, painter, widget ); }
+        { KStyle::drawComplexControl( element, option, painter, widget ); }
 
         painter->restore();
 
@@ -1235,13 +1213,13 @@ namespace Oxygen
             {
 
                 const QPalette pal = helper().mergePalettes( palette, animations().widgetEnabilityEngine().opacity( widget, AnimationEnable )  );
-                return QCommonStyle::drawItemText( painter, r, flags, pal, enabled, text, textRole );
+                return KStyle::drawItemText( painter, r, flags, pal, enabled, text, textRole );
 
             }
 
         }
 
-        return QCommonStyle::drawItemText( painter, r, flags, palette, enabled, text, textRole );
+        return KStyle::drawItemText( painter, r, flags, palette, enabled, text, textRole );
 
     }
 
@@ -1263,7 +1241,7 @@ namespace Oxygen
 
         if( widget->inherits( "QComboBoxPrivateContainer" ) ) { return eventFilterComboBoxContainer( widget, event ); }
 
-        return QCommonStyle::eventFilter( object, event );
+        return KStyle::eventFilter( object, event );
 
     }
 
@@ -1585,7 +1563,7 @@ namespace Oxygen
         const QStyleOptionTab* tabOpt( qstyleoption_cast<const QStyleOptionTab*>( option ) );
         if ( !tabOpt ) return QRect();
 
-        QRect r( QCommonStyle::subElementRect( element, option, widget ) );
+        QRect r( KStyle::subElementRect( element, option, widget ) );
         const bool selected( option->state&State_Selected );
 
         switch( tabOpt->shape )
@@ -1904,7 +1882,7 @@ namespace Oxygen
 
         }
 
-        return QCommonStyle::subControlRect( CC_GroupBox, option, subControl, widget );
+        return KStyle::subControlRect( CC_GroupBox, option, subControl, widget );
     }
 
     //___________________________________________________________________________________________________________________
@@ -1913,7 +1891,7 @@ namespace Oxygen
 
         const QRect& r( option->rect );
         const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>( option );
-        if( !cb ) return QCommonStyle::subControlRect( CC_ComboBox, option, subControl, widget );
+        if( !cb ) return KStyle::subControlRect( CC_ComboBox, option, subControl, widget );
 
         switch( subControl )
         {
@@ -1975,7 +1953,7 @@ namespace Oxygen
 
         }
 
-        return QCommonStyle::subControlRect( CC_ComboBox, option, subControl, widget );
+        return KStyle::subControlRect( CC_ComboBox, option, subControl, widget );
 
     }
 
@@ -2161,7 +2139,7 @@ namespace Oxygen
 
         }
 
-        return QCommonStyle::subControlRect( CC_SpinBox, option, subControl, widget );
+        return KStyle::subControlRect( CC_SpinBox, option, subControl, widget );
 
    }
 
@@ -2447,7 +2425,9 @@ namespace Oxygen
         const QPalette& palette( option->palette );
 
         const bool enabled( flags & State_Enabled );
-        const bool isInputWidget( widget && widget->testAttribute( Qt::WA_Hover ) );
+        const bool isQtQuickControl = !widget && option && option->styleObject && option->styleObject->inherits( "QQuickStyleItem" );
+        const bool isInputWidget( ( widget && widget->testAttribute( Qt::WA_Hover ) )
+                                  || ( isQtQuickControl && option->styleObject->property( "elementType" ).toString() == QStringLiteral( "edit") ) );
 
         // hover
         const bool hoverHighlight( enabled && isInputWidget && ( flags&State_MouseOver ) );
@@ -3103,7 +3083,14 @@ namespace Oxygen
             const QRect slabRect( r.adjusted( -1, 0, 1, 0 ) );
 
             // match color to the window background
-            const QColor buttonColor( helper().backgroundColor( palette.color( QPalette::Button ), widget, r.center() ) );
+            QColor buttonColor( helper().backgroundColor( palette.color( QPalette::Button ), widget, r.center() ) );
+
+            // merge button color with highlight in case of default button
+            if( enabled && bOpt && (bOpt->features&QStyleOptionButton::DefaultButton) )
+            {
+                const QColor tintColor( helper().calcLightColor( buttonColor ) );
+                buttonColor = KColorUtils::mix( buttonColor, tintColor, 0.5 );
+            }
 
             if( enabled && hoverAnimated && !( opts & Sunken ) )
             {
@@ -4773,7 +4760,7 @@ namespace Oxygen
         if( const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>( option ) )
         {
 
-            // same as QCommonStyle::drawControl, except that it handles animations
+            // same as KStyle::drawControl, except that it handles animations
             QStyleOptionProgressBarV2 subopt = *pb;
             subopt.rect = subElementRect( SE_ProgressBarGroove, pb, widget );
             drawProgressBarGrooveControl( &subopt, painter, widget );
@@ -7178,11 +7165,11 @@ namespace Oxygen
             QStyleOptionToolButton localOption( *toolButtonOpt );
             localOption.palette.setColor( QPalette::ButtonText, option->palette.color( QPalette::WindowText ) );
 
-            QCommonStyle::drawControl( CE_ToolButtonLabel, &localOption, painter, widget );
+            KStyle::drawControl( CE_ToolButtonLabel, &localOption, painter, widget );
 
         } else {
 
-            QCommonStyle::drawControl( CE_ToolButtonLabel, option, painter, widget );
+            KStyle::drawControl( CE_ToolButtonLabel, option, painter, widget );
 
         }
 
@@ -7505,7 +7492,7 @@ namespace Oxygen
             QFont font = oldFont;
             font.setBold( true );
             painter->setFont( font );
-            QCommonStyle::drawComplexControl( CC_GroupBox, option, painter, widget );
+            KStyle::drawComplexControl( CC_GroupBox, option, painter, widget );
             painter->setFont( oldFont );
             return true;
 
@@ -7673,7 +7660,7 @@ namespace Oxygen
             { palette = helper().mergePalettes( palette, animations().widgetEnabilityEngine().opacity( widget, AnimationEnable )  ); }
 
             palette.setCurrentColorGroup( active ? QPalette::Active: QPalette::Disabled );
-            QCommonStyle::drawItemText( painter, textRect, Qt::AlignCenter, palette, active, tb->text, QPalette::WindowText );
+            KStyle::drawItemText( painter, textRect, Qt::AlignCenter, palette, active, tb->text, QPalette::WindowText );
 
         }
 
@@ -7840,6 +7827,9 @@ namespace Oxygen
         // reset helper configuration
         helper().reloadConfig();
 
+        // background gradient
+        helper().setUseBackgroundGradient( StyleConfigData::useBackgroundGradient() );
+
         // background pixmap
         helper().setBackgroundPixmap( StyleConfigData::backgroundPixmap() );
 
@@ -7952,82 +7942,6 @@ namespace Oxygen
         const QStyleOption *option,
         const QWidget *widget ) const
     {
-
-        switch( standardIcon )
-        {
-
-            // copied from kstyle
-            case SP_DesktopIcon: return QIcon::fromTheme( QStringLiteral( "user-desktop" ) );
-            case SP_TrashIcon: return QIcon::fromTheme( QStringLiteral( "user-trash" ) );
-            case SP_ComputerIcon: return QIcon::fromTheme( QStringLiteral( "computer" ) );
-            case SP_DriveFDIcon: return QIcon::fromTheme( QStringLiteral( "media-floppy" ) );
-            case SP_DriveHDIcon: return QIcon::fromTheme( QStringLiteral( "drive-harddisk" ) );
-            case SP_DriveCDIcon: return QIcon::fromTheme( QStringLiteral( "drive-optical" ) );
-            case SP_DriveDVDIcon: return QIcon::fromTheme( QStringLiteral( "drive-optical" ) );
-            case SP_DriveNetIcon: return QIcon::fromTheme( QStringLiteral( "folder-remote" ) );
-            case SP_DirHomeIcon: return QIcon::fromTheme( QStringLiteral( "user-home" ) );
-            case SP_DirOpenIcon: return QIcon::fromTheme( QStringLiteral( "document-open-folder" ) );
-            case SP_DirClosedIcon: return QIcon::fromTheme( QStringLiteral( "folder" ) );
-            case SP_DirIcon: return QIcon::fromTheme( QStringLiteral( "folder" ) );
-
-            //TODO: generate ( !? ) folder with link emblem
-            case SP_DirLinkIcon: return QIcon::fromTheme( QStringLiteral( "folder" ) );
-
-            //TODO: look for a better icon
-            case SP_FileIcon: return QIcon::fromTheme( QStringLiteral( "text-plain" ) );
-
-            //TODO: generate ( !? ) file with link emblem
-            case SP_FileLinkIcon: return QIcon::fromTheme( QStringLiteral( "text-plain" ) );
-
-            //TODO: find correct icon
-            case SP_FileDialogStart: return QIcon::fromTheme( QStringLiteral( "media-playback-start" ) );
-
-            //TODO: find correct icon
-            case SP_FileDialogEnd: return QIcon::fromTheme( QStringLiteral( "media-playback-stop" ) );
-
-            case SP_FileDialogToParent: return QIcon::fromTheme( QStringLiteral( "go-up" ) );
-            case SP_FileDialogNewFolder: return QIcon::fromTheme( QStringLiteral( "folder-new" ) );
-            case SP_FileDialogDetailedView: return QIcon::fromTheme( QStringLiteral( "view-list-details" ) );
-            case SP_FileDialogInfoView: return QIcon::fromTheme( QStringLiteral( "document-properties" ) );
-            case SP_FileDialogContentsView: return QIcon::fromTheme( QStringLiteral( "view-list-icons" ) );
-            case SP_FileDialogListView: return QIcon::fromTheme( QStringLiteral( "view-list-text" ) );
-            case SP_FileDialogBack: return QIcon::fromTheme( QStringLiteral( "go-previous" ) );
-            case SP_MessageBoxInformation: return QIcon::fromTheme( QStringLiteral( "dialog-information" ) );
-            case SP_MessageBoxWarning: return QIcon::fromTheme( QStringLiteral( "dialog-warning" ) );
-            case SP_MessageBoxCritical: return QIcon::fromTheme( QStringLiteral( "dialog-error" ) );
-            case SP_MessageBoxQuestion: return QIcon::fromTheme( QStringLiteral( "dialog-information" ) );
-            case SP_DialogOkButton: return QIcon::fromTheme( QStringLiteral( "dialog-ok" ) );
-            case SP_DialogCancelButton: return QIcon::fromTheme( QStringLiteral( "dialog-cancel" ) );
-            case SP_DialogHelpButton: return QIcon::fromTheme( QStringLiteral( "help-contents" ) );
-            case SP_DialogOpenButton: return QIcon::fromTheme( QStringLiteral( "document-open" ) );
-            case SP_DialogSaveButton: return QIcon::fromTheme( QStringLiteral( "document-save" ) );
-            case SP_DialogCloseButton: return QIcon::fromTheme( QStringLiteral( "dialog-close" ) );
-            case SP_DialogApplyButton: return QIcon::fromTheme( QStringLiteral( "dialog-ok-apply" ) );
-            case SP_DialogResetButton: return QIcon::fromTheme( QStringLiteral( "document-revert" ) );
-            case SP_DialogDiscardButton: return QIcon::fromTheme( QStringLiteral( "dialog-cancel" ) );
-            case SP_DialogYesButton: return QIcon::fromTheme( QStringLiteral( "dialog-ok-apply" ) );
-            case SP_DialogNoButton: return QIcon::fromTheme( QStringLiteral( "dialog-cancel" ) );
-            case SP_ArrowUp: return QIcon::fromTheme( QStringLiteral( "go-up" ) );
-            case SP_ArrowDown: return QIcon::fromTheme( QStringLiteral( "go-down" ) );
-            case SP_ArrowLeft: return QIcon::fromTheme( QStringLiteral( "go-previous-view" ) );
-            case SP_ArrowRight: return QIcon::fromTheme( QStringLiteral( "go-next-view" ) );
-            case SP_ArrowBack: return QIcon::fromTheme( QStringLiteral( "go-previous" ) );
-            case SP_ArrowForward: return QIcon::fromTheme( QStringLiteral( "go-next" ) );
-            case SP_BrowserReload: return QIcon::fromTheme( QStringLiteral( "view-refresh" ) );
-            case SP_BrowserStop: return QIcon::fromTheme( QStringLiteral( "process-stop" ) );
-            case SP_MediaPlay: return QIcon::fromTheme( QStringLiteral( "media-playback-start" ) );
-            case SP_MediaStop: return QIcon::fromTheme( QStringLiteral( "media-playback-stop" ) );
-            case SP_MediaPause: return QIcon::fromTheme( QStringLiteral( "media-playback-pause" ) );
-            case SP_MediaSkipForward: return QIcon::fromTheme( QStringLiteral( "media-skip-forward" ) );
-            case SP_MediaSkipBackward: return QIcon::fromTheme( QStringLiteral( "media-skip-backward" ) );
-            case SP_MediaSeekForward: return QIcon::fromTheme( QStringLiteral( "media-seek-forward" ) );
-            case SP_MediaSeekBackward: return QIcon::fromTheme( QStringLiteral( "media-seek-backward" ) );
-            case SP_MediaVolume: return QIcon::fromTheme( QStringLiteral( "audio-volume-medium" ) );
-            case SP_MediaVolumeMuted: return QIcon::fromTheme( QStringLiteral( "audio-volume-muted" ) );
-
-            default: break;
-
-        }
 
         // MDI windows buttons
         // get button color ( unfortunately option and widget might not be set )
@@ -8175,7 +8089,7 @@ namespace Oxygen
             }
 
             default:
-            return QCommonStyle::standardIcon( standardIcon, option, widget );
+            return KStyle::standardIcon( standardIcon, option, widget );
         }
     }
 

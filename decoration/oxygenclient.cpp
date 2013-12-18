@@ -613,23 +613,8 @@ namespace Oxygen
     {
 
         // window background
-        if(
-            _configuration->blendStyle() == Configuration::BlendNone ||
-            ( _configuration->blendStyle() == Configuration::BlendFromStyle &&
-            !helper().hasBackgroundGradient( windowId() )
-            ) )
+        if( helper().hasBackgroundGradient( windowId() ) )
         {
-
-            if( compositingActive() && _transparencyEnabled && !opaque )
-            {
-
-                QColor color( palette.color( QPalette::Window ) );
-                color.setAlpha( _configuration->backgroundOpacity() );
-                painter->fillRect( rect, color );
-
-            } else painter->fillRect( rect, palette.color( QPalette::Window ) );
-
-        } else {
 
             int offset = layoutMetric( LM_OuterPaddingTop );
 
@@ -651,6 +636,17 @@ namespace Oxygen
                 helper().renderWindowBackground( painter, rect, widget, window, palette, offset, height );
 
             }
+
+        } else {
+
+            if( compositingActive() && _transparencyEnabled && !opaque )
+            {
+
+                QColor color( palette.color( QPalette::Window ) );
+                color.setAlpha( _configuration->backgroundOpacity() );
+                painter->fillRect( rect, color );
+
+            } else painter->fillRect( rect, palette.color( QPalette::Window ) );
 
         }
 
@@ -1427,14 +1423,6 @@ namespace Oxygen
 
     }
 
-//     //_________________________________________________________
-//     QString Client::defaultButtonsLeft() const
-//     { return KCommonDecoration::defaultButtonsLeft(); }
-//
-//     //_________________________________________________________
-//     QString Client::defaultButtonsRight() const
-//     { return QStringLiteral("HIAX"); }
-
     //________________________________________________________________
     void Client::updateWindowShape()
     {
@@ -1639,7 +1627,7 @@ namespace Oxygen
     {
 
         // palette
-        QPalette palette = widget()->palette();
+        QPalette palette = KCommonDecoration::palette();
         palette.setCurrentColorGroup( (isActive() ) ? QPalette::Active : QPalette::Inactive );
 
         // define frame

@@ -1,5 +1,5 @@
 /*
-Copyright 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+Copyright 2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
 Copyright 2009 Matthew Woehlke <mw.triad@users.sourceforge.net>
 Copyright 2009 Long Huynh Huu <long.upcase@googlemail.com>
 Copyright 2003 Sandro Giessl <ceebx@users.sourceforge.net>
@@ -78,6 +78,7 @@ namespace Oxygen
         load();
 
         connect( _backgroundOpacity, SIGNAL(valueChanged(int) ), SLOT(updateChanged()) );
+        connect( _useBackgroundGradient, SIGNAL(toggled(bool)), SLOT(updateChanged()) );
         connect( _toolBarDrawItemSeparator, SIGNAL(toggled(bool)), SLOT(updateChanged()) );
         connect( _checkDrawX, SIGNAL(toggled(bool)), SLOT(updateChanged()) );
         connect( _splitterProxyEnabled, SIGNAL(toggled(bool)), SLOT(updateChanged()) );
@@ -105,6 +106,7 @@ namespace Oxygen
     void StyleConfig::save( void )
     {
         StyleConfigData::setBackgroundOpacity( _backgroundOpacity->value() );
+        StyleConfigData::setUseBackgroundGradient( _useBackgroundGradient->isChecked() );
         StyleConfigData::setToolBarDrawItemSeparator( _toolBarDrawItemSeparator->isChecked() );
         StyleConfigData::setCheckBoxStyle( ( _checkDrawX->isChecked() ? StyleConfigData::CS_X : StyleConfigData::CS_CHECK ) );
         StyleConfigData::setSplitterProxyEnabled( _splitterProxyEnabled->isChecked() );
@@ -280,6 +282,7 @@ namespace Oxygen
         bool modified( false );
 
         // check if any value was modified
+        if ( _useBackgroundGradient->isChecked() != StyleConfigData::useBackgroundGradient() ) modified = true;
         if ( _toolBarDrawItemSeparator->isChecked() != StyleConfigData::toolBarDrawItemSeparator() ) modified = true;
         else if( _backgroundOpacity->value() != StyleConfigData::backgroundOpacity() ) modified = true;
         else if( _mnemonicsMode->currentIndex() != StyleConfigData::mnemonicsMode() ) modified = true;
@@ -332,6 +335,7 @@ namespace Oxygen
     {
 
         _backgroundOpacity->setValue( StyleConfigData::backgroundOpacity() );
+        _useBackgroundGradient->setChecked( StyleConfigData::useBackgroundGradient() );
         _toolBarDrawItemSeparator->setChecked( StyleConfigData::toolBarDrawItemSeparator() );
         _mnemonicsMode->setCurrentIndex( StyleConfigData::mnemonicsMode() );
         _splitterProxyEnabled->setChecked( StyleConfigData::splitterProxyEnabled() );

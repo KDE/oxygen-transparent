@@ -8,6 +8,11 @@ find_package(ECM 0.0.8 REQUIRED NO_MODULE)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
+include(ECMMarkNonGuiExecutable)
+
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings)
 
 ################# Qt5 #################
 find_package( Qt5 REQUIRED COMPONENTS Gui Widgets DBus )
@@ -17,19 +22,16 @@ find_package( Qt5 REQUIRED COMPONENTS PrintSupport Xml Network Concurrent Svg )
 # TODO remove it in future
 find_package(LibAttica NO_MODULE)
 
-find_package( KF5 MODULE REQUIRED COMPONENTS
-    CMake
-    Compiler
-    InstallDirs
-    KConfig
-    KGuiAddons
-    KConfigWidgets
-    KI18n
-    KIconThemes
-    KCompletion
-    KService
-    KWindowSystem
-    KStyle
+find_package( KF5 CONFIG REQUIRED
+    Config
+    GuiAddons
+    ConfigWidgets
+    I18n
+    IconThemes
+    Completion
+    Service
+    WindowSystem
+    Style
 )
 
 include_directories(

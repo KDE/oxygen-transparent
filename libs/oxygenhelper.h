@@ -2,7 +2,7 @@
 #define oxygen_helper_h
 
 /*
- * Copyright 2009-2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+ * Copyright 2009-2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
  * Copyright 2008 Long Huynh Huu <long.upcase@googlemail.com>
  * Copyright 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
  * Copyright 2007 Casper Boemann <cbr@boemann.dk>
@@ -345,6 +345,9 @@ namespace Oxygen
         virtual bool hasBackgroundPixmap( WId ) const;
 
         //@}
+
+        //! set color scheme as XProperty
+        void setColorScheme( WId, const QString& ) const;
 
         template <typename T> class ScopedPointer: public QScopedPointer<T, QScopedPointerPodDeleter>
         {
