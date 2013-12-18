@@ -2,7 +2,7 @@
 #define oxygen_style_helper_h
 
 /*
- * Copyright 2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+ * Copyright 2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
  * Copyright 2008 Long Huynh Huu <long.upcase@googlemail.com>
  * Copyright 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
  * Copyright 2007 Casper Boemann <cbr@boemann.dk>
@@ -68,17 +68,20 @@ namespace Oxygen
         //! update maximum cache size
         virtual void setMaxCacheSize( int );
 
+        //! background gradient
+        virtual void setUseBackgroundGradient( bool value )
+        { _useBackgroundGradient = value; }
+
         //! render window background using a given color as a reference
         /*!
         For the widget style, both the gradient and the background pixmap are rendered in the same method.
         All the actual rendering is performed by the base class
         */
         using Helper::renderWindowBackground;
-        virtual void renderWindowBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QColor& color, int y_shift=-23, int gradientHeight = 20 )
-        {
-            Helper::renderWindowBackground( p, clipRect, widget, widget->window(), color, y_shift, gradientHeight );
-            Helper::renderBackgroundPixmap( p, clipRect, widget, widget->window(), y_shift, gradientHeight );
-        }
+        virtual void renderWindowBackground( QPainter*, const QRect&, const QWidget*, const QColor&, int y_shift=-23, int gradientHeight = 20 );
+
+        //! set background gradient hint to widget
+        virtual void setHasBackgroundGradient( WId, bool ) const;
 
         // render menu background
         void renderMenuBackground( QPainter* p, const QRect& clipRect, const QWidget* widget, const QPalette& pal )
@@ -219,6 +222,9 @@ namespace Oxygen
 
         //! dynamically allocated debug area
         int _debugArea;
+
+        //! background grandient
+        bool _useBackgroundGradient;
 
         Cache<QPixmap> _dialSlabCache;
         Cache<QPixmap> _roundSlabCache;

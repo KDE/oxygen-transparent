@@ -77,7 +77,7 @@ namespace Oxygen
 
         //! true if window is maximized
         virtual bool isMaximized( void ) const
-        { return maximizeMode()==MaximizeFull && !configuration()->drawBorderOnMaximizedWindows();  }
+        { return maximizeMode()==MaximizeFull && !options()->moveResizeMaximizedWindows();  }
 
         //! true if animations are used
         bool animationsEnabled( void ) const

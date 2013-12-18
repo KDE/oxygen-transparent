@@ -5,7 +5,7 @@
 // Oxygen widget style for KDE 4
 // -------------------
 //
-// Copyright ( C ) 2009-2010 Hugo Pereira Da Costa <hugo@oxygen-icons.org>
+// Copyright ( C ) 2009-2010 Hugo Pereira Da Costa <hugo.pereira@free.fr>
 // Copyright ( C ) 2008 Long Huynh Huu <long.upcase@googlemail.com>
 // Copyright ( C ) 2007-2008 Casper Boemann <cbr@boemann.dk>
 // Copyright ( C ) 2007 Matthew Woehlke <mw_triad@users.sourceforge.net>
@@ -3099,7 +3099,14 @@ namespace Oxygen
             const QRect slabRect( r.adjusted( -1, 0, 1, 0 ) );
 
             // match color to the window background
-            const QColor buttonColor( helper().backgroundColor( palette.color( QPalette::Button ), widget, r.center() ) );
+            QColor buttonColor( helper().backgroundColor( palette.color( QPalette::Button ), widget, r.center() ) );
+
+            // merge button color with highlight in case of default button
+            if( enabled && bOpt && (bOpt->features&QStyleOptionButton::DefaultButton) )
+            {
+                const QColor tintColor( helper().calcLightColor( buttonColor ) );
+                buttonColor = KColorUtils::mix( buttonColor, tintColor, 0.5 );
+            }
 
             if( enabled && hoverAnimated && !( opts & Sunken ) )
             {
@@ -8035,6 +8042,9 @@ namespace Oxygen
 
         // reset helper configuration
         helper().reloadConfig();
+
+        // background gradient
+        helper().setUseBackgroundGradient( StyleConfigData::useBackgroundGradient() );
 
         // background pixmap
         helper().setBackgroundPixmap( StyleConfigData::backgroundPixmap() );

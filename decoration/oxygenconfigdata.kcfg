@@ -50,16 +50,7 @@
       <default>BorderTiny</default>
     </entry>
 
-    <entry name="BlendStyle" type = "Enum">
-      <choices>
-          <choice name="BlendNone" />
-          <choice name="BlendRadial" />
-          <choice name="BlendFromStyle" />
-      </choices>
-      <default>BlendFromStyle</default>
-    </entry>
-
-    <entry name="DrawSizeGrip" type = "Bool">
+    <entry name="drawSizeGrip" type = "Bool">
       <default>true</default>
     </entry>
 
@@ -81,11 +72,6 @@
 
     <entry name="UseExtendedWindowBorders" type = "Bool">
        <default>true</default>
-    </entry>
-
-    <!-- maximized windows -->
-    <entry name="DrawBorderOnMaximizedWindows" type = "Bool">
-       <default>false</default>
     </entry>
 
     <!-- animations -->

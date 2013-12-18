@@ -70,14 +70,12 @@ namespace Oxygen
         connect( ui.titleAlignment, SIGNAL(currentIndexChanged(int)), SLOT(updateChanged()) );
         connect( ui.buttonSize, SIGNAL(currentIndexChanged(int)), SLOT(updateChanged()) );
         connect( ui.frameBorder, SIGNAL(currentIndexChanged(int)), SLOT(updateChanged()) );
-        connect( ui.blendColor, SIGNAL(currentIndexChanged(int)), SLOT(updateChanged()) );
 
         connect( ui.titleOutline, SIGNAL(clicked()), SLOT(updateChanged()) );
         connect( ui.drawSizeGrip, SIGNAL(clicked()), SLOT(updateChanged()) );
         connect( ui.narrowButtonSpacing, SIGNAL(clicked()), SLOT(updateChanged()) );
         connect( ui.closeFromMenuButton, SIGNAL(clicked()), SLOT(updateChanged()) );
         connect( ui.separatorMode, SIGNAL(currentIndexChanged(int)), SLOT(updateChanged()) );
-        connect( ui.drawBorderOnMaximizedWindows, SIGNAL(clicked()), SLOT(updateChanged()) );
 
         // transparency
         connect( ui.opacityFromStyle, SIGNAL(clicked()), SLOT(updateChanged()) );
@@ -109,7 +107,6 @@ namespace Oxygen
         if( !_configuration ) return;
         ui.titleAlignment->setCurrentIndex( _configuration->titleAlignment() );
         ui.buttonSize->setCurrentIndex( _configuration->buttonSize() );
-        ui.blendColor->setCurrentIndex( _configuration->blendStyle() );
         ui.frameBorder->setCurrentIndex( _configuration->frameBorder() );
         ui.separatorMode->setCurrentIndex( _configuration->separatorMode() );
         ui.drawSizeGrip->setChecked( _configuration->drawSizeGrip() );
@@ -117,7 +114,6 @@ namespace Oxygen
         ui.animationsEnabled->setChecked( _configuration->animationsEnabled() );
         ui.narrowButtonSpacing->setChecked( _configuration->useNarrowButtonSpacing() );
         ui.closeFromMenuButton->setChecked( _configuration->closeWindowFromMenuButton() );
-        ui.drawBorderOnMaximizedWindows->setChecked( _configuration->drawBorderOnMaximizedWindows() );
 
         // transparency
         ui.opacityFromStyle->setChecked( _configuration->opacityFromStyle() );
@@ -138,14 +134,12 @@ namespace Oxygen
         // apply modifications from ui
         _configuration->setTitleAlignment( ui.titleAlignment->currentIndex() );
         _configuration->setButtonSize( ui.buttonSize->currentIndex() );
-        _configuration->setBlendStyle( ui.blendColor->currentIndex() );
         _configuration->setFrameBorder( ui.frameBorder->currentIndex() );
         _configuration->setSeparatorMode( ui.separatorMode->currentIndex() );
         _configuration->setDrawSizeGrip( ui.drawSizeGrip->isChecked() );
         _configuration->setDrawTitleOutline( ui.titleOutline->isChecked() );
         _configuration->setUseNarrowButtonSpacing( ui.narrowButtonSpacing->isChecked() );
         _configuration->setCloseWindowFromMenuButton( ui.closeFromMenuButton->isChecked() );
-        _configuration->setDrawBorderOnMaximizedWindows( ui.drawBorderOnMaximizedWindows->isChecked() );
 
         // transparency
         _configuration->setOpacityFromStyle( ui.opacityFromStyle->isChecked() );
@@ -244,14 +238,12 @@ namespace Oxygen
 
         if( ui.titleAlignment->currentIndex() != _configuration->titleAlignment() ) modified = true;
         else if( ui.buttonSize->currentIndex() != _configuration->buttonSize() ) modified = true;
-        else if( ui.blendColor->currentIndex() != _configuration->blendStyle() ) modified = true;
         else if( ui.frameBorder->currentIndex() != _configuration->frameBorder() ) modified = true;
         else if( ui.separatorMode->currentIndex() != _configuration->separatorMode() ) modified = true;
         else if( ui.drawSizeGrip->isChecked() != _configuration->drawSizeGrip() ) modified = true;
         else if( ui.titleOutline->isChecked() !=  _configuration->drawTitleOutline() ) modified = true;
         else if( ui.narrowButtonSpacing->isChecked() !=  _configuration->useNarrowButtonSpacing() ) modified = true;
         else if( ui.closeFromMenuButton->isChecked() != _configuration->closeWindowFromMenuButton() ) modified = true;
-        else if( ui.drawBorderOnMaximizedWindows->isChecked() != _configuration->drawBorderOnMaximizedWindows() ) modified = true;
 
         // transparency
         else if( ui.opacityFromStyle->isChecked() != _configuration->opacityFromStyle() ) modified = true;

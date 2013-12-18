@@ -611,23 +611,8 @@ namespace Oxygen
     {
 
         // window background
-        if(
-            _configuration->blendStyle() == Configuration::BlendNone ||
-            ( _configuration->blendStyle() == Configuration::BlendFromStyle &&
-            !helper().hasBackgroundGradient( windowId() )
-            ) )
+        if( helper().hasBackgroundGradient( windowId() ) )
         {
-
-            if( compositingActive() && _transparencyEnabled && !opaque )
-            {
-
-                QColor color( palette.color( QPalette::Window ) );
-                color.setAlpha( _configuration->backgroundOpacity() );
-                painter->fillRect( rect, color );
-
-            } else painter->fillRect( rect, palette.color( QPalette::Window ) );
-
-        } else {
 
             int offset = layoutMetric( LM_OuterPaddingTop );
 
@@ -636,7 +621,6 @@ namespace Oxygen
             if( isMaximized() ) offset -= 3;
 
             const QWidget* window( isPreview() ? this->widget() : widget->window() );
-
             if( compositingActive() && _transparencyEnabled && !opaque )
             {
 
@@ -649,6 +633,17 @@ namespace Oxygen
                 helper().renderWindowBackground( painter, rect, widget, window, palette, offset, height );
 
             }
+
+        } else {
+
+            if( compositingActive() && _transparencyEnabled && !opaque )
+            {
+
+                QColor color( palette.color( QPalette::Window ) );
+                color.setAlpha( _configuration->backgroundOpacity() );
+                painter->fillRect( rect, color );
+
+            } else painter->fillRect( rect, palette.color( QPalette::Window ) );
 
         }
 
