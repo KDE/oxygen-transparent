@@ -57,3 +57,5 @@ endif()
 add_subdirectory(libs)
 add_subdirectory(style)
 add_subdirectory(decoration)
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
