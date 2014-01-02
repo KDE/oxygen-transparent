@@ -37,9 +37,6 @@ find_package( KF5 CONFIG REQUIRED
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/libs
-    ${KF5_INCLUDE_DIRS}
-    ${KF5_INCLUDE_DIRS}/KDE
-    ${CMAKE_INSTALL_PREFIX}/include/KDE
 )
 
 ################# X11 #################
