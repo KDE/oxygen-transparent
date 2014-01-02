@@ -22,8 +22,7 @@ add_library(kwin3_oxygen_transparent MODULE ${kwin_oxygen_transparent_SRCS})
 target_link_libraries(kwin3_oxygen_transparent Qt5::Widgets )
 target_link_libraries(kwin3_oxygen_transparent KF5::I18n KF5::WindowSystem KF5::Style KF5::KDE4Support)
 
-find_library( KDECORATIONS_LIB NAMES kdecorations )
-target_link_libraries(kwin3_oxygen_transparent ${KDECORATIONS_LIB})
+target_link_libraries(kwin3_oxygen_transparent ${KDE4WORKSPACE_KDECORATIONS_LIBS})
 
 target_link_libraries(kwin3_oxygen_transparent oxygentransparentstyle )
 
