@@ -35,10 +35,14 @@ find_package( KF5 CONFIG REQUIRED
     Style
 )
 
+find_package(KDE4Workspace 4.90 REQUIRED)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/libs
+    ${KDE4WORKSPACE_INCLUDE_DIR}
 )
+
 
 ################# X11 #################
 find_package(X11 MODULE)
