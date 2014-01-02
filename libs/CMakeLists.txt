@@ -55,6 +55,8 @@ add_library(oxygentransparentstyleconfig SHARED
     ${oxygenstyleconfig_LIB_SRCS}
     ${oxygenstyleconfig_LIB_FORMS_HEADERS} )
 
+generate_export_header(oxygentransparentstyleconfig BASE_NAME Oxygen EXPORT_FILE_NAME oxygen_export.h)
+
 target_link_libraries(oxygentransparentstyleconfig Qt5::Core Qt5::Gui Qt5::Widgets)
 target_link_libraries(oxygentransparentstyleconfig KF5::I18n )
 target_link_libraries(oxygentransparentstyleconfig oxygentransparentstyle)
