@@ -28,6 +28,7 @@ find_package( KF5 CONFIG REQUIRED
     ConfigWidgets
     I18n
     IconThemes
+    KDE4Support
     Completion
     Service
     WindowSystem
