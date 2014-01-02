@@ -45,7 +45,7 @@
 //_______________________________________________________________________
 extern "C"
 {
-    KDE_EXPORT QObject* allocate_config( KConfig* conf, QWidget* parent )
+    OXYGEN_EXPORT QObject* allocate_config( KConfig* conf, QWidget* parent )
     { return ( new Oxygen::Config( conf, parent ) ); }
 }
 
