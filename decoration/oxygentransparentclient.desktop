@@ -1,66 +1,8 @@
 # KDE Desktop Entry
 [Desktop Entry]
 Name=Oxygen Transparent
-Name[bs]=Oxygen Transparent
-Name[ca]=Oxygen transparent
-Name[ca@valencia]=Oxygen transparent
-Name[cs]=Průhledný Oxygen
-Name[da]=Oxygen Transparent
-Name[de]=Oxygen Transparent
-Name[es]=Oxygen transparente
-Name[et]=Oxygen Transparent
-Name[fi]=Läpinäkyvä Oxygen
-Name[fr]=Oxygen Transparent
-Name[ga]=Oxygen Transparent
-Name[gl]=Oxygen transparente
-Name[hu]=Oxygen Transparent
-Name[it]=Oxygen trasparente
-Name[ko]=Oxygen 투명
-Name[lt]=Deguonies permatomas
-Name[mr]=ऑक्सीजन पारदर्शक
-Name[nl]=Oxygen Transparant
-Name[pl]=Przezroczystość Oxygen
-Name[pt]=Oxygen Transparente
-Name[pt_BR]=Transparente do Oxygen
-Name[ru]=Oxygen Transparent
-Name[sk]=Oxygen transparentné
-Name[sv]=Genomskinlig Oxygen
-Name[tr]=Şeffaf Oxygen
-Name[uk]=Прозорий Oxygen
-Name[x-test]=xxOxygen Transparentxx
-Name[zh_CN]=透明 Oxygen
-Name[zh_TW]=Oxygen 透明
 
 Comment=Transparent styling of the next generation desktop
-Comment[bs]=Transparentni stil radne površine nove generacije
-Comment[ca]=Disseny transparent de l'escriptori de pròxima generació
-Comment[ca@valencia]=Disseny transparent de l'escriptori de pròxima generació
-Comment[cs]=Průhledný styl pro desktop nové generace
-Comment[da]=Gennemsigtigt tema til næste generation af skrivebordsmiljøet
-Comment[de]=Transparente Version des KDE-Designs der nächsten Generation
-Comment[es]=Estilo transparente del escritorio de la próxima generación
-Comment[et]=Uue põlvkonna töölaua läbipaistev stiil
-Comment[fi]=Läpinäkyvä tyyli seuraavan sukupolven työpöydälle
-Comment[fr]=Style Transparent pour le bureau de la prochaine génération
-Comment[gl]=Estilo transparente dos escritorios das seguintes xeracións
-Comment[hu]=A következő generációs asztal átlátszó stílusa
-Comment[it]=Stile trasparente del desktop di prossima generazione
-Comment[ko]=다음 세대 데스크톱을 위한 투명한 스타일
-Comment[lt]=Kitos kartos darbastalio permatomumo stiliaus kūrimas
-Comment[mr]=नेक्स्ट जेनरेशन डेस्कटॉपचे पारदर्शक स्टायलिंग
-Comment[nds]=Dörsichtig Stil för den kamen Schriefdisch
-Comment[nl]=Transparante stijl voor de volgende generatie bureaubladen
-Comment[pl]=Przezroczysta stylizacja pulpitu następnej generacji
-Comment[pt]=Estilo transparente do ambiente de trabalho da próxima geração
-Comment[pt_BR]=Estilo transparente da próxima geração de área de trabalho
-Comment[ru]=Прозрачный стиль рабочего стола следующего поколения
-Comment[sk]=Transparentné štýlovanie plochy novej generácie
-Comment[sv]=Genomskinlig stil för nästa generations skrivbord
-Comment[tr]=Yeni nesil masaüstü şeffaf stili
-Comment[uk]=Прозорий стиль стільниці наступного покоління
-Comment[x-test]=xxTransparent styling of the next generation desktopxx
-Comment[zh_CN]=下一代桌面的透明风格
-Comment[zh_TW]=下一代桌面的透明樣式
 
 X-KDE-Library=kwin3_oxygen_transparent
 

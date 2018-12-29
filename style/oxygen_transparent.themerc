@@ -1,34 +1,5 @@
 [Misc]
 Name=Oxygen Transparent
-Name[bs]=Oxygen Transparent
-Name[ca]=Oxygen transparent
-Name[ca@valencia]=Oxygen transparent
-Name[cs]=Průhledný Oxygen
-Name[da]=Oxygen Transparent
-Name[de]=Oxygen Transparent
-Name[es]=Oxygen transparente
-Name[et]=Oxygen Transparent
-Name[fi]=Läpinäkyvä Oxygen
-Name[fr]=Oxygen Transparent
-Name[ga]=Oxygen Transparent
-Name[gl]=Oxygen transparente
-Name[hu]=Oxygen Transparent
-Name[it]=Oxygen trasparente
-Name[ko]=Oxygen 투명
-Name[lt]=Deguonies permatomas
-Name[mr]=ऑक्सीजन पारदर्शक
-Name[nl]=Oxygen Transparant
-Name[pl]=Przezroczystość Oxygen
-Name[pt]=Oxygen Transparente
-Name[pt_BR]=Transparente do Oxygen
-Name[ru]=Oxygen Transparent
-Name[sk]=Oxygen transparentné
-Name[sv]=Genomskinlig Oxygen
-Name[tr]=Şeffaf Oxygen
-Name[uk]=Прозорий Oxygen
-Name[x-test]=xxOxygen Transparentxx
-Name[zh_CN]=透明 Oxygen
-Name[zh_TW]=Oxygen 透明
 ConfigPage=kstyle_oxygen_transparent_config
 [KDE]
 WidgetStyle=Oxygen Transparent
